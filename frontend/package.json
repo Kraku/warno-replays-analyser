@@ -9,8 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@izohek/warno-deck-utils": "^1.1.0",
+    "@izohek/warno-deck-utils": "latest",
     "antd": "^5.24.4",
+    "axios": "^1.8.3",
     "dayjs": "^1.11.13",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

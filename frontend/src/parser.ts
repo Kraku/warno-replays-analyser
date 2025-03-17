@@ -1,67 +1,60 @@
-import { decodeDeckString } from "@izohek/warno-deck-utils";
+import {
+  decodeDeckString,
+  GenericLookupAdapter,
+  GenericLookupAdapterObject
+} from '@izohek/warno-deck-utils';
 
-const divisions = {
-  9: "7th",
-  10: "5th",
-  11: "79th",
-  12: "11Acr",
-  13: "3rd",
-  14: "8th",
-  15: "BerlinCmd",
-  17: "39th",
-  19: "4th",
-  20: "2nd",
-  23: "35th",
-  24: "82nd",
-  25: "11e",
-  26: "5e",
-  27: "KDA",
-  28: "TKS",
-  29: "1st",
-  30: "2ndUK",
-  33: "UntZentrum",
-  195: "119th",
-  207: "27th",
-  208: "24th",
-};
+import units from './data/units.json' assert { type: 'json' };
+import divisions from './data/divisions.json' assert { type: 'json' };
+
+const typedUnits: GenericLookupAdapterObject[] = units as GenericLookupAdapterObject[];
+const typedDivisions: GenericLookupAdapterObject[] = divisions as GenericLookupAdapterObject[];
 
 export type Replay = {
   createdAt: string;
   fileName: string;
-  result: "Victory" | "Defeat" | "Draw";
+  result: 'Victory' | 'Defeat' | 'Draw';
   division: string;
+  deck: string; // TODO
   enemyName: string;
   enemyDivision: string;
+  enemyRank: string;
+  enemyDeck: string; // TODO
 };
 
-export const parser = (data: any): Replay[] => {
-  return data.map((replay: any) => {
-    const ingamePlayerId = String(replay.warno.ingamePlayerId);
-    const playerKey =
-      ingamePlayerId === String(replay.warno.players?.player1?.PlayerAlliance)
-        ? "player1"
-        : "player2";
-    const enemyKey = playerKey === "player1" ? "player2" : "player1";
+const lookup = new GenericLookupAdapter(typedUnits, typedDivisions);
 
-    return {
-      createdAt: replay.createdAt,
-      fileName: replay.fileName,
-      result: ["4", "5"].includes(replay.warno.result.Victory)
-        ? "Victory"
-        : ["2"].includes(replay.warno.result.Victory)
-        ? "Defeat"
-        : "Draw",
-      division:
-        divisions[
-          decodeDeckString(replay.warno.players?.[playerKey]?.PlayerDeckContent)
-            .division.id as keyof typeof divisions
-        ],
-      enemyName: replay.warno.players[enemyKey].PlayerName,
-      enemyDivision:
-        divisions[
-          decodeDeckString(replay.warno.players[enemyKey].PlayerDeckContent)
-            .division.id as keyof typeof divisions
-        ],
-    };
-  });
+const getDivisionName = (code: string) => {
+  const id = code ? decodeDeckString(code, lookup).division.id : null;
+
+  return divisions.find((division) => division.id === id)?.name || 'Unknown';
+};
+
+export const parser = async (data: any): Promise<Replay[]> => {
+  return Promise.all(
+    data.map(async (replay: any) => {
+      const ingamePlayerId = String(replay.warno.ingamePlayerId);
+      const playerKey =
+        ingamePlayerId === String(replay.warno.players?.player1?.PlayerAlliance)
+          ? 'player1'
+          : 'player2';
+      const enemyKey = playerKey === 'player1' ? 'player2' : 'player1';
+
+      return {
+        createdAt: replay.createdAt,
+        fileName: replay.fileName,
+        result: ['4', '5'].includes(replay.warno.result.Victory)
+          ? 'Victory'
+          : ['2'].includes(replay.warno.result.Victory)
+          ? 'Defeat'
+          : 'Draw', // TODO
+        deck: replay.warno.players?.[playerKey]?.PlayerDeckContent,
+        division: getDivisionName(replay.warno.players?.[playerKey]?.PlayerDeckContent),
+        enemyName: replay.warno.players[enemyKey].PlayerName,
+        enemyDivision: getDivisionName(replay.warno.players?.[enemyKey]?.PlayerDeckContent),
+        enemyRank: replay.warno.players[enemyKey].PlayerRank,
+        enemyDeck: replay.warno.players?.[enemyKey]?.PlayerDeckContent
+      };
+    })
+  );
 };

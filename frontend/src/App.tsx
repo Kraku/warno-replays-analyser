@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./App.css";
 import { Analyse } from "../wailsjs/go/main/App";
-import { Button, Card, Divider, Input, Space, Tabs } from "antd";
+import { Button, Card, Divider, Input, Spin } from "antd";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { parser, Replay } from "./parser";
@@ -12,19 +12,28 @@ import { Stats } from "./components/Statistics";
 dayjs.extend(relativeTime);
 
 function App() {
-  const [directory, setDirectory] = useState("");
+  const [directory, setDirectory] = useState(
+    "D:\\steam\\userdata\\1861570968\\1611600\\remote" // TODO: try to auto detect
+  );
   const [replays, setReplays] = useState<Replay[]>([]);
   const [stats, setStats] = useState<Statistics>();
+  const [loading, setLoading] = useState(false);
+
   const updateName = (e: React.ChangeEvent<HTMLInputElement>): void =>
     setDirectory(e.target.value);
 
   const run = async () => {
-    const data = await Analyse(directory);
+    setLoading(true);
 
-    const replays = parser(JSON.parse(data));
+    try {
+      const data = await Analyse(directory);
+      const replays = await parser(JSON.parse(data));
 
-    setReplays(replays);
-    setStats(getStats(replays));
+      setReplays(replays);
+      setStats(getStats(replays));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -36,11 +45,12 @@ function App() {
           <Input
             onChange={updateName}
             autoComplete="off"
+            value={directory}
             placeholder="Replays directory path"
             name="input"
             type="text"
           />
-          <Button type="primary" onClick={run}>
+          <Button type="primary" onClick={run} disabled={loading}>
             Generate
           </Button>
         </div>
@@ -48,28 +58,34 @@ function App() {
 
       <Divider />
 
-      <Card
-        tabList={[
-          {
-            key: "1",
-            label: "Summary",
-            children: (
-              <div className="pt-4">
-                <ReplaysTable replays={replays} />
-              </div>
-            ),
-          },
-          {
-            key: "2",
-            label: "Statistics",
-            children: (
-              <div className="pt-4">
-                {stats ? <Stats stats={stats} /> : null}
-              </div>
-            ),
-          },
-        ]}
-      />
+      {loading ? (
+        <div className="flex justify-center items-center">
+          <Spin size="large" />
+        </div>
+      ) : (
+        <Card
+          tabList={[
+            {
+              key: "1",
+              label: "Summary",
+              children: (
+                <div className="pt-4">
+                  <ReplaysTable replays={replays} />
+                </div>
+              ),
+            },
+            {
+              key: "2",
+              label: "Statistics",
+              children: (
+                <div className="pt-4">
+                  {stats ? <Stats stats={stats} /> : null}
+                </div>
+              ),
+            },
+          ]}
+        />
+      )}
     </div>
   );
 }

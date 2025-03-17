@@ -26,6 +26,7 @@ func (a *App) startup(ctx context.Context) {
 
 func extractJsons(data string) ([]map[string]any, error) {
 	cleanedData := strings.ReplaceAll(data, "\n", "")
+
 	gameRegex := regexp.MustCompile(`\{"game":.*?"ingamePlayerId":[01]\}`)
 	resultRegex := regexp.MustCompile(`\{"result":.*?\}\}`)
 
@@ -46,7 +47,14 @@ func extractJsons(data string) ([]map[string]any, error) {
 }
 
 func readFilesFromDir(dir string) ([]os.DirEntry, error) {
-	return os.ReadDir(dir)
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("Found %d files in directory: %s", len(files), dir)
+
+	return files, nil
 }
 
 func readFileContent(filePath string) (string, error) {
@@ -80,26 +88,26 @@ func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) m
 	return merged
 }
 
-func (a *App) Analyse(name string) string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatalf("Failed to get user home directory: %v", err)
-	}
+func (a *App) Analyse(directory string) string {
+	dir, err := filepath.Abs(directory)
 
-	dir, err := filepath.Abs(filepath.Join(homeDir, "Downloads/replay_2025-03-16_13-40-49"))
+	log.Printf("Scanning directory: %s", dir)
+
 	if err != nil {
-		log.Fatalf("Failed to get directory: %v", err)
+		log.Printf("Failed to get directory: %v", err)
+		return "[]"
 	}
 
 	files, err := readFilesFromDir(dir)
 	if err != nil {
-		log.Fatalf("Failed to read directory: %v", err)
+		log.Printf("Failed to read directory: %v", err)
+		return "[]"
 	}
 
 	var result []map[string]any
 
 	for _, file := range files {
-		if file.IsDir() || filepath.Ext(file.Name()) != ".rpl3" {
+		if file.IsDir() || strings.ToLower(filepath.Ext(file.Name())) != ".rpl3" {
 			continue
 		}
 
@@ -107,6 +115,14 @@ func (a *App) Analyse(name string) string {
 		content, err := readFileContent(filePath)
 		if err != nil {
 			log.Printf("Failed to read file %s: %v", file.Name(), err)
+			continue
+		}
+
+		if !strings.Contains(content, `"NbMaxPlayer":"2"`) {
+			continue
+		}
+
+		if !strings.Contains(content, `"IsNetworkMode":"1"`) {
 			continue
 		}
 
@@ -119,14 +135,15 @@ func (a *App) Analyse(name string) string {
 		fileInfo, err := getFileInfo(file)
 		if err != nil {
 			log.Printf("Failed to get file info for %s: %v", file.Name(), err)
-		}
-
-		game := jsons[0]["game"].(map[string]any)
-		if game["NbMaxPlayer"].(string) != "2" || game["IsNetworkMode"].(string) != "1" {
 			continue
 		}
 
+		game := jsons[0]["game"].(map[string]any)
 		if _, exists := game["WithHost"]; exists {
+			continue
+		}
+
+		if _, exists := game["ServerName"]; exists {
 			continue
 		}
 
@@ -140,8 +157,11 @@ func (a *App) Analyse(name string) string {
 
 	resultArray, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
-		log.Fatalf("Error marshaling result to JSON: %v", err)
+		log.Printf("Error marshaling result to JSON: %v", err)
+		return "[]"
 	}
+
+	log.Printf("Result: %s", string(resultArray))
 
 	return string(resultArray)
 }

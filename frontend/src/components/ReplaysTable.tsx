@@ -54,6 +54,13 @@ const columns: ColumnType<Replay>[] = [
     sorter: (a: Replay, b: Replay) =>
       (a.enemyDivision || "").localeCompare(b.enemyDivision || ""),
   },
+  {
+    title: "Enemy Rank",
+    dataIndex: "enemyRank",
+    key: "enemyRank",
+    sorter: (a: Replay, b: Replay) =>
+      parseInt(a.enemyRank) - parseInt(b.enemyRank),
+  },
 ];
 
 export const ReplaysTable = ({ replays }: { replays: Replay[] }) => {
