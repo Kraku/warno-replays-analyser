@@ -1,32 +1,31 @@
-import { useState } from "react";
-import "./App.css";
-import { Analyse } from "../wailsjs/go/main/App";
-import { Button, Card, Divider, Input, Spin } from "antd";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { parser, Replay } from "./parser";
-import { getStats, Statistics } from "./stats";
-import { ReplaysTable } from "./components/ReplaysTable";
-import { Stats } from "./components/Statistics";
+import { useState } from 'react';
+import './App.css';
+import { Analyse } from '../wailsjs/go/main/App';
+import { Button, Card, Divider, Spin } from 'antd';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { parser, Replay } from './parser';
+import { getStats, Statistics } from './stats';
+import { ReplaysTable } from './components/ReplaysTable';
+import { Stats } from './components/Statistics';
+import { DirectoriesSelect } from './components/DirectoriesSelect';
 
 dayjs.extend(relativeTime);
 
 function App() {
-  const [directory, setDirectory] = useState(
-    "D:\\steam\\userdata\\1861570968\\1611600\\remote" // TODO: try to auto detect
-  );
+  const [directories, setDirectories] = useState<string[]>([]);
   const [replays, setReplays] = useState<Replay[]>([]);
   const [stats, setStats] = useState<Statistics>();
   const [loading, setLoading] = useState(false);
 
-  const updateName = (e: React.ChangeEvent<HTMLInputElement>): void =>
-    setDirectory(e.target.value);
-
   const run = async () => {
     setLoading(true);
 
+    setReplays([]);
+    setStats(undefined);
+
     try {
-      const data = await Analyse(directory);
+      const data = await Analyse(directories);
       const replays = await parser(JSON.parse(data));
 
       setReplays(replays);
@@ -42,14 +41,7 @@ function App() {
 
       <div>
         <div className="flex items-center gap-2">
-          <Input
-            onChange={updateName}
-            autoComplete="off"
-            value={directory}
-            placeholder="Replays directory path"
-            name="input"
-            type="text"
-          />
+          <DirectoriesSelect directories={directories} setDirectories={setDirectories} />
           <Button type="primary" onClick={run} disabled={loading}>
             Generate
           </Button>
@@ -66,24 +58,23 @@ function App() {
         <Card
           tabList={[
             {
-              key: "1",
-              label: "Summary",
+              key: '1',
+              label: 'Summary',
               children: (
-                <div className="pt-4">
+                <div className="pt-4 mb-10">
                   <ReplaysTable replays={replays} />
                 </div>
-              ),
+              )
             },
             {
-              key: "2",
-              label: "Statistics",
-              children: (
-                <div className="pt-4">
-                  {stats ? <Stats stats={stats} /> : null}
-                </div>
-              ),
-            },
+              key: '2',
+              label: 'Statistics',
+              children: <div className="pt-4 mb-10">{stats ? <Stats stats={stats} /> : null}</div>
+            }
           ]}
+          styles={{
+            body: { padding: 0 }
+          }}
         />
       )}
     </div>

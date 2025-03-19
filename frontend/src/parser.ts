@@ -6,20 +6,25 @@ import {
 
 import units from './data/units.json' assert { type: 'json' };
 import divisions from './data/divisions.json' assert { type: 'json' };
+import maps from './data/maps.json' assert { type: 'json' };
 
 const typedUnits: GenericLookupAdapterObject[] = units as GenericLookupAdapterObject[];
 const typedDivisions: GenericLookupAdapterObject[] = divisions as GenericLookupAdapterObject[];
+const typedMaps: Record<string, string> = maps as Record<string, string>;
 
 export type Replay = {
   createdAt: string;
   fileName: string;
   result: 'Victory' | 'Defeat' | 'Draw';
+  rank: string;
   division: string;
-  deck: string; // TODO
+  deck: string;
   enemyName: string;
   enemyDivision: string;
   enemyRank: string;
-  enemyDeck: string; // TODO
+  enemyDeck: string;
+  duration: number;
+  map: string;
 };
 
 const lookup = new GenericLookupAdapter(typedUnits, typedDivisions);
@@ -43,17 +48,20 @@ export const parser = async (data: any): Promise<Replay[]> => {
       return {
         createdAt: replay.createdAt,
         fileName: replay.fileName,
-        result: ['4', '5'].includes(replay.warno.result.Victory)
+        rank: replay.warno.players?.[playerKey]?.PlayerRank,
+        result: ['4', '5', '6'].includes(replay.warno.result.Victory)
           ? 'Victory'
           : ['2'].includes(replay.warno.result.Victory)
           ? 'Defeat'
-          : 'Draw', // TODO
+          : 'Draw',
         deck: replay.warno.players?.[playerKey]?.PlayerDeckContent,
         division: getDivisionName(replay.warno.players?.[playerKey]?.PlayerDeckContent),
         enemyName: replay.warno.players[enemyKey].PlayerName,
         enemyDivision: getDivisionName(replay.warno.players?.[enemyKey]?.PlayerDeckContent),
         enemyRank: replay.warno.players[enemyKey].PlayerRank,
-        enemyDeck: replay.warno.players?.[enemyKey]?.PlayerDeckContent
+        enemyDeck: replay.warno.players?.[enemyKey]?.PlayerDeckContent,
+        duration: parseInt(replay.warno.result.Duration),
+        map: typedMaps[replay.warno.game.Map] || replay.warno.game.Map
       };
     })
   );

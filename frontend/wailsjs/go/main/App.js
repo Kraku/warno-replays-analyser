@@ -5,3 +5,7 @@
 export function Analyse(arg1) {
   return window['go']['main']['App']['Analyse'](arg1);
 }
+
+export function GetWarnoSaveFolders() {
+  return window['go']['main']['App']['GetWarnoSaveFolders']();
+}
