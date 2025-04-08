@@ -1,6 +1,12 @@
 name: build
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+
+env:
+  NODE_OPTIONS: "--max-old-space-size=4096"
 
 jobs:
   build:
@@ -13,3 +19,4 @@ jobs:
         with:
           build-name: warno-replays-analyser
           build-platform: windows/amd64
+          package: true

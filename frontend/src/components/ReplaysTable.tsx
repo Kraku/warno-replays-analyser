@@ -1,7 +1,7 @@
 import { Table } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Replay } from '../parser';
+import { Replay } from '../parsers/replaysParser';
 import { ColumnType } from 'antd/es/table';
 import { Input } from 'antd';
 import { useState } from 'react';
@@ -15,7 +15,7 @@ const { Search } = Input;
 
 const columns: ColumnType<Replay>[] = [
   {
-    title: 'Time',
+    title: 'Date',
     dataIndex: 'createdAt',
     key: 'createdAt',
     render: (value: string) =>
@@ -23,19 +23,7 @@ const columns: ColumnType<Replay>[] = [
     sorter: (a: Replay, b: Replay) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix()
   },
   {
-    title: 'Result',
-    dataIndex: 'result',
-    key: 'result',
-    filters: [
-      { text: 'Victory', value: 'Victory' },
-      { text: 'Defeat', value: 'Defeat' },
-      { text: 'Draw', value: 'Draw' }
-    ],
-    onFilter: (value: boolean | React.Key, record: Replay) => record.result.includes(String(value)),
-    sorter: (a: Replay, b: Replay) => a.result.localeCompare(b.result)
-  },
-  {
-    title: 'Division',
+    title: 'My Division',
     dataIndex: 'division',
     key: 'division',
     sorter: (a: Replay, b: Replay) => (a.division || '').localeCompare(b.division || ''),
@@ -52,7 +40,7 @@ const columns: ColumnType<Replay>[] = [
     )
   },
   {
-    title: 'Rank',
+    title: 'My Rank',
     dataIndex: 'rank',
     key: 'rank',
     sorter: (a: Replay, b: Replay) => a.rank.localeCompare(b.rank)
@@ -99,7 +87,19 @@ const columns: ColumnType<Replay>[] = [
     dataIndex: 'map',
     key: 'map',
     sorter: (a: Replay, b: Replay) => a.map.localeCompare(b.map)
-  }
+  },
+  {
+    title: 'Result',
+    dataIndex: 'result',
+    key: 'result',
+    filters: [
+      { text: 'Victory', value: 'Victory' },
+      { text: 'Defeat', value: 'Defeat' },
+      { text: 'Draw', value: 'Draw' }
+    ],
+    onFilter: (value: boolean | React.Key, record: Replay) => record.result.includes(String(value)),
+    sorter: (a: Replay, b: Replay) => a.result.localeCompare(b.result)
+  },
 ];
 
 export const ReplaysTable = ({ replays }: { replays: Replay[] }) => {

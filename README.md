@@ -10,6 +10,7 @@
 Once Wails is installed, you can build the application by running:
 ```bash
 wails build
+wails build -nsis // with installer
 ```
 
 **Note:** This application is designed to work only on Windows.

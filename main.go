@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"embed"
 	"encoding/json"
 	"log"
@@ -13,6 +14,7 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	_ "modernc.org/sqlite"
 )
 
 //go:embed all:frontend/dist
@@ -20,10 +22,16 @@ var assets embed.FS
 
 type App struct {
 	ctx context.Context
+	DB  *sql.DB
 }
 
 func NewApp() *App {
-	return &App{}
+	db, err := sql.Open("sqlite", "mydb.sqlite")
+	if err != nil {
+		panic(err)
+	}
+
+	return &App{DB: db}
 }
 
 func (a *App) startup(ctx context.Context) {

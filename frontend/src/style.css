@@ -2,9 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    color-scheme: dark;
+}
+  
 html {
     background-color: rgb(20, 20, 20);
-    text-align: center;
     color: white;
 }
 
@@ -26,5 +29,4 @@ body {
 
 #app {
     height: 100vh;
-    text-align: center;
 }

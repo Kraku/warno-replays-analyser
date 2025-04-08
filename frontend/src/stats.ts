@@ -1,4 +1,4 @@
-import { Replay } from './parser';
+import { Replay } from './parsers/replaysParser';
 
 export type DivisionStats = {
   total: number;

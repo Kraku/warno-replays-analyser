@@ -51,23 +51,21 @@ const createColumn = (
   onFilter
 });
 
+export const renderRankHistoryTooltip = ({ payload }: any) => {
+  if (payload?.length === 0) return null;
+  return (
+    <div className="bg-gray-800 p-2">
+      <Typography.Text>{dayjs(payload[0].payload.date).format('YYYY-MM-DD HH:mm')}</Typography.Text>
+      <br />
+      <div className="bold text-xl">{payload[0].payload.rank}</div>
+    </div>
+  );
+};
+
 export const Stats = ({ stats }: { stats: Statistics }) => {
   if (!stats) {
     return null;
   }
-
-  const renderRankHistoryTooltip = ({ payload }: any) => {
-    if (payload?.length === 0) return null;
-    return (
-      <div className="bg-gray-800 p-2">
-        <Typography.Text>
-          {dayjs(payload[0].payload.date).format('YYYY-MM-DD HH:mm')}
-        </Typography.Text>
-        <br />
-        <div className="bold text-xl">{payload[0].payload.rank}</div>
-      </div>
-    );
-  };
 
   const rankHistoryColumns = [
     createColumn('Division', 'division', 'division', undefined, (a, b) =>

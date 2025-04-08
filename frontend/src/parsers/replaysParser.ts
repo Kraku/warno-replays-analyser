@@ -4,9 +4,9 @@ import {
   GenericLookupAdapterObject
 } from '@izohek/warno-deck-utils';
 
-import units from './data/units.json' assert { type: 'json' };
-import divisions from './data/divisions.json' assert { type: 'json' };
-import maps from './data/maps.json' assert { type: 'json' };
+import units from '../data/units.json' assert { type: 'json' };
+import divisions from '../data/divisions.json' assert { type: 'json' };
+import maps from '../data/maps.json' assert { type: 'json' };
 
 const typedUnits: GenericLookupAdapterObject[] = units as GenericLookupAdapterObject[];
 const typedDivisions: GenericLookupAdapterObject[] = divisions as GenericLookupAdapterObject[];
@@ -20,6 +20,7 @@ export type Replay = {
   division: string;
   deck: string;
   enemyName: string;
+  enemyId: string;
   enemyDivision: string;
   enemyRank: string;
   enemyDeck: string;
@@ -35,8 +36,8 @@ const getDivisionName = (code: string) => {
   return divisions.find((division) => division.id === id)?.name || 'Unknown';
 };
 
-export const parser = async (data: any): Promise<Replay[]> => {
-  return Promise.all(
+export const replaysParser = async (data: any): Promise<Replay[]> =>
+  Promise.all(
     data.map(async (replay: any) => {
       const ingamePlayerId = String(replay.warno.ingamePlayerId);
       const playerKey =
@@ -57,6 +58,7 @@ export const parser = async (data: any): Promise<Replay[]> => {
         deck: replay.warno.players?.[playerKey]?.PlayerDeckContent,
         division: getDivisionName(replay.warno.players?.[playerKey]?.PlayerDeckContent),
         enemyName: replay.warno.players[enemyKey].PlayerName,
+        enemyId: replay.warno.players[enemyKey].PlayerUserId,
         enemyDivision: getDivisionName(replay.warno.players?.[enemyKey]?.PlayerDeckContent),
         enemyRank: replay.warno.players[enemyKey].PlayerRank,
         enemyDeck: replay.warno.players?.[enemyKey]?.PlayerDeckContent,
@@ -65,4 +67,3 @@ export const parser = async (data: any): Promise<Replay[]> => {
       };
     })
   );
-};
