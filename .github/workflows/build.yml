@@ -1,6 +1,9 @@
 name: build
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
 
 env:
   NODE_OPTIONS: "--max-old-space-size=4096"
