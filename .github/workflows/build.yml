@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
-      - uses: dAppServer/wails-build-action@v2.2
+      - uses: dAppServer/wails-build-action@main
         with:
           build-name: warno-replays-analyser
           build-platform: windows/amd64
