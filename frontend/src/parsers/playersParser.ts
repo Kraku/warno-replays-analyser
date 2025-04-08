@@ -34,7 +34,7 @@ export const playersParser = async (replays: Replay[]): Promise<Player[]> => {
         createdAt: replay.createdAt,
         duration: replay.duration,
         map: replay.map,
-        enemyRank: replay.rank
+        enemyRank: replay.enemyRank
       });
     } else {
       const player: Player = {
@@ -49,7 +49,7 @@ export const playersParser = async (replays: Replay[]): Promise<Player[]> => {
             createdAt: replay.createdAt,
             duration: replay.duration,
             map: replay.map,
-            enemyRank: replay.rank
+            enemyRank: replay.enemyRank
           }
         ]
       };
