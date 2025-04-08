@@ -2,6 +2,9 @@ name: build
 
 on: [push, pull_request]
 
+env:
+  NODE_OPTIONS: "--max-old-space-size=4096"
+
 jobs:
   build:
     runs-on: windows-latest
@@ -9,7 +12,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
-      - uses: dAppServer/wails-build-action@v3
+      - uses: dAppServer/wails-build-action@v2.2
         with:
           build-name: warno-replays-analyser
           build-platform: windows/amd64
+          package: true

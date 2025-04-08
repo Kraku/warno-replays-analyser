@@ -4,11 +4,12 @@ import { Analyse } from '../wailsjs/go/main/App';
 import { Button, Card, Divider, Spin } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { parser, Replay } from './parser';
+import { replaysParser, Replay } from './parsers/replaysParser';
 import { getStats, Statistics } from './stats';
 import { ReplaysTable } from './components/ReplaysTable';
 import { Stats } from './components/Statistics';
 import { DirectoriesSelect } from './components/DirectoriesSelect';
+import { Players } from './components/Players';
 
 dayjs.extend(relativeTime);
 
@@ -26,7 +27,7 @@ function App() {
 
     try {
       const data = await Analyse(directories);
-      const replays = await parser(JSON.parse(data));
+      const replays = await replaysParser(JSON.parse(data));
 
       setReplays(replays);
       setStats(getStats(replays));
@@ -68,6 +69,11 @@ function App() {
             },
             {
               key: '2',
+              label: 'Players',
+              children: <div className="pt-4 mb-10">{stats ? <Players replays={replays} /> : null}</div>
+            },
+            {
+              key: '3',
               label: 'Statistics',
               children: <div className="pt-4 mb-10">{stats ? <Stats stats={stats} /> : null}</div>
             }
