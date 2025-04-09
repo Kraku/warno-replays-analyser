@@ -27,7 +27,9 @@ function App() {
 
     try {
       const data = await Analyse(directories);
-      const replays = await replaysParser(JSON.parse(data));
+      const replays = (await replaysParser(JSON.parse(data))).sort(
+        (a, b) => dayjs(b.createdAt).unix() - dayjs(a.createdAt).unix()
+      );
 
       setReplays(replays);
       setStats(getStats(replays));
@@ -43,8 +45,8 @@ function App() {
       <div>
         <div className="flex items-center gap-2">
           <DirectoriesSelect directories={directories} setDirectories={setDirectories} />
-          <Button type="primary" onClick={run} disabled={loading}>
-            Generate
+          <Button type="primary" onClick={run} disabled={loading} loading={loading}>
+            {loading ? 'Loading' : replays.length === 0 ? 'Generate' : 'Refresh'}
           </Button>
         </div>
       </div>
@@ -70,7 +72,9 @@ function App() {
             {
               key: '2',
               label: 'Players',
-              children: <div className="pt-4 mb-10">{stats ? <Players replays={replays} /> : null}</div>
+              children: (
+                <div className="pt-4 mb-10">{stats ? <Players replays={replays} /> : null}</div>
+              )
             },
             {
               key: '3',
