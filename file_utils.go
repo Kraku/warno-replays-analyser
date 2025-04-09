@@ -95,10 +95,7 @@ func processFile(filePath string, result *sync.Map) error {
 		return nil
 	}
 
-	merged, err := mergeJsons(filepath.Base(filePath), jsons)
-	if err != nil {
-		return err
-	}
+	merged := mergeJsons(filepath.Base(filePath), jsons, fileInfo)
 	result.Store(filePath, merged)
 
 	cachedData, err := json.Marshal(merged)

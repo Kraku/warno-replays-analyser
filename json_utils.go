@@ -5,7 +5,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"time"
 )
 
 func extractJsons(data string) ([]map[string]any, error) {
@@ -30,28 +29,11 @@ func extractJsons(data string) ([]map[string]any, error) {
 	return []map[string]any{gameJson, resultJson}, nil
 }
 
-func extractTimestampFromFilename(fileName string) (time.Time, error) {
-	re := regexp.MustCompile(`replay_(\d{4}-\d{2}-\d{2})_(\d{2}-\d{2}-\d{2})\.rpl3`)
-	matches := re.FindStringSubmatch(fileName)
-	if len(matches) < 3 {
-		return time.Time{}, os.ErrInvalid
-	}
-
-	dateTimeStr := matches[1] + " " + strings.ReplaceAll(matches[2], "-", ":")
-
-	return time.Parse("2006-01-02 15:04:05", dateTimeStr)
-}
-
-func mergeJsons(fileName string, jsons []map[string]any) (map[string]any, error) {
-	createdAt, err := extractTimestampFromFilename(fileName)
-	if err != nil {
-		return nil, err
-	}
-
+func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) map[string]any {
 	merged := map[string]any{
 		"fileName":  fileName,
 		"key":       fileName,
-		"createdAt": createdAt,
+		"createdAt": fileInfo.ModTime(),
 		"warno": map[string]any{
 			"game":           jsons[0]["game"],
 			"result":         jsons[1]["result"],
@@ -63,5 +45,5 @@ func mergeJsons(fileName string, jsons []map[string]any) (map[string]any, error)
 		},
 	}
 
-	return merged, nil
+	return merged
 }
