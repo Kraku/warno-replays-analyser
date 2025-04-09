@@ -98,9 +98,12 @@ export const Players = ({ replays }: { replays: Replay[] }) => {
     fetchPlayers();
   }, [replays]);
 
-  const filteredPlayers = players.filter((player) =>
-    player.names.some((name) => name.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredPlayers = players.filter(
+    (player) =>
+      player.names.some((name) => name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      player.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
 
   const selectedPlayerData = players.find((player) => player.id === selectedPlayer);
 
@@ -109,7 +112,7 @@ export const Players = ({ replays }: { replays: Replay[] }) => {
       <div className="w-1/5 ">
         <Input.Search
           className="mb-4"
-          placeholder="Filter players by name"
+          placeholder="Filter players by name or id"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           allowClear
