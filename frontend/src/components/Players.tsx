@@ -3,9 +3,11 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { Replay } from '../parsers/replaysParser';
 import { useEffect, useState } from 'react';
 import { Player, playersParser } from '../parsers/playersParser';
-import { List, Input, Button, Card, Empty, Table, Typography } from 'antd';
-import { ArrowRightOutlined, LinkOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import { List, Input, Button, Card, Empty, Table, Typography, Tag } from 'antd';
+import { ArrowRightOutlined, CopyOutlined } from '@ant-design/icons';
 import { ColumnType } from 'antd/es/table';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { PlayerNotes } from './PlayerNotes';
 
 dayjs.extend(relativeTime);
 
@@ -35,18 +37,7 @@ const columns: ColumnType<
   {
     title: 'My Division',
     dataIndex: 'division',
-    key: 'division',
-    render: (value: string, record) => (
-      <div>
-        {value}{' '}
-        <a
-          href={`https://war-yes.com/deck-builder?code=${record.enemyDeck}`}
-          target="_blank"
-          rel="noreferrer">
-          <LinkOutlined />
-        </a>
-      </div>
-    )
+    key: 'division'
   },
   {
     title: 'Enemy Division',
@@ -55,12 +46,9 @@ const columns: ColumnType<
     render: (value: string, record) => (
       <div>
         {value}{' '}
-        <a
-          href={`https://war-yes.com/deck-builder?code=${record.enemyDeck}`}
-          target="_blank"
-          rel="noreferrer">
-          <LinkOutlined />
-        </a>
+        <CopyToClipboard text={record.enemyDeck}>
+          <CopyOutlined />
+        </CopyToClipboard>
       </div>
     )
   },
@@ -103,7 +91,6 @@ export const Players = ({ replays }: { replays: Replay[] }) => {
       player.names.some((name) => name.toLowerCase().includes(searchQuery.toLowerCase())) ||
       player.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
 
   const selectedPlayerData = players.find((player) => player.id === selectedPlayer);
 
@@ -140,7 +127,7 @@ export const Players = ({ replays }: { replays: Replay[] }) => {
                   }
                   key={player.id}>
                   <List.Item.Meta
-                    title={player.names.join(', ').replace(/(\S{15})(?=\S)/g, '$1 ')}
+                    title={<Typography.Text strong>{player.names.join(', ')}</Typography.Text>}
                     description={
                       rankMinMax.min === rankMinMax.max
                         ? `${rankMinMax.min}`
@@ -154,16 +141,27 @@ export const Players = ({ replays }: { replays: Replay[] }) => {
         </div>
       </div>
       <div className="w-4/5">
-        <Card title={selectedPlayerData?.names.join(', ')}>
+        <Card
+          title={
+            selectedPlayerData ? (
+              <div className="flex gap-2 items-center mb-2">
+                <Typography.Text>{selectedPlayerData?.names.join(', ')}</Typography.Text>
+                <Tag>#{selectedPlayerData?.id}</Tag>
+              </div>
+            ) : null
+          }>
           {selectedPlayerData ? (
-            <Table
-              className="mb-4"
-              dataSource={selectedPlayerData.history}
-              columns={columns}
-              size="small"
-              rowKey="createdAt"
-              pagination={false}
-            />
+            <div>
+              <Table
+                className="mb-4"
+                dataSource={selectedPlayerData.history}
+                columns={columns}
+                size="small"
+                rowKey="createdAt"
+                pagination={false}
+              />
+              <PlayerNotes player={selectedPlayerData} />
+            </div>
           ) : (
             <Empty description="Select a player" image={Empty.PRESENTED_IMAGE_SIMPLE} />
           )}

@@ -6,6 +6,18 @@ export function Analyse(arg1) {
   return window['go']['main']['App']['Analyse'](arg1);
 }
 
+export function CreatePlayerNote(arg1, arg2) {
+  return window['go']['main']['App']['CreatePlayerNote'](arg1, arg2);
+}
+
+export function DeletePlayerNote(arg1, arg2) {
+  return window['go']['main']['App']['DeletePlayerNote'](arg1, arg2);
+}
+
+export function GetPlayerNotes(arg1) {
+  return window['go']['main']['App']['GetPlayerNotes'](arg1);
+}
+
 export function GetWarnoSaveFolders() {
   return window['go']['main']['App']['GetWarnoSaveFolders']();
 }

@@ -31,13 +31,13 @@ func readFileContent(filePath string) (string, error) {
 	return string(content), nil
 }
 
-func getCacheDir(appName string) (string, error) {
+func getCacheDir(appName string, directory string) (string, error) {
 	localAppData := os.Getenv("LOCALAPPDATA")
 	if localAppData == "" {
 		return "", fmt.Errorf("LOCALAPPDATA environment variable is not set")
 	}
 
-	cacheDir := filepath.Join(localAppData, appName, "cache")
+	cacheDir := filepath.Join(localAppData, appName, directory)
 	if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil {
 		return "", err
 	}
@@ -51,7 +51,7 @@ func processFile(filePath string, result *sync.Map) error {
 		return err
 	}
 
-	cacheDir, err := getCacheDir("warno-replays-analyser")
+	cacheDir, err := getCacheDir("warno-replays-analyser", "cache")
 	if err != nil {
 		return err
 	}

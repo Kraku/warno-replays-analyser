@@ -5,8 +5,9 @@ import { Replay } from '../parsers/replaysParser';
 import { ColumnType } from 'antd/es/table';
 import { Input } from 'antd';
 import { useState } from 'react';
-import { LinkOutlined } from '@ant-design/icons';
+import { CopyOutlined, LinkOutlined } from '@ant-design/icons';
 import duration from 'dayjs/plugin/duration';
+import CopyToClipboard from 'react-copy-to-clipboard';
 
 dayjs.extend(relativeTime);
 dayjs.extend(duration);
@@ -30,12 +31,9 @@ const columns: ColumnType<Replay>[] = [
     render: (value: string, record) => (
       <div>
         {value}{' '}
-        <a
-          href={`https://war-yes.com/deck-builder?code=${record.deck}`}
-          target="_blank"
-          rel="noreferrer">
-          <LinkOutlined />
-        </a>
+        <CopyToClipboard text={record.deck}>
+          <CopyOutlined />
+        </CopyToClipboard>
       </div>
     )
   },
@@ -59,12 +57,9 @@ const columns: ColumnType<Replay>[] = [
     render: (value: string, record) => (
       <div>
         {value}{' '}
-        <a
-          href={`https://war-yes.com/deck-builder?code=${record.enemyDeck}`}
-          target="_blank"
-          rel="noreferrer">
-          <LinkOutlined />
-        </a>
+        <CopyToClipboard text={record.enemyDeck}>
+          <CopyOutlined />
+        </CopyToClipboard>
       </div>
     )
   },
