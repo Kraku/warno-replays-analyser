@@ -109,3 +109,10 @@ func processFile(filePath string, result *sync.Map) error {
 
 	return nil
 }
+
+func getAppVersion() string {
+	versionBytes, _ := os.ReadFile("VERSION")
+	version := strings.TrimSpace(string(versionBytes))
+
+	return version
+}

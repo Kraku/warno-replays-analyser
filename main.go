@@ -14,7 +14,6 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
-	_ "modernc.org/sqlite"
 )
 
 //go:embed all:frontend/dist
@@ -26,12 +25,7 @@ type App struct {
 }
 
 func NewApp() *App {
-	db, err := sql.Open("sqlite", "mydb.sqlite")
-	if err != nil {
-		panic(err)
-	}
-
-	return &App{DB: db}
+	return &App{}
 }
 
 func (a *App) startup(ctx context.Context) {
@@ -127,7 +121,7 @@ func main() {
 	app := NewApp()
 
 	err := wails.Run(&options.App{
-		Title:  "warno-replays-analyser",
+		Title:  "warno-replays-analyser (" + getAppVersion() + ")",
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{
