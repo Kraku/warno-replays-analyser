@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
-import { GetReplays } from '../wailsjs/go/main/App';
-import { Button, Card, Divider, Spin } from 'antd';
+import { GetAppVersions, GetReplays } from '../wailsjs/go/main/App';
+import { Button, Card, Divider, Spin, Tag } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { replaysParser, Replay } from './parsers/replaysParser';
@@ -10,8 +10,9 @@ import { ReplaysTable } from './components/ReplaysTable';
 import { Stats } from './components/Statistics';
 import { DirectoriesSelect } from './components/DirectoriesSelect';
 import { Players } from './components/Players';
-import { SettingOutlined } from '@ant-design/icons';
+import { LinkOutlined, SettingOutlined } from '@ant-design/icons';
 import { SettingsDrawer } from './drawers/SettingsDrawer';
+import { versionOutdated } from './helpers/version';
 
 dayjs.extend(relativeTime);
 
@@ -21,6 +22,17 @@ function App() {
   const [stats, setStats] = useState<Statistics>();
   const [loading, setLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [versions, setVersions] = useState<[string, string]>();
+
+  useEffect(() => {
+    const fetchAppVersions = async (): Promise<void> => {
+      const [appVersion, latestVersion] = await GetAppVersions();
+
+      setVersions([appVersion, latestVersion]);
+    };
+
+    fetchAppVersions();
+  }, []);
 
   const run = async () => {
     setLoading(true);
@@ -45,7 +57,25 @@ function App() {
     <>
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold mb-4">WARNO Replays Analyser</h1>
+          <div className="flex items-center gap-4">
+            <div className="text-3xl font-bold">WARNO Replays Analyser</div>
+            {versions && versionOutdated(...versions) ? (
+              <Tag>
+                <div className="flex items-center">
+                  New version available: {versions[1]}
+                  <Button
+                    type="link"
+                    size="small"
+                    href="https://github.com/Kraku/warno-replays-analyser/releases/latest"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    icon={<LinkOutlined />}
+                  />
+                </div>
+              </Tag>
+            ) : null}
+          </div>
+
           <Button icon={<SettingOutlined />} onClick={() => setShowSettings(true)}>
             Settings
           </Button>
@@ -54,7 +84,7 @@ function App() {
         <div>
           <div className="flex items-center gap-2">
             <DirectoriesSelect directories={directories} setDirectories={setDirectories} />
-            <Button type="primary" onClick={run} disabled={loading} loading={loading}>
+            <Button type="primary" onClick={run} disabled={loading || directories.length === 0} loading={loading}>
               {loading ? 'Loading' : replays.length === 0 ? 'Generate' : 'Refresh'}
             </Button>
           </div>

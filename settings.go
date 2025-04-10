@@ -81,15 +81,13 @@ func (a *App) GetPlayerIdsOptions() []PlayerIdsOption {
 		folderKeys = append(folderKeys, value)
 	}
 
-	// Debug folderKeys
-	fmt.Printf("folderKeys: %v\n", folderKeys)
-
 	replays := getReplays(folderKeys)
+
 	var options []PlayerIdsOption
 	playerMap := make(map[string]string)
 	for _, replay := range replays {
 		playerKey := ""
-		if fmt.Sprintf("%d", replay.Warno.IngamePlayerId) == replay.Warno.Players.Player1.PlayerAlliance {
+		if fmt.Sprintf("%d", int(replay.Warno.IngamePlayerId)) == replay.Warno.Players.Player1.PlayerAlliance {
 			playerKey = "player1"
 		} else {
 			playerKey = "player2"

@@ -10,6 +10,10 @@ export function DeletePlayerNote(arg1, arg2) {
   return window['go']['main']['App']['DeletePlayerNote'](arg1, arg2);
 }
 
+export function GetAppVersions() {
+  return window['go']['main']['App']['GetAppVersions']();
+}
+
 export function GetPlayerIdsOptions() {
   return window['go']['main']['App']['GetPlayerIdsOptions']();
 }

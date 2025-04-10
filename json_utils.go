@@ -57,7 +57,7 @@ type Players struct {
 
 type Warno struct {
 	Game           Game    `json:"game"`
-	IngamePlayerId int     `json:"ingamePlayerId"`
+	IngamePlayerId float64 `json:"ingamePlayerId"`
 	Players        Players `json:"players"`
 	Result         Result  `json:"result"`
 }
@@ -91,11 +91,11 @@ func extractJsons(data string) ([]map[string]any, error) {
 	return []map[string]any{gameJson, resultJson}, nil
 }
 
-func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) WarnoData {
+func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) map[string]interface{} {
 	merged := WarnoData{
 		FileName:  fileName,
 		Key:       fileName,
-		CreatedAt: fileInfo.ModTime().Format(time.RFC3339), // Format time as RFC3339 string
+		CreatedAt: fileInfo.ModTime().Format(time.RFC3339),
 		Warno: Warno{
 			Game: func() Game {
 				gameData, _ := json.Marshal(jsons[0]["game"])
@@ -103,17 +103,36 @@ func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) W
 				_ = json.Unmarshal(gameData, &game)
 				return game
 			}(),
-			IngamePlayerId: jsons[0]["ingamePlayerId"].(int),
-			Result:         jsons[1]["result"].(Result),
+			IngamePlayerId: jsons[0]["ingamePlayerId"].(float64),
+			Result: func() Result {
+				resultData, _ := json.Marshal(jsons[1]["result"])
+				var result Result
+				_ = json.Unmarshal(resultData, &result)
+				return result
+			}(),
 			Players: struct {
 				Player1 Player `json:"player1"`
 				Player2 Player `json:"player2"`
 			}{
-				Player1: jsons[0]["player_2"].(Player),
-				Player2: jsons[0]["player_4"].(Player),
+				Player1: func() Player {
+					playerData, _ := json.Marshal(jsons[0]["player_2"])
+					var player Player
+					_ = json.Unmarshal(playerData, &player)
+					return player
+				}(),
+				Player2: func() Player {
+					playerData, _ := json.Marshal(jsons[0]["player_4"])
+					var player Player
+					_ = json.Unmarshal(playerData, &player)
+					return player
+				}(),
 			},
 		},
 	}
 
-	return merged
+	mergedMap := make(map[string]interface{})
+	mergedBytes, _ := json.Marshal(merged)
+	_ = json.Unmarshal(mergedBytes, &mergedMap)
+
+	return mergedMap
 }

@@ -6,6 +6,8 @@ export function CreatePlayerNote(arg1:string,arg2:string):Promise<void>;
 
 export function DeletePlayerNote(arg1:string,arg2:string):Promise<void>;
 
+export function GetAppVersions():Promise<Array<string>>;
+
 export function GetPlayerIdsOptions():Promise<Array<main.PlayerIdsOption>>;
 
 export function GetPlayerNotes(arg1:string):Promise<string>;

@@ -83,7 +83,14 @@ export const SettingsDrawer = ({
             mode="multiple"
             allowClear
             placeholder="Select one or more Eugen accounts"
-            options={options}
+            options={options.map((item) => ({
+              label: (
+                <div>
+                  {item.value} <span className="text-neutral-500">{item.label}</span>
+                </div>
+              ),
+              value: item.value
+            }))}
           />
         </Form.Item>
         <Form.Item
