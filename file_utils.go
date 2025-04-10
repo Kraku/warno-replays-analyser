@@ -31,18 +31,32 @@ func readFileContent(filePath string) (string, error) {
 	return string(content), nil
 }
 
-func getCacheDir(appName string, directory string) (string, error) {
+func getCacheDir(appName string, directory ...string) (string, error) {
 	localAppData := os.Getenv("LOCALAPPDATA")
 	if localAppData == "" {
 		return "", fmt.Errorf("LOCALAPPDATA environment variable is not set")
 	}
 
-	cacheDir := filepath.Join(localAppData, appName, directory)
+	cacheDir := filepath.Join(localAppData, appName)
+	if len(directory) > 0 {
+		cacheDir = filepath.Join(cacheDir, directory[0])
+	}
+
 	if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil {
 		return "", err
 	}
 
 	return cacheDir, nil
+}
+
+func writeEmptyCache(cacheFilePath string) error {
+	emptyFile, err := os.Create(cacheFilePath)
+	if err != nil {
+		return err
+	}
+	defer emptyFile.Close()
+
+	return nil
 }
 
 func processFile(filePath string, result *sync.Map) error {
@@ -63,6 +77,10 @@ func processFile(filePath string, result *sync.Map) error {
 			return err
 		}
 
+		if len(cachedContent) == 0 {
+			return nil
+		}
+
 		var cachedData map[string]interface{}
 		if err := json.Unmarshal(cachedContent, &cachedData); err != nil {
 			return err
@@ -79,7 +97,7 @@ func processFile(filePath string, result *sync.Map) error {
 	}
 
 	if !strings.Contains(content, `"NbMaxPlayer":"2"`) || !strings.Contains(content, `"IsNetworkMode":"1"`) {
-		return nil
+		return writeEmptyCache(cacheFilePath)
 	}
 
 	jsons, err := extractJsons(content)
@@ -89,10 +107,10 @@ func processFile(filePath string, result *sync.Map) error {
 
 	game := jsons[0]["game"].(map[string]interface{})
 	if _, exists := game["WithHost"]; exists {
-		return nil
+		return writeEmptyCache(cacheFilePath)
 	}
 	if _, exists := game["ServerName"]; exists {
-		return nil
+		return writeEmptyCache(cacheFilePath)
 	}
 
 	merged := mergeJsons(filepath.Base(filePath), jsons, fileInfo)

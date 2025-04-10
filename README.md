@@ -24,6 +24,5 @@ You can download the latest `.exe` or installer from the [Releases](https://gith
 #### Building the Application
 Once Wails is installed, you can build the application by running:
 ```bash
-wails build
-wails build -nsis // with installer
+wails build -nsis
 ```

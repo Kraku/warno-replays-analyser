@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Player } from '../parsers/playersParser';
 import { CreatePlayerNote, DeletePlayerNote, GetPlayerNotes } from '../../wailsjs/go/main/App';
 import { Button, Input, Typography } from 'antd';
-import { CheckOutlined, DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, SendOutlined } from '@ant-design/icons';
 
 dayjs.extend(relativeTime);
 
@@ -70,7 +70,7 @@ export const PlayerNotes = ({ player }: { player: Player }) => {
             }
           }}
         />
-        <Button onClick={() => handleNewNote()} icon={<CheckOutlined />} />
+        <Button onClick={() => handleNewNote()} icon={<SendOutlined />} />
       </div>
     </div>
   );

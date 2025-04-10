@@ -57,7 +57,7 @@ func (a *App) GetWarnoSaveFolders() string {
 	return string(warnoPathsJson)
 }
 
-func (a *App) Analyse(directories []string) string {
+func getReplays(directories []string) []WarnoData {
 	var wg sync.WaitGroup
 	result := sync.Map{}
 	fileChan := make(chan string, 100)
@@ -111,10 +111,21 @@ func (a *App) Analyse(directories []string) string {
 	resultArray, err := json.MarshalIndent(finalResult, "", "  ")
 	if err != nil {
 		log.Printf("Error marshaling result to JSON: %v", err)
-		return "[]"
+		return nil
 	}
 
-	return string(resultArray)
+	var warnoData []WarnoData
+	err = json.Unmarshal(resultArray, &warnoData)
+	if err != nil {
+		log.Printf("Error unmarshaling JSON to WarnoData: %v", err)
+		return nil
+	}
+
+	return warnoData
+}
+
+func (a *App) GetReplays(directories []string) []WarnoData {
+	return getReplays(directories)
 }
 
 func main() {

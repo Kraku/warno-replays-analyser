@@ -7,6 +7,8 @@ import {
 import units from '../data/units.json' assert { type: 'json' };
 import divisions from '../data/divisions.json' assert { type: 'json' };
 import maps from '../data/maps.json' assert { type: 'json' };
+import { GetSettings } from '../../wailsjs/go/main/App';
+import { main } from '../../wailsjs/go/models';
 
 const typedUnits: GenericLookupAdapterObject[] = units as GenericLookupAdapterObject[];
 const typedDivisions: GenericLookupAdapterObject[] = divisions as GenericLookupAdapterObject[];
@@ -15,6 +17,8 @@ const typedMaps: Record<string, string> = maps as Record<string, string>;
 export type Replay = {
   createdAt: string;
   fileName: string;
+  playerId: string;
+  playerName: string;
   result: 'Victory' | 'Defeat' | 'Draw';
   rank: string;
   division: string;
@@ -36,8 +40,10 @@ const getDivisionName = (code: string) => {
   return divisions.find((division) => division.id === id)?.name || 'Unknown';
 };
 
-export const replaysParser = async (data: any): Promise<Replay[]> =>
-  Promise.all(
+export const replaysParser = async (data: main.WarnoData[]): Promise<Replay[]> => {
+  const settings = await GetSettings();
+
+  const results = await Promise.all(
     data.map(async (replay: any) => {
       const ingamePlayerId = String(replay.warno.ingamePlayerId);
       const playerKey =
@@ -46,9 +52,22 @@ export const replaysParser = async (data: any): Promise<Replay[]> =>
           : 'player2';
       const enemyKey = playerKey === 'player1' ? 'player2' : 'player1';
 
+      if (
+        settings.playerIds &&
+        !settings.playerIds.includes(replay.warno.players?.[playerKey].PlayerUserId)
+      ) {
+        return null;
+      }
+
+      if (settings.startDate && new Date(replay.createdAt) < new Date(settings.startDate)) {
+        return null;
+      }
+
       return {
         createdAt: replay.createdAt,
         fileName: replay.fileName,
+        playerId: replay.warno.players?.[playerKey].PlayerUserId,
+        playerName: replay.warno.players?.[playerKey].PlayerName,
         rank: replay.warno.players?.[playerKey]?.PlayerRank,
         result: ['4', '5', '6'].includes(replay.warno.result.Victory)
           ? 'Victory'
@@ -67,3 +86,6 @@ export const replaysParser = async (data: any): Promise<Replay[]> =>
       };
     })
   );
+
+  return results.filter((replay) => replay !== null) as Replay[];
+};
