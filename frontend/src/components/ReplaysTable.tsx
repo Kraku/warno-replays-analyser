@@ -5,9 +5,10 @@ import { Replay } from '../parsers/replaysParser';
 import { ColumnType } from 'antd/es/table';
 import { Input } from 'antd';
 import { useState } from 'react';
-import { CopyOutlined, LinkOutlined } from '@ant-design/icons';
+import { CopyOutlined } from '@ant-design/icons';
 import duration from 'dayjs/plugin/duration';
 import CopyToClipboard from 'react-copy-to-clipboard';
+import { transliterate } from '../helpers/transliterate';
 
 dayjs.extend(relativeTime);
 dayjs.extend(duration);
@@ -19,8 +20,19 @@ const columns: ColumnType<Replay>[] = [
     title: 'Date',
     dataIndex: 'createdAt',
     key: 'createdAt',
-    render: (value: string) =>
-      `${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()})`,
+    render: (value: string, record) => (
+      <div
+        className={[
+          'border-l-2 pl-2',
+          record.result === 'Victory'
+            ? 'border-emerald-950'
+            : record.result === 'Defeat'
+            ? 'border-rose-950'
+            : 'border-gray-500'
+        ].join(' ')}>
+        {`${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()})`}
+      </div>
+    ),
     sorter: (a: Replay, b: Replay) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix()
   },
   {
@@ -94,7 +106,7 @@ const columns: ColumnType<Replay>[] = [
     ],
     onFilter: (value: boolean | React.Key, record: Replay) => record.result.includes(String(value)),
     sorter: (a: Replay, b: Replay) => a.result.localeCompare(b.result)
-  },
+  }
 ];
 
 export const ReplaysTable = ({ replays }: { replays: Replay[] }) => {
@@ -105,9 +117,7 @@ export const ReplaysTable = ({ replays }: { replays: Replay[] }) => {
   };
 
   const filteredReplays = replays.filter((replay) =>
-    Object.values(replay).some((val) =>
-      String(val).toLowerCase().includes(searchText.toLowerCase())
-    )
+    transliterate(replay.enemyName.toLowerCase()).includes(transliterate(searchText.toLowerCase()))
   );
 
   return (

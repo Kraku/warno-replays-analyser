@@ -14,6 +14,10 @@ export function GetAppVersions() {
   return window['go']['main']['App']['GetAppVersions']();
 }
 
+export function GetPlayerGameHistory(arg1) {
+  return window['go']['main']['App']['GetPlayerGameHistory'](arg1);
+}
+
 export function GetPlayerIdsOptions() {
   return window['go']['main']['App']['GetPlayerIdsOptions']();
 }

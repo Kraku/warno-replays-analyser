@@ -82,6 +82,36 @@ export namespace main {
 	        this.PlayerUserId = source["PlayerUserId"];
 	    }
 	}
+	export class PlayerGame {
+	    gameId: string;
+	    score: string;
+	    date: string;
+	    playerName: string;
+	    enemyName: string;
+	    playerElo: string[];
+	    enemyElo: string[];
+	    playerEloChange: string;
+	    enemyEloChange: string;
+	    result: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PlayerGame(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.gameId = source["gameId"];
+	        this.score = source["score"];
+	        this.date = source["date"];
+	        this.playerName = source["playerName"];
+	        this.enemyName = source["enemyName"];
+	        this.playerElo = source["playerElo"];
+	        this.enemyElo = source["enemyElo"];
+	        this.playerEloChange = source["playerEloChange"];
+	        this.enemyEloChange = source["enemyEloChange"];
+	        this.result = source["result"];
+	    }
+	}
 	export class PlayerIdsOption {
 	    label: string;
 	    value: string;

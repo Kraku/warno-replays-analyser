@@ -3,16 +3,15 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { Replay } from '../parsers/replaysParser';
 import { useEffect, useState } from 'react';
 import { Player, playersParser } from '../parsers/playersParser';
-import { List, Input, Button, Card, Empty, Table, Typography, Tag } from 'antd';
+import { List, Input, Button, Card, Empty, Typography, Tag } from 'antd';
 import { ArrowRightOutlined, CopyOutlined } from '@ant-design/icons';
 import { ColumnType } from 'antd/es/table';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { PlayerNotes } from './PlayerNotes';
+import { PlayerDetails } from './PlayerDetails/PlayerDetails';
+import { getMinMax } from '../helpers/getMinMax';
+import { transliterate } from '../helpers/transliterate';
 
 dayjs.extend(relativeTime);
-
-const getMinMax = (arr: number[]): { min: number | null; max: number | null } =>
-  arr.length ? { min: Math.min(...arr), max: Math.max(...arr) } : { min: null, max: null };
 
 const columns: ColumnType<
   Pick<
@@ -86,11 +85,14 @@ export const Players = ({ replays }: { replays: Replay[] }) => {
     fetchPlayers();
   }, [replays]);
 
-  const filteredPlayers = players.filter(
-    (player) =>
-      player.names.some((name) => name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      player.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPlayers = players.filter((player) => {
+    const normalizedQuery = transliterate(searchQuery.toLowerCase());
+
+    return (
+      player.names.some((name) => transliterate(name.toLowerCase()).includes(normalizedQuery)) ||
+      transliterate(player.id.toLowerCase()).includes(normalizedQuery)
+    );
+  });
 
   const selectedPlayerData = players.find((player) => player.id === selectedPlayer);
 
@@ -129,9 +131,28 @@ export const Players = ({ replays }: { replays: Replay[] }) => {
                   <List.Item.Meta
                     title={<Typography.Text strong>{player.names.join(', ')}</Typography.Text>}
                     description={
-                      rankMinMax.min === rankMinMax.max
-                        ? `${rankMinMax.min}`
-                        : `${rankMinMax.min} - ${rankMinMax.max}`
+                      rankMinMax.min ? (
+                        <div className="flex items-center">
+                          <div
+                            className={[
+                              'w-2 h-2 rounded-full mr-1',
+                              rankMinMax.min <= 50
+                                ? 'bg-rose-600'
+                                : rankMinMax.min <= 100
+                                ? 'bg-orange-600'
+                                : rankMinMax.min <= 200
+                                ? 'bg-yellow-600'
+                                : rankMinMax.min <= 500
+                                ? 'bg-emerald-600'
+                                : 'bg-neutral-600'
+                            ].join(' ')}
+                          />
+
+                          {rankMinMax.min === rankMinMax.max
+                            ? `${rankMinMax.min}`
+                            : `${rankMinMax.min} - ${rankMinMax.max}`}
+                        </div>
+                      ) : null
                     }
                   />
                 </List.Item>
@@ -141,31 +162,13 @@ export const Players = ({ replays }: { replays: Replay[] }) => {
         </div>
       </div>
       <div className="w-4/5">
-        <Card
-          title={
-            selectedPlayerData ? (
-              <div className="flex gap-2 items-center mb-2">
-                <Typography.Text>{selectedPlayerData?.names.join(', ')}</Typography.Text>
-                <Tag>#{selectedPlayerData?.id}</Tag>
-              </div>
-            ) : null
-          }>
-          {selectedPlayerData ? (
-            <div>
-              <Table
-                className="mb-4"
-                dataSource={selectedPlayerData.history}
-                columns={columns}
-                size="small"
-                rowKey="createdAt"
-                pagination={false}
-              />
-              <PlayerNotes player={selectedPlayerData} />
-            </div>
-          ) : (
+        {selectedPlayerData ? (
+          <PlayerDetails player={selectedPlayerData} />
+        ) : (
+          <Card>
             <Empty description="Select a player" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-          )}
-        </Card>
+          </Card>
+        )}
       </div>
     </div>
   );

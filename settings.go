@@ -18,7 +18,7 @@ type PlayerIdsOption struct {
 }
 
 func getSettingsFilePath() (string, error) {
-	settingsDir, err := getCacheDir("warno-replays-analyser")
+	settingsDir, err := getLocalAppDataDir("warno-replays-analyser")
 	if err != nil {
 		return "", fmt.Errorf("failed to get cache directory: %w", err)
 	}

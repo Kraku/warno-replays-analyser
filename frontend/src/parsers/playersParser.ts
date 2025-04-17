@@ -1,18 +1,20 @@
 import { Replay } from './replaysParser';
 
+export type PlayerHistory = {
+  result: 'Victory' | 'Defeat' | 'Draw';
+  division: string;
+  enemyDivision: string;
+  enemyDeck: string;
+  createdAt: string;
+  duration: number;
+  map: string;
+  enemyRank: string;
+};
+
 export type Player = {
   id: string;
   names: string[];
-  history: {
-    result: 'Victory' | 'Defeat' | 'Draw';
-    division: string;
-    enemyDivision: string;
-    enemyDeck: string;
-    createdAt: string;
-    duration: number;
-    map: string;
-    enemyRank: string;
-  }[];
+  history: PlayerHistory[];
 };
 
 export const playersParser = async (replays: Replay[]): Promise<Player[]> => {

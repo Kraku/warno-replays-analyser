@@ -19,7 +19,7 @@ type PlayerNote struct {
 }
 
 func getNotesFilePath(playerId string) (string, error) {
-	notesDir, err := getCacheDir("warno-replays-analyser", "playerNotes")
+	notesDir, err := getLocalAppDataDir("warno-replays-analyser", "playerNotes")
 	if err != nil {
 		return "", fmt.Errorf("getting playerNotes directory: %w", err)
 	}

@@ -8,6 +8,8 @@ export function DeletePlayerNote(arg1:string,arg2:string):Promise<void>;
 
 export function GetAppVersions():Promise<Array<string>>;
 
+export function GetPlayerGameHistory(arg1:string):Promise<Array<main.PlayerGame>>;
+
 export function GetPlayerIdsOptions():Promise<Array<main.PlayerIdsOption>>;
 
 export function GetPlayerNotes(arg1:string):Promise<string>;
