@@ -15,6 +15,7 @@ export const SettingsDrawer = ({
   const [form] = useForm();
   const [options, setOptions] = useState<main.PlayerIdsOption[]>([]);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const initialize = async () => {
       try {

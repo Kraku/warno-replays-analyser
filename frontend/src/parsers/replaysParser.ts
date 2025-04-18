@@ -32,6 +32,16 @@ export type Replay = {
   map: string;
 };
 
+export type EugenUser = {
+  eugenId: string;
+  playerNames: string[];
+};
+
+type ParserResult = {
+  replays: Replay[];
+  eugenUsers: EugenUser[];
+};
+
 const lookup = new GenericLookupAdapter(typedUnits, typedDivisions);
 
 const getDivisionName = (code: string) => {
@@ -40,8 +50,9 @@ const getDivisionName = (code: string) => {
   return divisions.find((division) => division.id === id)?.name || 'Unknown';
 };
 
-export const replaysParser = async (data: main.WarnoData[]): Promise<Replay[]> => {
+export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResult> => {
   const settings = await GetSettings();
+  const eugenUsers: EugenUser[] = [];
 
   const results = await Promise.all(
     data.map(async (replay: any) => {
@@ -61,6 +72,23 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<Replay[]> =
 
       if (settings.startDate && new Date(replay.createdAt) < new Date(settings.startDate)) {
         return null;
+      }
+
+      const eugenUserIndex = eugenUsers.findIndex(
+        (user) => user.eugenId === replay.warno.players?.[playerKey].PlayerUserId
+      );
+
+      if (eugenUserIndex === -1) {
+        eugenUsers.push({
+          eugenId: replay.warno.players?.[playerKey].PlayerUserId,
+          playerNames: [replay.warno.players?.[playerKey].PlayerName]
+        });
+      } else if (
+        !eugenUsers[eugenUserIndex].playerNames.includes(
+          replay.warno.players?.[playerKey].PlayerName
+        )
+      ) {
+        eugenUsers[eugenUserIndex].playerNames.push(replay.warno.players?.[playerKey].PlayerName);
       }
 
       return {
@@ -87,5 +115,8 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<Replay[]> =
     })
   );
 
-  return results.filter((replay) => replay !== null) as Replay[];
+  return {
+    replays: results.filter((replay) => replay !== null) as Replay[],
+    eugenUsers
+  };
 };

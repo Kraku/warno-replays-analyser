@@ -8,8 +8,9 @@ import (
 )
 
 type Settings struct {
-	PlayerIds []string `json:"playerIds,omitempty"`
-	StartDate string   `json:"startDate,omitempty"`
+	PlayerIds      []string `json:"playerIds,omitempty"`
+	StartDate      string   `json:"startDate,omitempty"`
+	DailyRecapUser string   `json:"dailyRecapUser,omitempty"`
 }
 
 type PlayerIdsOption struct {

@@ -1,5 +1,23 @@
 export namespace main {
 	
+	export class DailyRecap {
+	    eloChange: number;
+	    gamesPlayed: number;
+	    wins: number;
+	    losses: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new DailyRecap(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.eloChange = source["eloChange"];
+	        this.gamesPlayed = source["gamesPlayed"];
+	        this.wins = source["wins"];
+	        this.losses = source["losses"];
+	    }
+	}
 	export class Game {
 	    CombatRule: string;
 	    DeploymentMode: string;
@@ -175,6 +193,7 @@ export namespace main {
 	export class Settings {
 	    playerIds?: string[];
 	    startDate?: string;
+	    dailyRecapUser?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -184,6 +203,7 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.playerIds = source["playerIds"];
 	        this.startDate = source["startDate"];
+	        this.dailyRecapUser = source["dailyRecapUser"];
 	    }
 	}
 	export class Warno {

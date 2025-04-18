@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import { GetAppVersions, GetReplays } from '../wailsjs/go/main/App';
-import { Button, Card, Divider, Spin, Tag } from 'antd';
+import { Button, Card, Spin, Tag } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { replaysParser, Replay } from './parsers/replaysParser';
+import { replaysParser, Replay, EugenUser } from './parsers/replaysParser';
 import { getStats, Statistics } from './stats';
 import { ReplaysTable } from './components/ReplaysTable';
 import { Stats } from './components/Statistics';
@@ -13,6 +13,7 @@ import { Players } from './components/Players';
 import { LinkOutlined, SettingOutlined } from '@ant-design/icons';
 import { SettingsDrawer } from './drawers/SettingsDrawer';
 import { versionOutdated } from './helpers/version';
+import { DailyRecap } from './components/DailyRecap';
 
 dayjs.extend(relativeTime);
 
@@ -23,6 +24,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [versions, setVersions] = useState<[string, string]>();
+  const [eugenUsers, setEugenUsers] = useState<EugenUser[]>();
 
   useEffect(() => {
     const fetchAppVersions = async (): Promise<void> => {
@@ -41,10 +43,12 @@ function App() {
 
     try {
       const data = await GetReplays(directories);
-      const parsedReplays = await replaysParser(data);
-      const sortedReplays = parsedReplays.sort(
+      const { replays, eugenUsers } = await replaysParser(data);
+      const sortedReplays = replays.sort(
         (a, b) => dayjs(b.createdAt).unix() - dayjs(a.createdAt).unix()
       );
+
+      setEugenUsers(eugenUsers);
 
       setReplays(sortedReplays);
       setStats(getStats(sortedReplays));
@@ -84,47 +88,54 @@ function App() {
         <div>
           <div className="flex items-center gap-2">
             <DirectoriesSelect directories={directories} setDirectories={setDirectories} />
-            <Button type="primary" onClick={run} disabled={loading || directories.length === 0} loading={loading}>
+            <Button
+              type="primary"
+              onClick={run}
+              disabled={loading || directories.length === 0}
+              loading={loading}>
               {loading ? 'Loading' : replays.length === 0 ? 'Generate' : 'Refresh'}
             </Button>
           </div>
         </div>
 
-        <Divider />
-
         {loading ? (
-          <div className="flex justify-center items-center">
+          <div className="flex justify-center items-center h-96">
             <Spin size="large" />
           </div>
         ) : (
-          <Card
-            tabList={[
-              {
-                key: '1',
-                label: 'Summary',
-                children: (
-                  <div className="pt-4 mb-10">
-                    <ReplaysTable replays={replays} />
-                  </div>
-                )
-              },
-              {
-                key: '2',
-                label: 'Players',
-                children: (
-                  <div className="pt-4 mb-10">{stats ? <Players replays={replays} /> : null}</div>
-                )
-              },
-              {
-                key: '3',
-                label: 'Statistics',
-                children: <div className="pt-4 mb-10">{stats ? <Stats stats={stats} /> : null}</div>
-              }
-            ]}
-            styles={{
-              body: { padding: 0 }
-            }}
-          />
+          <div className="flex flex-col gap-4 mt-4">
+            {replays.length > 0 && eugenUsers ? <DailyRecap eugenUsers={eugenUsers} /> : null}
+            <Card
+              tabList={[
+                {
+                  key: '1',
+                  label: 'Summary',
+                  children: (
+                    <div className="pt-4 mb-10">
+                      <ReplaysTable replays={replays} />
+                    </div>
+                  )
+                },
+                {
+                  key: '2',
+                  label: 'Players',
+                  children: (
+                    <div className="pt-4 mb-10">{stats ? <Players replays={replays} /> : null}</div>
+                  )
+                },
+                {
+                  key: '3',
+                  label: 'Statistics',
+                  children: (
+                    <div className="pt-4 mb-10">{stats ? <Stats stats={stats} /> : null}</div>
+                  )
+                }
+              ]}
+              styles={{
+                body: { padding: 0 }
+              }}
+            />
+          </div>
         )}
       </div>
 

@@ -1,11 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
 	"time"
@@ -25,29 +23,6 @@ type PlayerGame struct {
 }
 
 func (a *App) GetPlayerGameHistory(playerId string) []PlayerGame {
-	var allEntries []PlayerGame
-
-	filePath, err := getNotesFilePath(playerId)
-	if err != nil {
-		fmt.Printf("Error: %v", err)
-		return nil
-	}
-
-	if _, err := os.Stat(filePath); err == nil {
-		file, err := os.Open(filePath)
-		if err != nil {
-			fmt.Printf("Error opening existing gamehistory.json: %v\n", err)
-			return nil
-		}
-		defer file.Close()
-
-		decoder := json.NewDecoder(file)
-		if err := decoder.Decode(&allEntries); err != nil {
-			fmt.Printf("Error reading existing gamehistory.json: %v\n", err)
-			return nil
-		}
-	}
-
 	url := fmt.Sprintf("https://api.eugnet.com/gamehistory/list?userid=%v&page=0", playerId)
 	fmt.Printf("Fetching URL: %s\n", url)
 	resp, err := http.Get(url)
@@ -68,7 +43,7 @@ func (a *App) GetPlayerGameHistory(playerId string) []PlayerGame {
 		return nil
 	}
 
-	entries := extractGameEntries(string(body), allEntries)
+	entries := extractGameEntries(string(body), 10)
 	fmt.Printf("Extracted %d entries\n", len(entries))
 
 	if len(entries) == 0 {
@@ -76,17 +51,15 @@ func (a *App) GetPlayerGameHistory(playerId string) []PlayerGame {
 		return nil
 	}
 
-	allEntries = append(allEntries, entries...)
-
-	for i := range allEntries {
-		if allEntries[i].Player != "" && allEntries[i].Enemy != "" &&
-			len(allEntries[i].PlayerElo) == 2 && len(allEntries[i].EnemyElo) == 2 {
-			fmt.Printf("Skipping game details fetch for GameID %s (Player/Enemy already set)\n", allEntries[i].GameID)
+	for i := range entries {
+		if entries[i].Player != "" && entries[i].Enemy != "" &&
+			len(entries[i].PlayerElo) == 2 && len(entries[i].EnemyElo) == 2 {
+			fmt.Printf("Skipping game details fetch for GameID %s (Player/Enemy already set)\n", entries[i].GameID)
 			continue
 		}
 
-		gameID := allEntries[i].GameID
-		url := fmt.Sprintf("https://api.eugnet.com/gamehistory/game?gameid=%s&userid=2366334", gameID)
+		gameID := entries[i].GameID
+		url := fmt.Sprintf("https://api.eugnet.com/gamehistory/game?gameid=%s", gameID)
 
 		fmt.Printf("Fetching game details for GameID: %s\n", gameID)
 		resp, err := http.Get(url)
@@ -107,28 +80,28 @@ func (a *App) GetPlayerGameHistory(playerId string) []PlayerGame {
 			continue
 		}
 
-		playerName, enemyName, playerElo, enemyElo, playerEloChange, enemyEloChange := extractPlayerAndEnemyData(string(body), allEntries[i].Result)
+		playerName, enemyName, playerElo, enemyElo, playerEloChange, enemyEloChange := extractPlayerAndEnemyData(string(body), entries[i].Result)
 
 		if playerName != "" && enemyName != "" {
-			allEntries[i].Player = playerName
-			allEntries[i].Enemy = enemyName
-			allEntries[i].PlayerElo = []string{
+			entries[i].Player = playerName
+			entries[i].Enemy = enemyName
+			entries[i].PlayerElo = []string{
 				playerElo,
 				addStrings(playerElo, playerEloChange),
 			}
-			allEntries[i].EnemyElo = []string{
+			entries[i].EnemyElo = []string{
 				enemyElo,
 				addStrings(enemyElo, enemyEloChange),
 			}
-			allEntries[i].PlayerEloChange = playerEloChange
-			allEntries[i].EnemyEloChange = enemyEloChange
+			entries[i].PlayerEloChange = playerEloChange
+			entries[i].EnemyEloChange = enemyEloChange
 		}
 	}
 
-	return allEntries
+	return entries
 }
 
-func extractGameEntries(data string, existingEntries []PlayerGame) []PlayerGame {
+func extractGameEntries(data string, max int) []PlayerGame {
 	var entries []PlayerGame
 
 	gameIDRe := regexp.MustCompile(`gameid=([a-f0-9]{32})`)
@@ -143,7 +116,7 @@ func extractGameEntries(data string, existingEntries []PlayerGame) []PlayerGame 
 
 	fmt.Printf("Found %d gameids, %d scores, and %d times\n", len(gameIDs), len(scores), len(times))
 
-	for i := 0; i < len(gameIDs) && i < 10; i++ {
+	for i := 0; i < len(gameIDs) && i < max; i++ {
 		if i >= len(scores) || scores[i][1] == "" {
 			continue
 		}
@@ -176,21 +149,10 @@ func extractGameEntries(data string, existingEntries []PlayerGame) []PlayerGame 
 			Date:   dateStr,
 		}
 
-		if !gameExists(entry.GameID, existingEntries) {
-			entries = append(entries, entry)
-		}
+		entries = append(entries, entry)
 	}
 
 	return entries
-}
-
-func gameExists(gameID string, existingEntries []PlayerGame) bool {
-	for _, entry := range existingEntries {
-		if entry.GameID == gameID {
-			return true
-		}
-	}
-	return false
 }
 
 func extractPlayerAndEnemyData(data string, result string) (playerName, enemyName, playerElo, enemyElo, playerEloChange, enemyEloChange string) {
