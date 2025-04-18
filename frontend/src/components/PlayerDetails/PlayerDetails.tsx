@@ -62,14 +62,24 @@ export const PlayerDetails = ({ player }: { player: Player }) => {
       }>
       <div>
         <Typography.Title level={5} className="mb-2">
-          Games History (last 10)
+          Games History<span className="text-xs text-neutral-400 ml-2">(last 10)</span>
         </Typography.Title>
 
         <GamesTable history={globalHistory} isLoading={isGlobalHistoryLoading} />
 
         <Typography.Title level={5} className="mb-2">
           Our Games History
+          <span className="text-xs text-neutral-400 ml-2">
+            {`${player.history.filter((game) => game.result === 'Victory').length}/${
+              player.history.length
+            } (${(
+              (player.history.filter((game) => game.result === 'Victory').length /
+                player.history.length) *
+              100
+            ).toFixed(1)}%)`}
+          </span>
         </Typography.Title>
+
         <OurGamesTable history={player.history} />
 
         <PlayerNotes player={player} />

@@ -33,7 +33,7 @@ const columns: ColumnType<main.PlayerGame>[] = [
     key: 'score'
   },
   {
-    title: 'Stronger Opponent',
+    title: 'Difficulty',
     key: 'stronger',
     render: (_v: string, record) => {
       const playerElo = (record.playerElo || []).map((elo) => Number(elo));
@@ -41,7 +41,18 @@ const columns: ColumnType<main.PlayerGame>[] = [
       const { min: playerMin } = getMinMax(playerElo);
       const { min: enemyMin } = getMinMax(enemyElo);
 
-      return playerMin && enemyMin ? (playerMin > enemyMin ? 'No' : 'Yes') : '-';
+      if (!playerMin || !enemyMin) return 'Unknown';
+
+      const diff = enemyMin - playerMin;
+
+      if (diff <= -300) return 'Very Easy';
+      if (diff <= -200) return 'Easy';
+      if (diff <= -100) return 'Moderate';
+      if (diff < 0) return 'Challenging';
+      if (diff < 100) return 'Hard';
+      if (diff < 200) return 'Very Hard';
+      if (diff <= 300) return 'Extreme Hard';
+      if (diff > 300) return 'Impossible';
     }
   },
   {
