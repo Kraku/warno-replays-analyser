@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './App.css';
-import { GetAppVersions, GetReplays } from '../wailsjs/go/main/App';
-import { Button, Card, Spin, Tag } from 'antd';
+import { GetReplays } from '../wailsjs/go/main/App';
+import { Button, Card, Spin } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { replaysParser, Replay, EugenUser } from './parsers/replaysParser';
@@ -10,10 +10,10 @@ import { ReplaysTable } from './components/ReplaysTable';
 import { Stats } from './components/Statistics';
 import { DirectoriesSelect } from './components/DirectoriesSelect';
 import { Players } from './components/Players';
-import { LinkOutlined, SettingOutlined } from '@ant-design/icons';
+import { SettingOutlined } from '@ant-design/icons';
 import { SettingsDrawer } from './drawers/SettingsDrawer';
-import { versionOutdated } from './helpers/version';
 import { DailyRecap } from './components/DailyRecap';
+import { Version } from './components/Version';
 
 dayjs.extend(relativeTime);
 
@@ -23,18 +23,7 @@ function App() {
   const [stats, setStats] = useState<Statistics>();
   const [loading, setLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [versions, setVersions] = useState<[string, string]>();
   const [eugenUsers, setEugenUsers] = useState<EugenUser[]>();
-
-  useEffect(() => {
-    const fetchAppVersions = async (): Promise<void> => {
-      const [appVersion, latestVersion] = await GetAppVersions();
-
-      setVersions([appVersion, latestVersion]);
-    };
-
-    fetchAppVersions();
-  }, []);
 
   const run = async () => {
     setLoading(true);
@@ -63,21 +52,7 @@ function App() {
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-4">
             <div className="text-3xl font-bold">WARNO Replays Analyser</div>
-            {versions && versionOutdated(...versions) ? (
-              <Tag>
-                <div className="flex items-center">
-                  New version available: {versions[1]}
-                  <Button
-                    type="link"
-                    size="small"
-                    href="https://github.com/Kraku/warno-replays-analyser/releases/latest"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    icon={<LinkOutlined />}
-                  />
-                </div>
-              </Tag>
-            ) : null}
+            <Version />
           </div>
 
           <Button icon={<SettingOutlined />} onClick={() => setShowSettings(true)}>

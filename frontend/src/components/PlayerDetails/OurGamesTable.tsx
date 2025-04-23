@@ -18,10 +18,10 @@ const columns: ColumnType<PlayerHistory>[] = [
         className={[
           'border-l-2 pl-2',
           record.result === 'Victory'
-        ? 'border-emerald-950'
-        : record.result === 'Defeat'
-        ? 'border-rose-950'
-        : 'border-gray-500'
+            ? 'border-emerald-950'
+            : record.result === 'Defeat'
+            ? 'border-rose-950'
+            : 'border-gray-500'
         ].join(' ')}>
         {`${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()})`}
       </div>
@@ -46,6 +46,11 @@ const columns: ColumnType<PlayerHistory>[] = [
     )
   },
   {
+    title: 'My Rank',
+    dataIndex: 'rank',
+    key: 'rank'
+  },
+  {
     title: 'Enemy Rank',
     dataIndex: 'enemyRank',
     key: 'enemyRank'
@@ -60,6 +65,25 @@ const columns: ColumnType<PlayerHistory>[] = [
     title: 'Map',
     dataIndex: 'map',
     key: 'map'
+  },
+  {
+    title: 'Difficulty',
+    key: 'stronger',
+    render: (_v: string, record) => {
+      const playerRank = parseInt(record.rank);
+      const enemyRank = parseInt(record.enemyRank);
+
+      const diff = enemyRank - playerRank;
+
+      if (diff > 250) return 'Very Easy';
+      if (diff >= 150) return 'Easy';
+      if (diff >= 50) return 'Moderate';
+      if (diff > 0) return 'Challenging';
+      if (diff > -50) return 'Hard';
+      if (diff > -150) return 'Very Hard';
+      if (diff >= -250) return 'Extreme Hard';
+      if (diff < -250) return 'Impossible';
+    }
   },
   {
     title: 'Result',

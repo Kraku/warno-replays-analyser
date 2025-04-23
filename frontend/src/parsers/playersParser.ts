@@ -3,6 +3,7 @@ import { Replay } from './replaysParser';
 export type PlayerHistory = {
   result: 'Victory' | 'Defeat' | 'Draw';
   division: string;
+  rank: string;
   enemyDivision: string;
   enemyDeck: string;
   createdAt: string;
@@ -31,6 +32,7 @@ export const playersParser = async (replays: Replay[]): Promise<Player[]> => {
       existingPlayer.history.push({
         result: replay.result,
         division: replay.division,
+        rank: replay.rank,
         enemyDivision: replay.enemyDivision,
         enemyDeck: replay.enemyDeck,
         createdAt: replay.createdAt,
@@ -46,6 +48,7 @@ export const playersParser = async (replays: Replay[]): Promise<Player[]> => {
           {
             result: replay.result,
             division: replay.division,
+            rank: replay.rank,
             enemyDivision: replay.enemyDivision,
             enemyDeck: replay.enemyDeck,
             createdAt: replay.createdAt,

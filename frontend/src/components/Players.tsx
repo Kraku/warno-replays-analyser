@@ -106,7 +106,7 @@ export const Players = ({ replays }: { replays: Replay[] }) => {
           onChange={(e) => setSearchQuery(e.target.value)}
           allowClear
         />
-        <div className="max-h-[calc(100vh-18rem)] overflow-y-auto pr-2">
+        <div className="max-h-[calc(100vh-23rem)] overflow-y-auto pr-2">
           <List
             dataSource={filteredPlayers}
             size="small"

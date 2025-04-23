@@ -18,17 +18,22 @@ export const DailyRecap = ({ eugenUsers = [] }: DailyRecapProps) => {
   useEffect(() => {
     const initialize = async () => {
       const savedSettings = await GetSettings();
-      let userId = savedSettings.dailyRecapUser;
+      const fallbackUserId = eugenUsers[0]?.eugenId;
+      const userId = savedSettings.dailyRecapUser || fallbackUserId;
 
-      if (!userId && eugenUsers.length > 0) {
-        userId = eugenUsers[0].eugenId;
-        await SaveSettings({ ...savedSettings, dailyRecapUser: userId });
+      if (!userId) return;
+
+      const exists = !savedSettings.dailyRecapUser;
+      const updatedSettings = exists ? { ...savedSettings, dailyRecapUser: userId } : savedSettings;
+
+      if (exists) {
+        await SaveSettings(updatedSettings);
       }
 
-      if (userId) {
-        setSelectedUser(userId);
-        await fetchStats(userId);
-      }
+      setSettings(updatedSettings);
+      setSelectedUser(userId);
+
+      await fetchStats(userId);
     };
 
     initialize();
@@ -36,8 +41,10 @@ export const DailyRecap = ({ eugenUsers = [] }: DailyRecapProps) => {
 
   const fetchStats = async (eugenId: string) => {
     setIsLoading(true);
+
     try {
       const data = await GetDailyRecap(eugenId);
+
       setStats(data);
     } finally {
       setIsLoading(false);

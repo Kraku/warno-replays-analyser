@@ -99,7 +99,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
         rank: replay.warno.players?.[playerKey]?.PlayerRank,
         result: ['4', '5', '6'].includes(replay.warno.result.Victory)
           ? 'Victory'
-          : ['2'].includes(replay.warno.result.Victory)
+          : ['1', '2'].includes(replay.warno.result.Victory)
           ? 'Defeat'
           : 'Draw',
         deck: replay.warno.players?.[playerKey]?.PlayerDeckContent,

@@ -36,6 +36,12 @@ const columns: ColumnType<Replay>[] = [
     sorter: (a: Replay, b: Replay) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix()
   },
   {
+    title: 'Enemy Name',
+    dataIndex: 'enemyName',
+    key: 'enemyName',
+    sorter: (a: Replay, b: Replay) => a.enemyName.localeCompare(b.enemyName)
+  },
+  {
     title: 'My Division',
     dataIndex: 'division',
     key: 'division',
@@ -50,18 +56,6 @@ const columns: ColumnType<Replay>[] = [
     )
   },
   {
-    title: 'My Rank',
-    dataIndex: 'rank',
-    key: 'rank',
-    sorter: (a: Replay, b: Replay) => a.rank.localeCompare(b.rank)
-  },
-  {
-    title: 'Enemy Name',
-    dataIndex: 'enemyName',
-    key: 'enemyName',
-    sorter: (a: Replay, b: Replay) => a.enemyName.localeCompare(b.enemyName)
-  },
-  {
     title: 'Enemy Division',
     dataIndex: 'enemyDivision',
     key: 'enemyDivision',
@@ -74,6 +68,12 @@ const columns: ColumnType<Replay>[] = [
         </CopyToClipboard>
       </div>
     )
+  },
+  {
+    title: 'My Rank',
+    dataIndex: 'rank',
+    key: 'rank',
+    sorter: (a: Replay, b: Replay) => a.rank.localeCompare(b.rank)
   },
   {
     title: 'Enemy Rank',
