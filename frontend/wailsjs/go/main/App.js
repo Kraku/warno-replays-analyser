@@ -45,3 +45,11 @@ export function GetWarnoSaveFolders() {
 export function SaveSettings(arg1) {
   return window['go']['main']['App']['SaveSettings'](arg1);
 }
+
+export function SearchPlayerInApi(arg1) {
+  return window['go']['main']['App']['SearchPlayerInApi'](arg1);
+}
+
+export function SendUsersToAPI(arg1) {
+  return window['go']['main']['App']['SendUsersToAPI'](arg1);
+}

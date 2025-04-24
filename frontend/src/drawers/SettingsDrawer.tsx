@@ -1,4 +1,4 @@
-import { Button, DatePicker, Drawer, Form, Select } from 'antd';
+import { Button, Checkbox, DatePicker, Drawer, Form, Select, Switch } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useForm } from 'antd/es/form/Form';
@@ -23,7 +23,8 @@ export const SettingsDrawer = ({
 
         form.setFieldsValue({
           playerIds: settings.playerIds,
-          startDate: settings.startDate ? dayjs(settings.startDate) : undefined
+          startDate: settings.startDate ? dayjs(settings.startDate) : undefined,
+          playerInfoSharingDisabled: settings.playerInfoSharingDisabled || false
         });
 
         setOptions(data);
@@ -36,27 +37,15 @@ export const SettingsDrawer = ({
   }, []);
 
   const handleSave = async () => {
-    const {
-      playerIds,
-      startDate
-    }: {
-      playerIds?: string[];
-      startDate?: Dayjs;
-    } = form.getFieldsValue(true);
+    const { playerIds = [], startDate, playerInfoSharingDisabled } = form.getFieldsValue(true);
 
-    const params: {
-      playerIds?: string[];
-      startDate?: string;
-    } = {
-      playerIds: playerIds ? playerIds : []
+    const params = {
+      playerIds,
+      startDate: startDate?.toISOString(),
+      playerInfoSharingDisabled
     };
 
-    if (startDate) {
-      params.startDate = startDate.toISOString();
-    }
-
     await SaveSettings(params);
-
     onSave();
   };
 
@@ -111,6 +100,12 @@ export const SettingsDrawer = ({
               }
             ]}
           />
+        </Form.Item>
+        <Form.Item
+          name="playerInfoSharingDisabled"
+          valuePropName="checked"
+          extra="When this is enabled, your replay data stays private — we won’t collect any opponent names, ranks, or Eugen IDs. You’ll also only be able to search for players you’ve already played with.">
+          <Checkbox>Disable Player Info Sharing</Checkbox>
         </Form.Item>
       </Form>
     </Drawer>

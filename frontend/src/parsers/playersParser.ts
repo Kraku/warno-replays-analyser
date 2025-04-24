@@ -16,52 +16,55 @@ export type Player = {
   id: string;
   names: string[];
   history: PlayerHistory[];
+  ranks: string[];
+  api: boolean;
+};
+
+const createPlayerHistory = (replay: Replay): PlayerHistory => ({
+  result: replay.result,
+  division: replay.division,
+  rank: replay.rank,
+  enemyDivision: replay.enemyDivision,
+  enemyDeck: replay.enemyDeck,
+  createdAt: replay.createdAt,
+  duration: replay.duration,
+  map: replay.map,
+  enemyRank: replay.enemyRank,
+});
+
+const createNewPlayer = (replay: Replay): Player => ({
+  id: replay.enemyId,
+  names: [replay.enemyName],
+  ranks: [replay.enemyRank],
+  api: false,
+  history: [createPlayerHistory(replay)],
+});
+
+const updatePlayer = (existingPlayer: Player, replay: Replay): void => {
+  if (!existingPlayer.names.includes(replay.enemyName)) {
+    existingPlayer.names.push(replay.enemyName);
+  }
+
+  if (!existingPlayer.ranks.includes(replay.enemyRank)) {
+    existingPlayer.ranks.push(replay.enemyRank);
+  }
+
+  existingPlayer.history.push(createPlayerHistory(replay));
 };
 
 export const playersParser = async (replays: Replay[]): Promise<Player[]> => {
   const playersMap: Map<string, Player> = new Map();
 
-  for (const replay of replays) {
+  replays.forEach((replay) => {
     const existingPlayer = playersMap.get(replay.enemyId);
 
     if (existingPlayer) {
-      if (!existingPlayer.names.includes(replay.enemyName)) {
-        existingPlayer.names.push(replay.enemyName);
-      }
-
-      existingPlayer.history.push({
-        result: replay.result,
-        division: replay.division,
-        rank: replay.rank,
-        enemyDivision: replay.enemyDivision,
-        enemyDeck: replay.enemyDeck,
-        createdAt: replay.createdAt,
-        duration: replay.duration,
-        map: replay.map,
-        enemyRank: replay.enemyRank
-      });
+      updatePlayer(existingPlayer, replay);
     } else {
-      const player: Player = {
-        id: replay.enemyId,
-        names: [replay.enemyName],
-        history: [
-          {
-            result: replay.result,
-            division: replay.division,
-            rank: replay.rank,
-            enemyDivision: replay.enemyDivision,
-            enemyDeck: replay.enemyDeck,
-            createdAt: replay.createdAt,
-            duration: replay.duration,
-            map: replay.map,
-            enemyRank: replay.enemyRank
-          }
-        ]
-      };
-
-      playersMap.set(replay.enemyId, player);
+      const newPlayer = createNewPlayer(replay);
+      playersMap.set(replay.enemyId, newPlayer);
     }
-  }
+  });
 
   return Array.from(playersMap.values());
 };

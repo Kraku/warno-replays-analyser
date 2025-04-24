@@ -23,3 +23,7 @@ export function GetSettings():Promise<main.Settings>;
 export function GetWarnoSaveFolders():Promise<string>;
 
 export function SaveSettings(arg1:main.Settings):Promise<void>;
+
+export function SearchPlayerInApi(arg1:string):Promise<Array<main.GetUser>>;
+
+export function SendUsersToAPI(arg1:Array<main.PostUser>):Promise<Record<string, boolean>>;

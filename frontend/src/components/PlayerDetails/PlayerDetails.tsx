@@ -26,7 +26,7 @@ export const PlayerDetails = ({ player }: { player: Player }) => {
     fetchPlayers();
   }, [player.id]);
 
-  const rankMinMax = getMinMax(player.history.flatMap(({ enemyRank }) => parseInt(enemyRank)));
+  const rankMinMax = getMinMax(player.ranks.flatMap((ranks) => parseInt(ranks)));
 
   return (
     <Card
@@ -70,13 +70,15 @@ export const PlayerDetails = ({ player }: { player: Player }) => {
         <Typography.Title level={5} className="mb-2">
           Our Games History
           <span className="text-xs text-neutral-400 ml-2">
-            {`${player.history.filter((game) => game.result === 'Victory').length}/${
-              player.history.length
-            } (${(
-              (player.history.filter((game) => game.result === 'Victory').length /
+            {player.history.length > 0
+              ? `${player.history.filter((game) => game.result === 'Victory').length}/${
+                player.history.length
+              } (${(
+                (player.history.filter((game) => game.result === 'Victory').length /
                 player.history.length) *
-              100
-            ).toFixed(1)}%)`}
+                100
+              ).toFixed(1)}%)`
+              : ''}
           </span>
         </Typography.Title>
 
