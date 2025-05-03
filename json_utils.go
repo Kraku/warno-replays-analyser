@@ -53,12 +53,15 @@ type Result struct {
 type Players struct {
 	Player1 Player `json:"player1"`
 	Player2 Player `json:"player2"`
+	Player3 Player `json:"player3"`
+	Player4 Player `json:"player4"`
 }
 
 type Warno struct {
 	Game           Game    `json:"game"`
 	IngamePlayerId float64 `json:"ingamePlayerId"`
 	Players        Players `json:"players"`
+	PlayerCount    uint8   `json:"playerCount`
 	Result         Result  `json:"result"`
 }
 
@@ -113,6 +116,8 @@ func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) m
 			Players: struct {
 				Player1 Player `json:"player1"`
 				Player2 Player `json:"player2"`
+				Player3 Player `json:"player3"`
+				Player4 Player `json:"player4"`
 			}{
 				Player1: func() Player {
 					playerData, _ := json.Marshal(jsons[0]["player_2"])
@@ -126,7 +131,23 @@ func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) m
 					_ = json.Unmarshal(playerData, &player)
 					return player
 				}(),
+				// Player3 and Player4 will be nil if game is a 1v1
+				Player3: func() Player {
+					playerData, _ := json.Marshal(jsons[0]["player_6"])
+					var player Player
+					_ = json.Unmarshal(playerData, &player)
+					return player
+				}(),
+				Player4: func() Player {
+					playerData, _ := json.Marshal(jsons[0]["player_8"])
+					var player Player
+					_ = json.Unmarshal(playerData, &player)
+					return player
+				}(),
 			},
+			PlayerCount: func() uint8 {
+				return jsons[0]["game"].(map[string]any)["NbMaxPlayer"].(uint8)
+			}(),
 		},
 	}
 
