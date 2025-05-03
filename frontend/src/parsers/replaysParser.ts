@@ -32,6 +32,30 @@ export type Replay = {
   map: string;
 };
 
+export type Replay2v2 = {
+  createdAt: string;
+  fileName: string;
+  playerId: string;
+  playerName: string;
+  allyId: string;
+  allyName: string;
+  result: 'Victory' | 'Defeat' | 'Draw';
+  division: string;
+  deck: string;
+  allyDivision: string;
+  allyDeck: string;
+  enemyName1: string;
+  enemyId1: string;
+  enemyDivision1: string;
+  enemyDeck1: string;
+  enemyName2: string;
+  enemyId2: string;
+  enemyDivision2: string;
+  enemyDeck2: string;
+  duration: number;
+  map: string;
+}
+
 export type EugenUser = {
   eugenId: string;
   playerNames: string[];
