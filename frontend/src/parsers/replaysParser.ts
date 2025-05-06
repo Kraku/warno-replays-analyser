@@ -14,7 +14,7 @@ const typedUnits: GenericLookupAdapterObject[] = units as GenericLookupAdapterOb
 const typedDivisions: GenericLookupAdapterObject[] = divisions as GenericLookupAdapterObject[];
 const typedMaps: Record<string, string> = maps as Record<string, string>;
 
-export type Replay = {
+export type Replay1v1 = {
   createdAt: string;
   fileName: string;
   playerId: string;
@@ -62,7 +62,8 @@ export type EugenUser = {
 };
 
 type ParserResult = {
-  replays: Replay[];
+  replays1v1: Replay1v1[];
+  replays2v2: Replay2v2[];
   eugenUsers: EugenUser[];
 };
 
@@ -81,6 +82,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
   const results = await Promise.all(
     data.map(async (replay: any) => {
       const ingamePlayerId = String(replay.warno.ingamePlayerId);
+      const playercount = replay.warno.players?.length ?? 0;
       const playerKey =
         ingamePlayerId === String(replay.warno.players?.player1?.PlayerAlliance)
           ? 'player1'

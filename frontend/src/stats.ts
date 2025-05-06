@@ -1,11 +1,11 @@
-import { Replay } from './parsers/replaysParser';
+import { Replay1v1, Replay2v2 } from './parsers/replaysParser';
 
 export type DivisionStats = {
   total: number;
   won: number;
 };
 
-export type Statistics = {
+export type Statistics1v1 = {
   totalGames: number;
   wonGames: number;
   victoryRatio: number;
@@ -83,7 +83,7 @@ const calculateVictoryRatio = (won: number, total: number): number => {
 };
 
 const getDivisionStats = (
-  replays: Replay[],
+  replays: Replay1v1[],
   key: 'division' | 'enemyDivision'
 ): Record<string, DivisionStats> => {
   return replays.reduce((acc, replay) => {
@@ -105,7 +105,7 @@ const getDivisionStats = (
 };
 
 const calculateStreaks = (
-  replays: Replay[]
+  replays: Replay1v1[]
 ): { longestWinningStreak: number; longestLosingStreak: number } => {
   let longestWinningStreak = 0;
   let longestLosingStreak = 0;
@@ -128,7 +128,7 @@ const calculateStreaks = (
 };
 
 const calculateMostFrequentOpponents = (
-  replays: Replay[]
+  replays: Replay1v1[]
 ): { enemyDivision: string; count: number }[] => {
   const opponentFrequency: Record<string, number> = {};
 
@@ -151,12 +151,12 @@ const calculateMostFrequentOpponents = (
     .sort((a, b) => b.count - a.count);
 };
 
-const calculateAverageGameDuration = (replays: Replay[]): number => {
+const calculateAverageGameDuration = (replays: Replay1v1[]): number => {
   const totalDuration = replays.reduce((acc, replay) => acc + (replay.duration || 0), 0);
   return totalDuration / replays.length || 0;
 };
 
-const trackRankHistory = (replays: Replay[]): { date: string; rank: number }[] => {
+const trackRankHistory = (replays: Replay1v1[]): { date: string; rank: number }[] => {
   return replays
     .map((replay) => ({
       date: replay.createdAt,
@@ -165,7 +165,7 @@ const trackRankHistory = (replays: Replay[]): { date: string; rank: number }[] =
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 };
 
-export const getStats = (replays: Replay[]): Statistics => {
+export const getStats1v1 = (replays: Replay1v1[]): Statistics1v1 => {
   const totalGames = replays.length;
   const wonGames = replays.filter((replay) => replay.result === 'Victory').length;
   const victoryRatio = calculateVictoryRatio(wonGames, totalGames);
@@ -241,10 +241,7 @@ export const getStats = (replays: Replay[]): Statistics => {
   };
 };
 
-export const get2v2Stats = (replays: Replay[]): Statistics2v2 => {
-  // filter out 1v1s
-  replays.filter(replay => replay.)
-  const totalGames = replays.length;
+export const getStats2v2 = (replays: Replay2v2[]): Statistics2v2 => {
   // tally normal statistics
   // group by your ally and calc
   // group by your enemies and calc
