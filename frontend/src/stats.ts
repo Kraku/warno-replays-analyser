@@ -1,81 +1,46 @@
 import { Replay1v1, Replay2v2 } from './parsers/replaysParser';
 
-export type DivisionStats = {
-  total: number;
-  won: number;
-};
-
-export type Statistics1v1 = {
+export type CommonStatistics = {
   totalGames: number;
   wonGames: number;
   victoryRatio: number;
+  longestWinningStreak: number;
+  longestLosingStreak: number;
+  averageGameDuration: number;
+  rankHistory: { date: string; rank: number }[];
   divisionVictoryRatios: {
     division: string;
     victoryRatio: number;
     games: number;
   }[];
-  enemyDivisionVictoryRatios: {
-    division: string;
-    victoryRatio: number;
-    games: number;
-  }[];
-  averageGameDuration: number;
-  mostFrequentOpponents: {
-    enemyDivision: string;
-    count: number;
-  }[];
-  longestWinningStreak: number;
-  longestLosingStreak: number;
-  rankHistory: { date: string; rank: number }[];
   mapVictoryRatios: {
     map: string;
     victoryRatio: number;
     games: number;
   }[];
+}
+
+export type DivisionStats = {
+  total: number;
+  won: number;
 };
 
-export type Statistics2v2 = {
-  totalGames: number;
-  wonGames: number;
-  victoryRatio: number;
-  bestAllyId: string;
-  divisionVictoryRatios: {
+export type Statistics1v1 = CommonStatistics & {
+  enemyDivisionVictoryRatios: {
     division: string;
     victoryRatio: number;
     games: number;
   }[];
-  allyStatistics: AllyStatistics[]
-  enemyStatistics: EnemyStatistics[]
-}
-
-export type AllyStatistics = {
-  allyId: string;
-  totalGames: number;
-  wonGames: number;
-  victoryRatio: number;
-  divisionVictoryPairRatios: {
-    yourDivision: string;
-    allyDivision: string;
-    victoryRatio: number;
-    games: number;
+  mostFrequentOpponents: {
+    enemyDivision: string;
+    count: number;
   }[];
-  averageGameDuration: number;
-  longestWinningStreak: number;
-  longestLosingStreak: number;
-}
+};
 
-export type EnemyStatistics = {
-  enemyId1: string;
-  enemyId2: string;
-  totalGames: number;
-  wonGames: number;
-  victoryRatio: number;
-  divisionLossPairRatios: {
-    player1Division: string;
-    player2Division: string;
-    victoryRatio: number;
-    games: number;
-  }[];
+export type Statistics2v2 = CommonStatistics & {
+  bestAllyId: string;
+  allyStatistics: Statistics2v2[]
+  enemyStatistics: Statistics2v2[]
 }
 
 const calculateVictoryRatio = (won: number, total: number): number => {
