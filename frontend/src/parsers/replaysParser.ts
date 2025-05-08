@@ -32,7 +32,7 @@ export type EugenUser = {
   playerNames: string[];
 };
 
-type CommonReplayData = {
+export type CommonReplayData = {
   createdAt: string;
   fileName: string;
   playerId: string;
