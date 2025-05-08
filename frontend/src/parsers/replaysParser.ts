@@ -23,8 +23,8 @@ export type Replay1v1 = CommonReplayData & {
 };
 
 export type Replay2v2 = CommonReplayData & {
-  ally: PlayerData,
-  enemies: PlayerData[];
+  allyData: PlayerData,
+  enemiesData: PlayerData[];
 }
 
 export type EugenUser = {
@@ -61,11 +61,16 @@ type ParserResult = {
 
 const lookup = new GenericLookupAdapter(typedUnits, typedDivisions);
 
-const getDivisionName = (code: string) => {
+const getDivision = (code: string) => {
   const id = code ? decodeDeckString(code, lookup).division.id : null;
 
-  return divisions.find((division) => division.id === id)?.name || 'Unknown';
-};
+  return divisions.find((division) => division.id === id);
+}
+
+const getDivisionName = (code: string) => getDivision(code)?.name ?? 'Unknown';
+
+// may not be necessary if data is in warnodata
+const getDivisionAlliance = (code: string) => getDivision(code)?.alliance ?? 'Unknown';
 
 export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResult> => {
   const settings = await GetSettings();
@@ -76,6 +81,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
   data.forEach((replay: any) => {
     const ingamePlayerId = String(replay.warno.ingamePlayerId);
     const playerCount = replay.warno.players?.length ?? 0;
+    // this may not work for team games
     const playerKeyObject
       = replay.warno.players?.find((player: any) => String(player.PlayerAlliance) === ingamePlayerId) ?? {};
     const playerKey = Object.keys(playerKeyObject)[0];
@@ -113,9 +119,9 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
       fileName: replay.fileName,
       playerId: replay.warno.players?.[playerKey].PlayerUserId,
       playerName: replay.warno.players?.[playerKey].PlayerName,
-      rank: replay.warno.players?.[playerKey]?.PlayerRank,
-      deck: replay.warno.players?.[playerKey]?.PlayerDeckContent,
-      division: getDivisionName(replay.warno.players?.[playerKey]?.PlayerDeckContent),
+      rank: replay.warno.players?.[playerKey].PlayerRank,
+      deck: replay.warno.players?.[playerKey].PlayerDeckContent,
+      division: getDivisionName(replay.warno.players?.[playerKey].PlayerDeckContent),
       duration: parseInt(replay.warno.result.Duration),
       map: typedMaps[replay.warno.game.Map] || replay.warno.game.Map,
       result: ['4', '5', '6'].includes(replay.warno.result.Victory)
@@ -131,18 +137,40 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
         ...commonReplayData,
         enemyName: replay.warno.players[enemyKey].PlayerName,
         enemyId: replay.warno.players[enemyKey].PlayerUserId,
-        enemyDivision: getDivisionName(replay.warno.players?.[enemyKey]?.PlayerDeckContent),
+        enemyDivision: getDivisionName(replay.warno.players?.[enemyKey].PlayerDeckContent),
         enemyRank: replay.warno.players[enemyKey].PlayerRank,
         enemyDeck: replay.warno.players?.[enemyKey]?.PlayerDeckContent
       });
 
     } else if (playerCount == 4) {
-      // determine ally
-      // determine foes
-      replays2v2.push({
-        ...commonReplayData,
+      let ally: PlayerData | undefined = undefined;
+      const enemies: PlayerData[] = [];
+      const playerAlliance = getDivisionAlliance(replay.warno.players?.[playerKey].PlayerDeckContent);
+      replay.warno.players
+        .filter((player: any) => player.PlayerUserId != commonReplayData.playerId)
+        .forEach((player: any) => {
+          const playerData = {
+            playerName: player.PlayerName,
+            playerId: player.PlayerUserId,
+            playerDivision: getDivisionName(player.PlayerDeckContent),
+            playerRank: player.PlayerRank,
+            playerDeck: player.PlayerDeckContent
+          }
 
-      });
+          if (getDivisionAlliance(player.PlayerDeckContent) === playerAlliance) {
+            ally = playerData;
+          } else {
+            enemies.push(playerData);
+          }
+        });
+
+      if (ally && enemies.length > 0) {
+        replays2v2.push({
+          ...commonReplayData,
+          allyData: ally,
+          enemiesData: enemies
+        });
+      }
     }
   })
 

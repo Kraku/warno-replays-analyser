@@ -88,7 +88,7 @@ function App() {
           </div>
         ) : (
           <div className="flex flex-col gap-4 mt-4">
-            {replays.length > 0 && eugenUsers ? <DailyRecap eugenUsers={eugenUsers} /> : null}
+            {replays1v1.length > 0 && eugenUsers ? <DailyRecap eugenUsers={eugenUsers} /> : null}
             <Card
               tabList={[
                 {
