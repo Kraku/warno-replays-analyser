@@ -164,7 +164,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
           }
         });
 
-      if (ally && enemies.length > 0) {
+      if (ally && enemies.length == 2) {
         replays2v2.push({
           ...commonReplayData,
           allyData: ally,
