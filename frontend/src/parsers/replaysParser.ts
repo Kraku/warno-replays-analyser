@@ -67,10 +67,10 @@ const getDivision = (code: string) => {
   return divisions.find((division) => division.id === id);
 }
 
-const getDivisionName = (code: string) => getDivision(code)?.name ?? 'Unknown';
+export const getDivisionName = (code: string) => getDivision(code)?.name ?? 'Unknown';
 
 // may not be necessary if data is in warnodata
-const getDivisionAlliance = (code: string) => getDivision(code)?.alliance ?? 'Unknown';
+export const getDivisionAlliance = (code: string) => getDivision(code)?.alliance ?? 'Unknown';
 
 export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResult> => {
   const settings = await GetSettings();

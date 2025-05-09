@@ -1,4 +1,4 @@
-import { CommonReplayData, Replay1v1, Replay2v2 } from './parsers/replaysParser';
+import { CommonReplayData, getDivisionName, Replay1v1, Replay2v2 } from './parsers/replaysParser';
 
 export type CommonStatistics = {
   totalGames: number;
@@ -243,10 +243,17 @@ export const getStats2v2 = (replays: Replay2v2[]): Statistics2v2 => {
   const enemyDivisionVictories = new Map<string, { victories: number, games: number }>();
 
   replays.forEach(replay => {
-    // sort enemies to prevent P1: a, P2: b being unique from P1: b, P2: a
+    // sort enemies and divs to prevent P1/D1: a, P2/D2: b being unique from P1/D1: b, P2/D2: a
     const sortedEnemies = replay.enemiesData;
-    sortedEnemies.sort((a, b) => a.playerId.localeCompare(b.playerId));
+    sortedEnemies.sort((enemy1, enemy2) => enemy1.playerId.localeCompare(enemy2.playerId));
+    const sortedEnemyDivisions = replay.enemiesData.map(data => data.playerDivision);
     const compositeEnemyKey = JSON.stringify([sortedEnemies[0], sortedEnemies[1]]);
+    sortedEnemyDivisions.sort((div1, div2) => div1.localeCompare(div2));
+    const compositeAlliedDivisionKey 
+      = JSON.stringify([getDivisionName(replay.division), getDivisionName(replay.allyData.playerDivision)]);
+    const compositeEnemyDivisionKey
+      = JSON.stringify([getDivisionName(sortedEnemyDivisions[0]), getDivisionName(sortedEnemyDivisions[1])]);
+
 
     if (replay.result == 'Victory') {
       const existing = alliedVictories.get(replay.allyData.playerId);
