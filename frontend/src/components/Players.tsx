@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Replay } from '../parsers/replaysParser';
+import { Replay1v1 } from '../parsers/replaysParser';
 import { Player, playersParser } from '../parsers/playersParser';
 import { List, Input, Button, Card, Empty, Typography } from 'antd';
 import { ApiOutlined, ArrowRightOutlined, CopyOutlined } from '@ant-design/icons';
@@ -62,7 +62,7 @@ const columns: ColumnType<Pick<Player['history'][number], 'result' | 'division' 
   }
 ];
 
-export const Players = ({ replays }: { replays: Replay[] }) => {
+export const Players1v1 = ({ replays }: { replays: Replay1v1[] }) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedPlayer, setSelectedPlayer] = useState<string>();

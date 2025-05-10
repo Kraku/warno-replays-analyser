@@ -1,7 +1,7 @@
 import { Col, Row, Statistic, Table, Typography } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Statistics } from '../stats';
+import { Statistics1v1 } from '../stats';
 import { LineChart, Line, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 dayjs.extend(relativeTime);
@@ -62,7 +62,7 @@ export const renderRankHistoryTooltip = ({ payload }: any) => {
   );
 };
 
-export const Stats = ({ stats }: { stats: Statistics }) => {
+export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
   if (!stats) {
     return null;
   }

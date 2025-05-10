@@ -6,14 +6,15 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { replaysParser, Replay1v1, Replay2v2, EugenUser } from './parsers/replaysParser';
 import { getStats1v1, getStats2v2, Statistics1v1, Statistics2v2 } from './stats';
-import { ReplaysTable } from './components/ReplaysTable';
-import { Stats } from './components/Statistics';
+import { ReplaysTable1v1 } from './components/ReplaysTable';
+import { Stats1v1 } from './components/Statistics';
 import { DirectoriesSelect } from './components/DirectoriesSelect';
-import { Players } from './components/Players';
+import { Players1v1 } from './components/Players';
 import { SettingOutlined } from '@ant-design/icons';
 import { SettingsDrawer } from './drawers/SettingsDrawer';
 import { DailyRecap } from './components/DailyRecap';
 import { Version } from './components/Version';
+import { ReplaysTable2v2 } from './components/ReplaysTable2v2';
 
 dayjs.extend(relativeTime);
 
@@ -93,25 +94,73 @@ function App() {
               tabList={[
                 {
                   key: '1',
-                  label: 'Summary',
+                  label: '1v1',
                   children: (
-                    <div className="pt-4 mb-10">
-                      <ReplaysTable replays={replays1v1} />
-                    </div>
+                    <Card
+                      tabList={[
+                        {
+                          key: '1',
+                          label: 'Summary',
+                          children: (
+                            <div className="pt-4 mb-10">
+                              <ReplaysTable1v1 replays={replays1v1} />
+                            </div>
+                          )
+                        },
+                        {
+                          key: '2',
+                          label: 'Players',
+                          children: (
+                            <div className="pt-4 mb-10">{stats ? <Players1v1 replays={replays1v1} /> : null}</div>
+                          )
+                        },
+                        {
+                          key: '3',
+                          label: 'Statistics',
+                          children: (
+                            <div className="pt-4 mb-10">{stats ? <Stats1v1 stats={stats1v1} /> : null}</div>
+                          )
+                        }
+                      ]}
+                      styles={{
+                        body: { padding: 0 }
+                      }}
+                    />
                   )
                 },
                 {
                   key: '2',
-                  label: 'Players',
+                  label: '2v2',
                   children: (
-                    <div className="pt-4 mb-10">{stats ? <Players replays={replays1v1} /> : null}</div>
-                  )
-                },
-                {
-                  key: '3',
-                  label: 'Statistics',
-                  children: (
-                    <div className="pt-4 mb-10">{stats ? <Stats stats={stats1v1} /> : null}</div>
+                    <Card
+                      tabList={[
+                        {
+                          key: '1',
+                          label: 'Summary',
+                          children: (
+                            <div className="pt-4 mb-10">
+                              <ReplaysTable2v2 replays={replays2v2} />
+                            </div>
+                          )
+                        },
+                        {
+                          key: '2',
+                          label: 'Players',
+                          children: (
+                            <div className="pt-4 mb-10">{stats ? <Players2v2 replays={replays2v2} /> : null}</div>
+                          )
+                        },
+                        {
+                          key: '3',
+                          label: 'Statistics',
+                          children: (
+                            <div className="pt-4 mb-10">{stats ? <Stats2v2 stats={stats2v2} /> : null}</div>
+                          )
+                        }
+                      ]}
+                      styles={{
+                        body: { padding: 0 }
+                      }}
                   )
                 }
               ]}
