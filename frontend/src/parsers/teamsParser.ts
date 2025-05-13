@@ -15,10 +15,10 @@ export type TeamHistory = {
 }
 
 export type Team = {
-  player1id: string;
-  player2id: string;
-  player1names: string[];
-  player2names: string[];
+  player1Id: string;
+  player2Id: string;
+  player1Names: string[];
+  player2Names: string[];
   history: TeamHistory[];
 }
 
@@ -37,20 +37,20 @@ const createTeamHistory = (replay: Replay2v2): TeamHistory => ({
 });
 
 const createNewTeam = (replay: Replay2v2): Team => ({
-  player1id: replay.enemiesData[0].playerId,
-  player2id: replay.enemiesData[1].playerId,
-  player1names: [replay.enemiesData[0].playerName],
-  player2names: [replay.enemiesData[1].playerName],
+  player1Id: replay.enemiesData[0].playerId,
+  player2Id: replay.enemiesData[1].playerId,
+  player1Names: [replay.enemiesData[0].playerName],
+  player2Names: [replay.enemiesData[1].playerName],
   history: [createTeamHistory(replay)],
 });
 
 const updateTeam = (existingTeam: Team, replay: Replay2v2): void => {
-  if (!existingTeam.player1names.includes(replay.enemiesData[0].playerName)) {
-    existingTeam.player1names.push(replay.enemiesData[0].playerName);
+  if (!existingTeam.player1Names.includes(replay.enemiesData[0].playerName)) {
+    existingTeam.player1Names.push(replay.enemiesData[0].playerName);
   }
 
-  if (!existingTeam.player2names.includes(replay.enemiesData[1].playerName)) {
-    existingTeam.player2names.push(replay.enemiesData[1].playerName);
+  if (!existingTeam.player2Names.includes(replay.enemiesData[1].playerName)) {
+    existingTeam.player2Names.push(replay.enemiesData[1].playerName);
   }
 
   existingTeam.history.push(createTeamHistory(replay));

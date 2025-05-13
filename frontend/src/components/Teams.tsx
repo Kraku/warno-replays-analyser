@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Player, playersParser } from '../parsers/playersParser';
 import { List, Input, Button, Card, Empty, Typography } from 'antd';
 import { ApiOutlined, ArrowRightOutlined, CopyOutlined } from '@ant-design/icons';
 import { ColumnType } from 'antd/es/table';
@@ -9,7 +8,6 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { PlayerDetails } from './PlayerDetails/PlayerDetails';
 import { getMinMax } from '../helpers/getMinMax';
 import { transliterate } from '../helpers/transliterate';
-import { GetSettings, SearchPlayerInApi, SendUsersToAPI } from '../../wailsjs/go/main/App';
 import { Team, TeamHistory, teamsParser } from '../parsers/teamsParser';
 import { Replay2v2 } from '../parsers/replaysParser';
 
@@ -82,88 +80,64 @@ export const Teams = ({ replays }: { replays: Replay2v2[] }) => {
   const [selectedTeam, setSelectedTeam] = useState<string>();
 
   useEffect(() => {
-    const fetchPlayers = async () => {
+    const fetchTeams = async () => {
       const parsedTeams = await teamsParser(replays);
-      setPlayers(parsedPlayers);
+      setTeams(parsedTeams);
     };
 
-    fetchPlayers();
+    fetchTeams();
   }, [replays]);
 
-  const handleApiSearch = async (query: string) => {
-    const apiPlayers = await SearchPlayerInApi(query) || [];
-    setPlayers((prevPlayers) => {
-      const newPlayers = apiPlayers
-        .filter((apiPlayer) => !prevPlayers.some((player) => player.id === apiPlayer.eugenId.toString()))
-        .map((apiPlayer) => ({
-          id: apiPlayer.eugenId.toString(),
-          names: apiPlayer.usernames,
-          ranks: apiPlayer.ranks.map(String),
-          history: [],
-          api: true
-        }));
-
-      return [...prevPlayers, ...newPlayers];
-    });
-  };
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.trim();
     setSearchQuery(query);
-
-    if (query.length >= 2) {
-      const settings = await GetSettings();
-
-      if (settings.playerInfoSharingDisabled || !players.length) return;
-
-      handleApiSearch(query);
-    }
   };
 
-  const filteredPlayers = players.filter((player) => {
+  const filteredTeams = teams.filter((team) => {
     const normalizedQuery = transliterate(searchQuery.toLowerCase());
 
     return (
-      player.names.some((name) => transliterate(name.toLowerCase()).includes(normalizedQuery)) ||
-      transliterate(player.id.toLowerCase()).includes(normalizedQuery)
+      team.player1Names.some((name) => transliterate(name.toLowerCase()).includes(normalizedQuery)) ||
+      team.player2Names.some((name) => transliterate(name.toLowerCase()).includes(normalizedQuery)) ||
+      transliterate(team.player1Id.toLowerCase()).includes(normalizedQuery) ||
+      transliterate(team.player2Id.toLowerCase()).includes(normalizedQuery)
     );
   });
 
-  const selectedPlayerData = players.find((player) => player.id === selectedPlayer);
+  const selectedTeamData = teams
+    .find((team) => JSON.stringify([team.player1Id, team.player2Id]) === selectedTeam);
 
   return (
     <div className="flex gap-4">
       <div className="w-1/5">
         <Input.Search
           className="mb-4"
-          placeholder="Filter players by name or id"
+          placeholder="Filter teams by name or id"
           value={searchQuery}
           onChange={handleSearch}
           allowClear
         />
         <div className="max-h-[calc(100vh-23rem)] overflow-y-auto pr-2">
           <List
-            dataSource={filteredPlayers}
+            dataSource={filteredTeams}
             size="small"
-            renderItem={(player) => {
-              const rankMinMax = getMinMax(player.ranks.flatMap((rank) => parseInt(rank)));
-
+            renderItem={(team) => {
               return (
                 <List.Item
                   actions={[
                     <Button
                       icon={<ArrowRightOutlined />}
-                      onClick={() => setSelectedPlayer(player.id)}
+                      onClick={() => setSelectedTeam(JSON.stringify([team.player1Id, team.player2Id]))}
                       key="open"
                     />
                   ]}
-                  className={selectedPlayer === player.id ? 'bg-neutral-800' : 'hover:bg-neutral-900'}
-                  key={player.id}
+                  className={selectedTeam === JSON.stringify([team.player1Id, team.player2Id]) ? 'bg-neutral-800' : 'hover:bg-neutral-900'}
+                  key={JSON.stringify([team.player1Id, team.player2Id])}
                 >
                   <List.Item.Meta
                     title={
                       <div className="flex gap-1 items-center">
-                        {player.api && <ApiOutlined />}
                         <Typography.Text strong>{player.names.join(', ')}</Typography.Text>
                       </div>
                     }
@@ -198,11 +172,11 @@ export const Teams = ({ replays }: { replays: Replay2v2[] }) => {
         </div>
       </div>
       <div className="w-4/5">
-        {selectedPlayerData ? (
-          <PlayerDetails player={selectedPlayerData} />
+        {selectedTeamData ? (
+          <TeamDetails team={selectedTeamData} />
         ) : (
           <Card>
-            <Empty description="Select a player" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            <Empty description="Select a team" image={Empty.PRESENTED_IMAGE_SIMPLE} />
           </Card>
         )}
       </div>
