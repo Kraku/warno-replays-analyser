@@ -1,0 +1,75 @@
+import { Replay2v2 } from "./replaysParser";
+
+export type TeamHistory = {
+  result: 'Victory' | 'Defeat' | 'Draw';
+  division: string;
+  allyName: string;
+  allyDivision: string;
+  enemy1Division: string;
+  enemy1Deck: string;
+  enemy2Division: string;
+  enemy2Deck: string;
+  createdAt: string;
+  duration: number;
+  map: string;
+}
+
+export type Team = {
+  player1id: string;
+  player2id: string;
+  player1names: string[];
+  player2names: string[];
+  history: TeamHistory[];
+}
+
+const createTeamHistory = (replay: Replay2v2): TeamHistory => ({
+  result: replay.result,
+  division: replay.division,
+  allyName: replay.allyData.playerName,
+  allyDivision: replay.allyData.playerDivision,
+  enemy1Division: replay.enemiesData[0].playerDivision,
+  enemy1Deck: replay.enemiesData[0].playerDeck,
+  enemy2Division: replay.enemiesData[1].playerDivision,
+  enemy2Deck: replay.enemiesData[1].playerDeck,
+  createdAt: replay.createdAt,
+  duration: replay.duration,
+  map: replay.map
+});
+
+const createNewTeam = (replay: Replay2v2): Team => ({
+  player1id: replay.enemiesData[0].playerId,
+  player2id: replay.enemiesData[1].playerId,
+  player1names: [replay.enemiesData[0].playerName],
+  player2names: [replay.enemiesData[1].playerName],
+  history: [createTeamHistory(replay)],
+});
+
+const updateTeam = (existingTeam: Team, replay: Replay2v2): void => {
+  if (!existingTeam.player1names.includes(replay.enemiesData[0].playerName)) {
+    existingTeam.player1names.push(replay.enemiesData[0].playerName);
+  }
+
+  if (!existingTeam.player2names.includes(replay.enemiesData[1].playerName)) {
+    existingTeam.player2names.push(replay.enemiesData[1].playerName);
+  }
+
+  existingTeam.history.push(createTeamHistory(replay));
+};
+
+export const teamsParser = async (replays: Replay2v2[]): Promise<Team[]> => {
+  const teamsMap: Map<string, Team> = new Map();
+
+  replays.forEach((replay) => {
+    const teamCompositeKey = JSON.stringify([replay.enemiesData[0].playerId, replay.enemiesData[1].playerId]);
+    const existingTeam = teamsMap.get(teamCompositeKey);
+
+    if (existingTeam) {
+      updateTeam(existingTeam, replay);
+    } else {
+      const newTeam = createNewTeam(replay);
+      teamsMap.set(teamCompositeKey, newTeam);
+    }
+  });
+
+  return Array.from(teamsMap.values());
+};

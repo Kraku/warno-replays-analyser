@@ -1,0 +1,211 @@
+import { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { Player, playersParser } from '../parsers/playersParser';
+import { List, Input, Button, Card, Empty, Typography } from 'antd';
+import { ApiOutlined, ArrowRightOutlined, CopyOutlined } from '@ant-design/icons';
+import { ColumnType } from 'antd/es/table';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { PlayerDetails } from './PlayerDetails/PlayerDetails';
+import { getMinMax } from '../helpers/getMinMax';
+import { transliterate } from '../helpers/transliterate';
+import { GetSettings, SearchPlayerInApi, SendUsersToAPI } from '../../wailsjs/go/main/App';
+import { Team, TeamHistory, teamsParser } from '../parsers/teamsParser';
+import { Replay2v2 } from '../parsers/replaysParser';
+
+dayjs.extend(relativeTime);
+
+const columns: ColumnType<TeamHistory>[] = [
+  {
+    title: 'Date',
+    dataIndex: 'createdAt',
+    key: 'createdAt',
+    render: (value: string) => `${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()})`
+  },
+  {
+    title: 'My Division',
+    dataIndex: 'division',
+    key: 'division'
+  },
+  {
+    title: 'Ally Division',
+    dataIndex: 'allyDivision',
+    key: 'allyDivision'
+  },
+  {
+    title: 'Enemy 1 Division',
+    dataIndex: 'enemy1Division',
+    key: 'enemy1Division',
+    render: (value: string, record) => (
+      <div>
+        {value}{' '}
+        <CopyToClipboard text={record.enemy1Deck}>
+          <CopyOutlined />
+        </CopyToClipboard>
+      </div>
+    )
+  },
+  {
+    title: 'Enemy 2 Division',
+    dataIndex: 'enemy2Division',
+    key: 'enemy2Division',
+    render: (value: string, record) => (
+      <div>
+        {value}{' '}
+        <CopyToClipboard text={record.enemy2Deck}>
+          <CopyOutlined />
+        </CopyToClipboard>
+      </div>
+    )
+  },
+  {
+    title: 'Duration',
+    dataIndex: 'duration',
+    key: 'duration',
+    render: (value: number) => dayjs.duration(value, 'seconds').format('mm:ss')
+  },
+  {
+    title: 'Map',
+    dataIndex: 'map',
+    key: 'map'
+  },
+  {
+    title: 'Result',
+    dataIndex: 'result',
+    key: 'result'
+  }
+];
+
+export const Teams = ({ replays }: { replays: Replay2v2[] }) => {
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedTeam, setSelectedTeam] = useState<string>();
+
+  useEffect(() => {
+    const fetchPlayers = async () => {
+      const parsedTeams = await teamsParser(replays);
+      setPlayers(parsedPlayers);
+    };
+
+    fetchPlayers();
+  }, [replays]);
+
+  const handleApiSearch = async (query: string) => {
+    const apiPlayers = await SearchPlayerInApi(query) || [];
+    setPlayers((prevPlayers) => {
+      const newPlayers = apiPlayers
+        .filter((apiPlayer) => !prevPlayers.some((player) => player.id === apiPlayer.eugenId.toString()))
+        .map((apiPlayer) => ({
+          id: apiPlayer.eugenId.toString(),
+          names: apiPlayer.usernames,
+          ranks: apiPlayer.ranks.map(String),
+          history: [],
+          api: true
+        }));
+
+      return [...prevPlayers, ...newPlayers];
+    });
+  };
+
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value.trim();
+    setSearchQuery(query);
+
+    if (query.length >= 2) {
+      const settings = await GetSettings();
+
+      if (settings.playerInfoSharingDisabled || !players.length) return;
+
+      handleApiSearch(query);
+    }
+  };
+
+  const filteredPlayers = players.filter((player) => {
+    const normalizedQuery = transliterate(searchQuery.toLowerCase());
+
+    return (
+      player.names.some((name) => transliterate(name.toLowerCase()).includes(normalizedQuery)) ||
+      transliterate(player.id.toLowerCase()).includes(normalizedQuery)
+    );
+  });
+
+  const selectedPlayerData = players.find((player) => player.id === selectedPlayer);
+
+  return (
+    <div className="flex gap-4">
+      <div className="w-1/5">
+        <Input.Search
+          className="mb-4"
+          placeholder="Filter players by name or id"
+          value={searchQuery}
+          onChange={handleSearch}
+          allowClear
+        />
+        <div className="max-h-[calc(100vh-23rem)] overflow-y-auto pr-2">
+          <List
+            dataSource={filteredPlayers}
+            size="small"
+            renderItem={(player) => {
+              const rankMinMax = getMinMax(player.ranks.flatMap((rank) => parseInt(rank)));
+
+              return (
+                <List.Item
+                  actions={[
+                    <Button
+                      icon={<ArrowRightOutlined />}
+                      onClick={() => setSelectedPlayer(player.id)}
+                      key="open"
+                    />
+                  ]}
+                  className={selectedPlayer === player.id ? 'bg-neutral-800' : 'hover:bg-neutral-900'}
+                  key={player.id}
+                >
+                  <List.Item.Meta
+                    title={
+                      <div className="flex gap-1 items-center">
+                        {player.api && <ApiOutlined />}
+                        <Typography.Text strong>{player.names.join(', ')}</Typography.Text>
+                      </div>
+                    }
+                    description={
+                      rankMinMax.min ? (
+                        <div className="flex items-center">
+                          <div
+                            className={[
+                              'w-2 h-2 rounded-full mr-1',
+                              rankMinMax.min <= 50
+                                ? 'bg-rose-600'
+                                : rankMinMax.min <= 100
+                                  ? 'bg-orange-600'
+                                  : rankMinMax.min <= 200
+                                    ? 'bg-yellow-600'
+                                    : rankMinMax.min <= 500
+                                      ? 'bg-emerald-600'
+                                      : 'bg-neutral-600'
+                            ].join(' ')}
+                          />
+                          {rankMinMax.min === rankMinMax.max
+                            ? `${rankMinMax.min}`
+                            : `${rankMinMax.min} - ${rankMinMax.max}`}
+                        </div>
+                      ) : null
+                    }
+                  />
+                </List.Item>
+              );
+            }}
+          />
+        </div>
+      </div>
+      <div className="w-4/5">
+        {selectedPlayerData ? (
+          <PlayerDetails player={selectedPlayerData} />
+        ) : (
+          <Card>
+            <Empty description="Select a player" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+};

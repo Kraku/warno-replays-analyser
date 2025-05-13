@@ -121,7 +121,7 @@ const columns: ColumnType<Replay2v2>[] = [
     render: (value: string, record) => (
       <div>
         {value}{' '}
-        <CopyToClipboard text={record.enemy1Deck}>
+        <CopyToClipboard text={record.enemy2Deck}>
           <CopyOutlined />
         </CopyToClipboard>
       </div>
