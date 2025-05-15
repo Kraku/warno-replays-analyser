@@ -1,3 +1,4 @@
+import { calculateVictoryRatio } from "../stats";
 import { Replay2v2 } from "./replaysParser";
 
 export type TeamHistory = {
@@ -20,7 +21,21 @@ export type Team = {
   player1Names: string[];
   player2Names: string[];
   history: TeamHistory[];
+  getPlayer1CommonName: () => string;
+  getPlayer2CommonName: () => string;
+  getGamesCount: () => number;
+  getVictoryRatio: () => number;
 }
+
+const getMostCommonName = (names: string[]): string => {
+  const nameCount: Record<string, number> = {};
+  for (const name of names) {
+    nameCount[name] = (nameCount[name] || 0) + 1;
+  }
+  return Object.entries(nameCount).reduce((mostCommon, current) => {
+    return current[1] > nameCount[mostCommon[0]] ? current : mostCommon;
+  })[0];
+};
 
 const createTeamHistory = (replay: Replay2v2): TeamHistory => ({
   result: replay.result,
@@ -42,6 +57,12 @@ const createNewTeam = (replay: Replay2v2): Team => ({
   player1Names: [replay.enemiesData[0].playerName],
   player2Names: [replay.enemiesData[1].playerName],
   history: [createTeamHistory(replay)],
+  getPlayer1CommonName() { return getMostCommonName(this.player1Names); },
+  getPlayer2CommonName() { return getMostCommonName(this.player2Names); },
+  getGamesCount() { return this.history.length; },
+  getVictoryRatio() {
+    return calculateVictoryRatio(this.history.filter(h => h.result === 'Victory').length, this.history.length);
+  }
 });
 
 const updateTeam = (existingTeam: Team, replay: Replay2v2): void => {

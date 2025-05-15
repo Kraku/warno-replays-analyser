@@ -2,11 +2,9 @@ import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { List, Input, Button, Card, Empty, Typography } from 'antd';
-import { ApiOutlined, ArrowRightOutlined, CopyOutlined } from '@ant-design/icons';
+import { ArrowRightOutlined, CopyOutlined } from '@ant-design/icons';
 import { ColumnType } from 'antd/es/table';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import { PlayerDetails } from './PlayerDetails/PlayerDetails';
-import { getMinMax } from '../helpers/getMinMax';
 import { transliterate } from '../helpers/transliterate';
 import { Team, TeamHistory, teamsParser } from '../parsers/teamsParser';
 import { Replay2v2 } from '../parsers/replaysParser';
@@ -138,32 +136,19 @@ export const Teams = ({ replays }: { replays: Replay2v2[] }) => {
                   <List.Item.Meta
                     title={
                       <div className="flex gap-1 items-center">
-                        <Typography.Text strong>{player.names.join(', ')}</Typography.Text>
+                        <Typography.Text strong>`{team.getPlayer1CommonName()}, {team.getPlayer2CommonName()}`</Typography.Text>
                       </div>
                     }
-                    description={
-                      rankMinMax.min ? (
-                        <div className="flex items-center">
-                          <div
-                            className={[
-                              'w-2 h-2 rounded-full mr-1',
-                              rankMinMax.min <= 50
-                                ? 'bg-rose-600'
-                                : rankMinMax.min <= 100
-                                  ? 'bg-orange-600'
-                                  : rankMinMax.min <= 200
-                                    ? 'bg-yellow-600'
-                                    : rankMinMax.min <= 500
-                                      ? 'bg-emerald-600'
-                                      : 'bg-neutral-600'
-                            ].join(' ')}
-                          />
-                          {rankMinMax.min === rankMinMax.max
-                            ? `${rankMinMax.min}`
-                            : `${rankMinMax.min} - ${rankMinMax.max}`}
+                    description={(
+                      <div className="flex items-center">
+                        <div className='w-2 h-2 rounded-full mr-1'>
+                        {`games: ${team.getGamesCount()}`}
                         </div>
-                      ) : null
-                    }
+                        <div className='w-2 h-2 rounded-full mr-1'>
+                        {`WR: ${team.getVictoryRatio()}%`}
+                        </div>
+                      </div>
+                    )}
                   />
                 </List.Item>
               );

@@ -63,7 +63,7 @@ export type Statistics2v2 = CommonStatistics & {
   }[];
 }
 
-const calculateVictoryRatio = (won: number, total: number): number => {
+export const calculateVictoryRatio = (won: number, total: number): number => {
   return total === 0 ? 0 : (won / total) * 100;
 };
 
