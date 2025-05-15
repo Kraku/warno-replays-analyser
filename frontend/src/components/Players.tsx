@@ -62,7 +62,7 @@ const columns: ColumnType<Pick<Player['history'][number], 'result' | 'division' 
   }
 ];
 
-export const Players1v1 = ({ replays }: { replays: Replay1v1[] }) => {
+export const Players = ({ replays }: { replays: Replay1v1[] }) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedPlayer, setSelectedPlayer] = useState<string>();

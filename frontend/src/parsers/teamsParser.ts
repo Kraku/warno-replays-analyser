@@ -1,4 +1,4 @@
-import { calculateVictoryRatio } from "../stats";
+import { calculateVictoryRatio } from "../helpers/calculateVictoryRatio";
 import { Replay2v2 } from "./replaysParser";
 
 export type TeamHistory = {

@@ -27,8 +27,8 @@ const columns: ColumnType<Replay2v2>[] = [
           record.result === 'Victory'
             ? 'border-emerald-950'
             : record.result === 'Defeat'
-            ? 'border-rose-950'
-            : 'border-gray-500'
+              ? 'border-rose-950'
+              : 'border-gray-500'
         ].join(' ')}>
         {`${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()})`}
       </div>
@@ -168,13 +168,15 @@ export const ReplaysTable2v2 = ({ replays }: { replays: Replay2v2[] }) => {
     setSearchText(value);
   };
 
-  const filteredReplays = replays.filter((replay) =>
-    transliterate(replay.enemiesData.map(enemy => enemy.playerName).join().toLowerCase()).includes(transliterate(searchText.toLowerCase()))
-  );
+  const filteredReplays = replays.filter((replay) => {
+    const searchNames = replay.enemiesData.map(enemy => enemy.playerName);
+    searchNames.push(replay.allyData.playerName);
+    transliterate(searchNames.join().toLowerCase()).includes(transliterate(searchText.toLowerCase()));
+  });
 
   return (
     <>
-      <Search placeholder="Find enemy" onSearch={handleSearch} className="mb-2" allowClear />
+      <Search placeholder="Find ally or enemy by name" onSearch={handleSearch} className="mb-2" allowClear />
       <Table
         dataSource={filteredReplays}
         columns={columns}

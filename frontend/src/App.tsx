@@ -6,15 +6,16 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { replaysParser, Replay1v1, Replay2v2, EugenUser } from './parsers/replaysParser';
 import { getStats1v1, getStats2v2, Statistics1v1, Statistics2v2 } from './stats';
-import { ReplaysTable1v1 } from './components/ReplaysTable';
+import { ReplaysTable1v1 } from './components/ReplaysTable1v1';
 import { Stats1v1 } from './components/Statistics';
 import { DirectoriesSelect } from './components/DirectoriesSelect';
-import { Players1v1 } from './components/Players';
+import { Players } from './components/Players';
 import { SettingOutlined } from '@ant-design/icons';
 import { SettingsDrawer } from './drawers/SettingsDrawer';
 import { DailyRecap } from './components/DailyRecap';
 import { Version } from './components/Version';
 import { ReplaysTable2v2 } from './components/ReplaysTable2v2';
+import { Teams } from './components/Teams';
 
 dayjs.extend(relativeTime);
 
@@ -111,14 +112,14 @@ function App() {
                           key: '2',
                           label: 'Players',
                           children: (
-                            <div className="pt-4 mb-10">{stats ? <Players1v1 replays={replays1v1} /> : null}</div>
+                            <div className="pt-4 mb-10">{stats1v1 ? <Players replays={replays1v1} /> : null}</div>
                           )
                         },
                         {
                           key: '3',
                           label: 'Statistics',
                           children: (
-                            <div className="pt-4 mb-10">{stats ? <Stats1v1 stats={stats1v1} /> : null}</div>
+                            <div className="pt-4 mb-10">{stats1v1 ? <Stats1v1 stats={stats1v1} /> : null}</div>
                           )
                         }
                       ]}
@@ -147,14 +148,14 @@ function App() {
                           key: '2',
                           label: 'Players',
                           children: (
-                            <div className="pt-4 mb-10">{stats ? <Players2v2 replays={replays2v2} /> : null}</div>
+                            <div className="pt-4 mb-10">{stats2v2 ? <Teams replays={replays2v2} /> : null}</div>
                           )
                         },
                         {
                           key: '3',
                           label: 'Statistics',
                           children: (
-                            <div className="pt-4 mb-10">{stats ? <Stats2v2 stats={stats2v2} /> : null}</div>
+                            <div className="pt-4 mb-10">{stats2v2 ? <Stats2v2 stats={stats2v2} /> : null}</div>
                           )
                         }
                       ]}

@@ -1,3 +1,4 @@
+import { calculateVictoryRatio } from './helpers/calculateVictoryRatio';
 import { CommonReplayData, getDivisionName, Replay1v1, Replay2v2 } from './parsers/replaysParser';
 
 export type CommonStatistics = {
@@ -62,10 +63,6 @@ export type Statistics2v2 = CommonStatistics & {
     games: number;
   }[];
 }
-
-export const calculateVictoryRatio = (won: number, total: number): number => {
-  return total === 0 ? 0 : (won / total) * 100;
-};
 
 const getDivisionStats = (
   replays: Replay1v1[],
