@@ -16,6 +16,7 @@ import { DailyRecap } from './components/DailyRecap';
 import { Version } from './components/Version';
 import { ReplaysTable2v2 } from './components/ReplaysTable2v2';
 import { Teams } from './components/Teams';
+import { Stats2v2 } from './components/Statistics2v2';
 
 dayjs.extend(relativeTime);
 
@@ -112,14 +113,14 @@ function App() {
                           key: '2',
                           label: 'Players',
                           children: (
-                            <div className="pt-4 mb-10">{stats1v1 ? <Players replays={replays1v1} /> : null}</div>
+                            <div className="pt-4 mb-10">{stats1v1 ? <Players replays={replays1v1} /> : null}
                           )
                         },
                         {
                           key: '3',
                           label: 'Statistics',
                           children: (
-                            <div className="pt-4 mb-10">{stats1v1 ? <Stats1v1 stats={stats1v1} /> : null}</div>
+                            <div className="pt-4 mb-10">{stats1v1 ? <Stats1v1 stats={stats1v1} /> : null}
                           )
                         }
                       ]}
@@ -148,14 +149,14 @@ function App() {
                           key: '2',
                           label: 'Players',
                           children: (
-                            <div className="pt-4 mb-10">{stats2v2 ? <Teams replays={replays2v2} /> : null}</div>
+                            <div className="pt-4 mb-10">{stats2v2 ? <Teams replays={replays2v2} /> : null}
                           )
                         },
                         {
                           key: '3',
                           label: 'Statistics',
                           children: (
-                            <div className="pt-4 mb-10">{stats2v2 ? <Stats2v2 stats={stats2v2} /> : null}</div>
+                            <div className="pt-4 mb-10">{stats2v2 ? <Stats2v2 stats={stats2v2} /> : null}
                           )
                         }
                       ]}

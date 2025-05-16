@@ -3,10 +3,9 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Statistics1v1 } from '../stats';
 import { LineChart, Line, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { renderVictoryRatio } from '../helpers/renderVictoryRatio';
 
 dayjs.extend(relativeTime);
-
-const renderVictoryRatio = (value: number) => `${value.toFixed(2)}%`;
 
 const TableComponent = ({
   dataSource,

@@ -8,6 +8,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { transliterate } from '../helpers/transliterate';
 import { Team, TeamHistory, teamsParser } from '../parsers/teamsParser';
 import { Replay2v2 } from '../parsers/replaysParser';
+import { renderVictoryRatio } from '../helpers/renderVictoryRatio';
 
 dayjs.extend(relativeTime);
 
@@ -145,7 +146,7 @@ export const Teams = ({ replays }: { replays: Replay2v2[] }) => {
                         {`games: ${team.getGamesCount()}`}
                         </div>
                         <div className='w-2 h-2 rounded-full mr-1'>
-                        {`WR: ${team.getVictoryRatio()}%`}
+                        {`WR: ${renderVictoryRatio(team.getVictoryRatio())}%`}
                         </div>
                       </div>
                     )}
