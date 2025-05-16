@@ -80,7 +80,7 @@ export const Teams = ({ replays }: { replays: Replay2v2[] }) => {
 
   useEffect(() => {
     const fetchTeams = async () => {
-      const parsedTeams = await teamsParser(replays);
+      const parsedTeams = teamsParser(replays);
       setTeams(parsedTeams);
     };
 

@@ -77,7 +77,7 @@ const updateTeam = (existingTeam: Team, replay: Replay2v2): void => {
   existingTeam.history.push(createTeamHistory(replay));
 };
 
-export const teamsParser = async (replays: Replay2v2[]): Promise<Team[]> => {
+export const teamsParser = (replays: Replay2v2[]): Team[] => {
   const teamsMap: Map<string, Team> = new Map();
 
   replays.forEach((replay) => {
@@ -94,3 +94,18 @@ export const teamsParser = async (replays: Replay2v2[]): Promise<Team[]> => {
 
   return Array.from(teamsMap.values());
 };
+
+export const getPlayerIdCommonNameMap = (replays: Replay2v2[]): Map<string, string> => {
+  const idNamesMap: Map<string, string> = new Map();
+  const usedNamesMaps: Map<string, string[]> = new Map();
+  replays.forEach((replay) => {
+    [...replay.enemiesData, replay.allyData].forEach((player) => {
+      const existingPlayer = usedNamesMaps.get(player.playerId);
+      if (existingPlayer) {
+        existingPlayer.push(player.playerName);
+      } else {
+        usedNamesMaps.set(player.playerId, [ player.playerName ]);
+      }
+    })
+  })
+}
