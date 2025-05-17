@@ -1,5 +1,6 @@
 import { calculateVictoryRatio } from './helpers/calculateVictoryRatio';
 import { CommonReplayData, getDivisionName, Replay1v1, Replay2v2 } from './parsers/replaysParser';
+import { getPlayerIdCommonNameMap } from './parsers/teamsParser';
 
 export type CommonStatistics = {
   totalGames: number;
@@ -41,6 +42,7 @@ export type Statistics1v1 = CommonStatistics & {
 export type Statistics2v2 = CommonStatistics & {
   alliedTeamVictoryRatios: {
     allyPlayerId: string;
+    allyPlayerName: string;
     victoryRatio: number;
     games: number;
   }[];
@@ -52,7 +54,9 @@ export type Statistics2v2 = CommonStatistics & {
   }[];
   enemyTeamVictoryRatios: {
     enemyPlayer1Id: string;
+    enemyPlayer1Name: string;
     enemyPlayer2Id: string;
+    enemyPlayer2Name: string;
     victoryRatio: number;
     games: number;
   }[];
@@ -316,14 +320,18 @@ export const getStats2v2 = (replays: Replay2v2[]): Statistics2v2 => {
     }
   })
 
+  const playerIdMap = getPlayerIdCommonNameMap(replays);
   const alliedTeamVictoryRatios = Array.from(alliedVictories).map(([key, obj]) => ({
     allyPlayerId: key,
+    allyPlayerName: playerIdMap.get(key) ?? 'unknown',
     victoryRatio: obj.games ? obj.games / obj.victories : 0,
     games: obj.games
   })).sort((stat1, stat2) => stat1.games - stat2.games);
   const enemyTeamVictoryRatios = Array.from(enemyVictories).map(([key, obj]) => ({
     enemyPlayer1Id: JSON.parse(key)[0],
+    enemyPlayer1Name: playerIdMap.get(JSON.parse(key)[0]) ?? 'unknown',
     enemyPlayer2Id: JSON.parse(key)[1],
+    enemyPlayer2Name: playerIdMap.get(JSON.parse(key)[1]) ?? 'unknown',
     victoryRatio: obj.games ? obj.games / obj.victories : 0,
     games: obj.games
   })).sort((stat1, stat2) => stat1.games - stat2.games);

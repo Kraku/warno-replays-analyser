@@ -108,4 +108,15 @@ export const getPlayerIdCommonNameMap = (replays: Replay2v2[]): Map<string, stri
       }
     })
   })
+
+  usedNamesMaps.forEach((names, playerId) => {
+    const nameCounts: Record<string, number> = {};
+    names.forEach((name) => {
+      nameCounts[name] = (nameCounts[name] ?? 0) + 1;
+    })
+    const mostCommon = Object.entries(nameCounts).reduce((accu, curr) => accu[1] > curr[1] ? accu : curr);
+    idNamesMap.set(playerId, mostCommon[0]);
+  })
+
+  return idNamesMap;
 }
