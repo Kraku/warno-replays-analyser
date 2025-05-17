@@ -1,6 +1,7 @@
 import { Card, Typography, Tag } from 'antd';
 import { Team } from '../../parsers/teamsParser';
 import { TeamGamesTable } from './TeamGamesTable';
+import { TeamNotes } from './TeamNotes';
 
 export const TeamDetails = ({ team }: { team: Team }) => {
   return (
@@ -18,6 +19,7 @@ export const TeamDetails = ({ team }: { team: Team }) => {
 
         <TeamGamesTable history={team.history} />
 
+        <TeamNotes team={team} />
       </div>
     </Card>
   );

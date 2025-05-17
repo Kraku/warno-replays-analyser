@@ -143,6 +143,12 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
       });
 
     } else if (playerCount == 4) {
+      // filter by settings if desired
+      if (settings.analyze2v2For4pMapsOnly) {
+        // if settings invalid return
+        // if map invalid return
+      }
+
       let ally: PlayerData | undefined = undefined;
       const enemies: PlayerData[] = [];
       const playerAlliance = getDivisionAlliance(replay.warno.players?.[playerKey].PlayerDeckContent);

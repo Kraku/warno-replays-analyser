@@ -12,6 +12,7 @@ type Settings struct {
 	StartDate                 string   `json:"startDate,omitempty"`
 	DailyRecapUser            string   `json:"dailyRecapUser,omitempty"`
 	PlayerInfoSharingDisabled bool     `json:"playerInfoSharingDisabled,omitempty"`
+	Analyze2v2For4pMapsOnly   bool     `json:"analyze2v2For4pMapsOnly"`
 }
 
 type PlayerIdsOption struct {
