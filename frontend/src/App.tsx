@@ -50,7 +50,7 @@ function App() {
       setEugenUsers(eugenUsers);
 
       setReplays1v1(sorted1v1Replays);
-      setReplays2v2(replays2v2);
+      setReplays2v2(sorted2v2Replays);
       setStats1v1(getStats1v1(replays1v1));
       setStats2v2(getStats2v2(replays2v2));
     } finally {
