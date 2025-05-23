@@ -40,14 +40,14 @@ const columns: ColumnType<Replay2v2>[] = [
     dataIndex: 'division',
     key: 'division',
     sorter: (a: Replay2v2, b: Replay2v2) => (a.division || '').localeCompare(b.division || ''),
-    render: (value: string, record) => {
+    render: (value: string, record) => (
       <div>
         {value}{' '}
         <CopyToClipboard text={record.deck}>
           <CopyOutlined />
         </CopyToClipboard>
       </div>
-    }
+    )
   },
   {
     title: 'My Rank',
@@ -69,7 +69,7 @@ const columns: ColumnType<Replay2v2>[] = [
     render: (value: string, record) => (
       <div>
         {value}{' '}
-        <CopyToClipboard text={record.teammateDeck}>
+        <CopyToClipboard text={record.allyData.playerDeck}>
           <CopyOutlined />
         </CopyToClipboard>
       </div>
@@ -95,7 +95,7 @@ const columns: ColumnType<Replay2v2>[] = [
     render: (value: string, record) => (
       <div>
         {value}{' '}
-        <CopyToClipboard text={record.enemy1Deck}>
+        <CopyToClipboard text={record.enemiesData[0].playerDivision}>
           <CopyOutlined />
         </CopyToClipboard>
       </div>
@@ -121,7 +121,7 @@ const columns: ColumnType<Replay2v2>[] = [
     render: (value: string, record) => (
       <div>
         {value}{' '}
-        <CopyToClipboard text={record.enemy2Deck}>
+        <CopyToClipboard text={record.enemiesData[1].playerDivision}>
           <CopyOutlined />
         </CopyToClipboard>
       </div>

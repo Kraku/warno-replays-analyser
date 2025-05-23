@@ -113,14 +113,18 @@ function App() {
                           key: '2',
                           label: 'Players',
                           children: (
-                            <div className="pt-4 mb-10">{stats1v1 ? <Players replays={replays1v1} /> : null}
+                            <div className="pt-4 mb-10">
+                              {stats1v1 ? <Players replays={replays1v1} /> : null}
+                            </div>
                           )
                         },
                         {
                           key: '3',
                           label: 'Statistics',
                           children: (
-                            <div className="pt-4 mb-10">{stats1v1 ? <Stats1v1 stats={stats1v1} /> : null}
+                            <div className="pt-4 mb-10">
+                              {stats1v1 ? <Stats1v1 stats={stats1v1} /> : null
+                            }</div>
                           )
                         }
                       ]}
@@ -147,22 +151,27 @@ function App() {
                         },
                         {
                           key: '2',
-                          label: 'Players',
+                          label: 'Teams',
                           children: (
-                            <div className="pt-4 mb-10">{stats2v2 ? <Teams replays={replays2v2} /> : null}
+                            <div className="pt-4 mb-10">
+                              {stats2v2 ? <Teams replays={replays2v2} /> : null}
+                            </div>
                           )
                         },
                         {
                           key: '3',
                           label: 'Statistics',
                           children: (
-                            <div className="pt-4 mb-10">{stats2v2 ? <Stats2v2 stats={stats2v2} /> : null}
+                            <div className="pt-4 mb-10">
+                              {stats2v2 ? <Stats2v2 stats={stats2v2} /> : null}
+                            </div>
                           )
                         }
                       ]}
                       styles={{
                         body: { padding: 0 }
                       }}
+                    />
                   )
                 }
               ]}

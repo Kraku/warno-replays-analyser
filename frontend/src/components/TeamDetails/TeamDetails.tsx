@@ -8,7 +8,7 @@ export const TeamDetails = ({ team }: { team: Team }) => {
     <Card
       title={
         <div className="flex gap-2 items-center mb-2">
-          <Typography.Text>{player?.names.join(', ')}</Typography.Text>
+          <Typography.Text>{[team.getPlayer1CommonName(), team.getPlayer2CommonName()].join('& ')}</Typography.Text>
           <Tag bordered={false}>#{[team.player1Id, team.player2Id].join(' & ')}</Tag>
         </div>
       }>

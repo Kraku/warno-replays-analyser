@@ -9,6 +9,7 @@ import { transliterate } from '../helpers/transliterate';
 import { Team, TeamHistory, teamsParser } from '../parsers/teamsParser';
 import { Replay2v2 } from '../parsers/replaysParser';
 import { renderVictoryRatio } from '../helpers/renderVictoryRatio';
+import { TeamDetails } from './TeamDetails/TeamDetails';
 
 dayjs.extend(relativeTime);
 

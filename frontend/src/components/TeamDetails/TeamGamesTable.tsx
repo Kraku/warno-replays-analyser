@@ -31,14 +31,14 @@ const columns: ColumnType<TeamHistory>[] = [
     title: 'My Division',
     dataIndex: 'division',
     key: 'division',
-    render: (value: string, record) => {
+    render: (value: string, record) => (
       <div>
         {value}{' '}
-        <CopyToClipboard text={record.deck}>
+        <CopyToClipboard text={record.division}>
           <CopyOutlined />
         </CopyToClipboard>
       </div>
-    }
+    )
   },
   {
     title: 'Teammate Name',
@@ -52,7 +52,7 @@ const columns: ColumnType<TeamHistory>[] = [
     render: (value: string, record) => (
       <div>
         {value}{' '}
-        <CopyToClipboard text={record.teammateDeck}>
+        <CopyToClipboard text={record.allyDivision}>
           <CopyOutlined />
         </CopyToClipboard>
       </div>

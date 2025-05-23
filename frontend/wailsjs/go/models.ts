@@ -187,6 +187,8 @@ export namespace main {
 	export class Players {
 	    player1: Player;
 	    player2: Player;
+	    player3: Player;
+	    player4: Player;
 	
 	    static createFrom(source: any = {}) {
 	        return new Players(source);
@@ -196,6 +198,8 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.player1 = this.convertValues(source["player1"], Player);
 	        this.player2 = this.convertValues(source["player2"], Player);
+	        this.player3 = this.convertValues(source["player3"], Player);
+	        this.player4 = this.convertValues(source["player4"], Player);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -251,7 +255,7 @@ export namespace main {
 	    startDate?: string;
 	    dailyRecapUser?: string;
 	    playerInfoSharingDisabled?: boolean;
-		analyze2v2For4pMapsOnly?: boolean;
+	    analyze2v2For4pMapsOnly: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -263,13 +267,14 @@ export namespace main {
 	        this.startDate = source["startDate"];
 	        this.dailyRecapUser = source["dailyRecapUser"];
 	        this.playerInfoSharingDisabled = source["playerInfoSharingDisabled"];
-			this.analyze2v2For4pMapsOnly = source["analyze2v2For4pMapsOnly"];
+	        this.analyze2v2For4pMapsOnly = source["analyze2v2For4pMapsOnly"];
 	    }
 	}
 	export class Warno {
 	    game: Game;
 	    ingamePlayerId: number;
 	    players: Players;
+	    PlayerCount: number;
 	    result: Result;
 	
 	    static createFrom(source: any = {}) {
@@ -281,6 +286,7 @@ export namespace main {
 	        this.game = this.convertValues(source["game"], Game);
 	        this.ingamePlayerId = source["ingamePlayerId"];
 	        this.players = this.convertValues(source["players"], Players);
+	        this.PlayerCount = source["PlayerCount"];
 	        this.result = this.convertValues(source["result"], Result);
 	    }
 	

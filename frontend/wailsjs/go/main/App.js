@@ -6,8 +6,16 @@ export function CreatePlayerNote(arg1, arg2) {
   return window['go']['main']['App']['CreatePlayerNote'](arg1, arg2);
 }
 
+export function CreateTeamNote(arg1, arg2, arg3) {
+  return window['go']['main']['App']['CreateTeamNote'](arg1, arg2, arg3);
+}
+
 export function DeletePlayerNote(arg1, arg2) {
   return window['go']['main']['App']['DeletePlayerNote'](arg1, arg2);
+}
+
+export function DeleteTeamNote(arg1, arg2, arg3) {
+  return window['go']['main']['App']['DeleteTeamNote'](arg1, arg2, arg3);
 }
 
 export function GetAppVersions() {
@@ -36,6 +44,10 @@ export function GetReplays(arg1) {
 
 export function GetSettings() {
   return window['go']['main']['App']['GetSettings']();
+}
+
+export function GetTeamNotes(arg1, arg2) {
+  return window['go']['main']['App']['GetTeamNotes'](arg1, arg2);
 }
 
 export function GetWarnoSaveFolders() {

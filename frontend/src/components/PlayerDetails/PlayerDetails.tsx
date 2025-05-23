@@ -1,12 +1,12 @@
 import { Player } from '../../parsers/playersParser';
 import { Card, Typography, Tag } from 'antd';
-import { PlayerNotes } from '../PlayerNotes';
 import { useEffect, useState } from 'react';
 import { main } from '../../../wailsjs/go/models';
 import { GetPlayerGameHistory } from '../../../wailsjs/go/main/App';
 import { OurGamesTable } from './OurGamesTable';
 import { GamesTable } from './GamesTable';
 import { getMinMax } from '../../helpers/getMinMax';
+import { PlayerNotes } from './PlayerNotes';
 
 export const PlayerDetails = ({ player }: { player: Player }) => {
   const [globalHistory, setGlobalHistory] = useState<main.PlayerGame[]>([]);
