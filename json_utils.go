@@ -61,7 +61,7 @@ type Warno struct {
 	Game           Game    `json:"game"`
 	IngamePlayerId float64 `json:"ingamePlayerId"`
 	Players        Players `json:"players"`
-	PlayerCount    uint8   `json:"playerCount`
+	PlayerCount    uint8   `json:"playerCount"`
 	Result         Result  `json:"result"`
 }
 
@@ -146,7 +146,14 @@ func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) m
 				}(),
 			},
 			PlayerCount: func() uint8 {
-				return jsons[0]["game"].(map[string]any)["NbMaxPlayer"].(uint8)
+				playerKeys := []string{"player_2", "player_4", "player_6", "player_8"}
+				var playerCount uint8
+				for _, key := range playerKeys {
+					if _, exists := jsons[0][key]; exists {
+						playerCount++
+					}
+				}
+				return playerCount
 			}(),
 		},
 	}

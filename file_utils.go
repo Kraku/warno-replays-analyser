@@ -98,7 +98,7 @@ func processFile(filePath string, result *sync.Map) error {
 
 	is1v1 := strings.Contains(content, `"NbMaxPlayer":"2"`)
 	is2v2 := strings.Contains(content, `"NbMaxPlayer":"4"`)
-	if !is1v1 || !is2v2 || !strings.Contains(content, `"IsNetworkMode":"1"`) {
+	if (!is1v1 && !is2v2) || !strings.Contains(content, `"IsNetworkMode":"1"`) {
 		return writeEmptyCache(cacheFilePath)
 	}
 
