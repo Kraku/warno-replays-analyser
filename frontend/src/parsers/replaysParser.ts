@@ -80,19 +80,22 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
 
   data.forEach((replay: any) => {
     const ingamePlayerId = String(replay.warno.ingamePlayerId);
-    const playerCount = replay.warno.players?.length ?? 0;
-    // this may not work for team games
-    const playerKeyObject
-      = replay.warno.players?.find((player: any) => String(player.PlayerAlliance) === ingamePlayerId) ?? {};
-    const playerKey = Object.keys(playerKeyObject)[0];
+    const playersEntries = Object.entries(replay.warno.players) ?? {};
+    const playersArray = playersEntries.filter((playerObj: any) => playerObj[1].PlayerUserId.length > 0);
+    const playerCount = playersArray.length;
+    const playerKeyObject = playersArray.find((player: any) =>
+      String(player[1].PlayerAlliance) === ingamePlayerId
+    );
+    const playerKey = playerKeyObject?.[0] ?? '';
+
 
     if (settings.startDate && new Date(replay.createdAt) < new Date(settings.startDate)) {
       return;
     }
 
-    if (playerKey &&
-      settings.playerIds &&
-      !settings.playerIds?.includes(replay.warno.players?.[playerKey].PlayerUserId)
+    if (playerKey.length == 0 ||
+      (settings.playerIds &&
+      !settings.playerIds?.includes(replay.warno.players?.[playerKey]?.PlayerUserId))
     ) {
       return;
     }
@@ -151,18 +154,18 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
       let ally: PlayerData | undefined = undefined;
       const enemies: PlayerData[] = [];
       const playerAlliance = getDivisionAlliance(replay.warno.players?.[playerKey].PlayerDeckContent);
-      replay.warno.players
-        .filter((player: any) => player.PlayerUserId != commonReplayData.playerId)
-        .forEach((player: any) => {
+      playersArray
+        .filter((playerObj: any) => playerObj[1].PlayerUserId != commonReplayData.playerId)
+        .forEach((playerObj: any) => {
           const playerData = {
-            playerName: player.PlayerName,
-            playerId: player.PlayerUserId,
-            playerDivision: getDivisionName(player.PlayerDeckContent),
-            playerRank: player.PlayerRank,
-            playerDeck: player.PlayerDeckContent
+            playerName: playerObj[1].PlayerName,
+            playerId: playerObj[1].PlayerUserId,
+            playerDivision: getDivisionName(playerObj[1].PlayerDeckContent),
+            playerRank: playerObj[1].PlayerRank,
+            playerDeck: playerObj[1].PlayerDeckContent
           }
 
-          if (getDivisionAlliance(player.PlayerDeckContent) === playerAlliance) {
+          if (getDivisionAlliance(playerObj[1].PlayerDeckContent) === playerAlliance) {
             ally = playerData;
           } else {
             enemies.push(playerData);
