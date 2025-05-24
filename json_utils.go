@@ -75,7 +75,7 @@ type WarnoData struct {
 func extractJsons(data string) ([]map[string]any, error) {
 	cleanedData := strings.ReplaceAll(data, "\n", "")
 
-	gameRegex := regexp.MustCompile(`\{"game":.*?"ingamePlayerId":[01]\}`)
+	gameRegex := regexp.MustCompile(`\{"game":.*?"ingamePlayerId":[0-4]\}`)
 	resultRegex := regexp.MustCompile(`\{"result":.*?\}\}`)
 
 	gameMatch := gameRegex.FindString(cleanedData)
@@ -131,22 +131,21 @@ func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) m
 					_ = json.Unmarshal(playerData, &player)
 					return player
 				}(),
-				// Player3 and Player4 will be nil if game is a 1v1
 				Player3: func() Player {
-					playerData, _ := json.Marshal(jsons[0]["player_6"])
+					playerData, _ := json.Marshal(jsons[0]["player_1"])
 					var player Player
 					_ = json.Unmarshal(playerData, &player)
 					return player
 				}(),
 				Player4: func() Player {
-					playerData, _ := json.Marshal(jsons[0]["player_8"])
+					playerData, _ := json.Marshal(jsons[0]["player_3"])
 					var player Player
 					_ = json.Unmarshal(playerData, &player)
 					return player
 				}(),
 			},
 			PlayerCount: func() uint8 {
-				playerKeys := []string{"player_2", "player_4", "player_6", "player_8"}
+				playerKeys := []string{"player_1", "player_2", "player_3", "player_4"}
 				var playerCount uint8
 				for _, key := range playerKeys {
 					if _, exists := jsons[0][key]; exists {
