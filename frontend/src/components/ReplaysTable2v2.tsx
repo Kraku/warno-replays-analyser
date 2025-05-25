@@ -57,18 +57,19 @@ const columns: ColumnType<Replay2v2>[] = [
   },
   {
     title: 'Teammate Name',
-    dataIndex: 'teammateName',
     key: 'teammateName',
-    sorter: (a: Replay2v2, b: Replay2v2) => a.allyData.playerName.localeCompare(b.allyData.playerName)
+    sorter: (a: Replay2v2, b: Replay2v2) => a.allyData.playerName.localeCompare(b.allyData.playerName),
+    render: (_, record) => (
+      <div>{record.allyData.playerName}</div>
+    )
   },
   {
     title: 'Teammate Division',
-    dataIndex: 'teammateDivision',
     key: 'teammateDivision',
     sorter: (a: Replay2v2, b: Replay2v2) => (a.allyData.playerDivision || '').localeCompare(b.allyData.playerDivision || ''),
-    render: (value: string, record) => (
+    render: (_, record) => (
       <div>
-        {value}{' '}
+        {record.allyData.playerDivision}{' '}
         <CopyToClipboard text={record.allyData.playerDeck}>
           <CopyOutlined />
         </CopyToClipboard>
@@ -77,24 +78,27 @@ const columns: ColumnType<Replay2v2>[] = [
   },
   {
     title: 'Teammate Rank',
-    dataIndex: 'teammateRank',
     key: 'teammateRank',
-    sorter: (a: Replay2v2, b: Replay2v2) => parseInt(a.allyData.playerRank) - parseInt(b.allyData.playerRank)
+    sorter: (a: Replay2v2, b: Replay2v2) => parseInt(a.allyData.playerRank) - parseInt(b.allyData.playerRank),
+    render: (_, record) => (
+      <div>{record.allyData.playerRank}</div>
+    )
   },
   {
     title: 'Enemy 1 Name',
-    dataIndex: 'enemy1Name',
     key: 'enemy1Name',
-    sorter: (a: Replay2v2, b: Replay2v2) => a.enemiesData[0].playerName.localeCompare(b.enemiesData[0].playerName)
+    sorter: (a: Replay2v2, b: Replay2v2) => a.enemiesData[0].playerName.localeCompare(b.enemiesData[0].playerName),
+    render: (_, record) => (
+      <div>{record.enemiesData[0].playerName}</div>
+    )
   },
   {
     title: 'Enemy 1 Division',
-    dataIndex: 'enemy1Division',
     key: 'enemy1Division',
     sorter: (a: Replay2v2, b: Replay2v2) => (a.enemiesData[0].playerDivision || '').localeCompare(b.enemiesData[0].playerDivision || ''),
-    render: (value: string, record) => (
+    render: (_, record) => (
       <div>
-        {value}{' '}
+        {record.enemiesData[0].playerDivision}{' '}
         <CopyToClipboard text={record.enemiesData[0].playerDivision}>
           <CopyOutlined />
         </CopyToClipboard>
@@ -103,24 +107,27 @@ const columns: ColumnType<Replay2v2>[] = [
   },
   {
     title: 'Enemy 1 Rank',
-    dataIndex: 'enemy1Rank',
     key: 'enemy1Rank',
-    sorter: (a: Replay2v2, b: Replay2v2) => parseInt(a.enemiesData[0].playerRank) - parseInt(b.enemiesData[0].playerRank)
+    sorter: (a: Replay2v2, b: Replay2v2) => parseInt(a.enemiesData[0].playerRank) - parseInt(b.enemiesData[0].playerRank),
+    render: (_, record) => (
+      <div>{record.enemiesData[0].playerRank}</div>
+    )
   },
   {
     title: 'Enemy 2 Name',
-    dataIndex: 'enemy2Name',
     key: 'enemy2Name',
-    sorter: (a: Replay2v2, b: Replay2v2) => a.enemiesData[1].playerName.localeCompare(b.enemiesData[1].playerName)
+    sorter: (a: Replay2v2, b: Replay2v2) => a.enemiesData[1].playerName.localeCompare(b.enemiesData[1].playerName),
+    render: (_, record) => (
+      <div>{record.enemiesData[1].playerName}</div>
+    )
   },
   {
     title: 'Enemy 2 Division',
-    dataIndex: 'enemy2Division',
     key: 'enemy2Division',
     sorter: (a: Replay2v2, b: Replay2v2) => (a.enemiesData[1].playerDivision || '').localeCompare(b.enemiesData[1].playerDivision || ''),
-    render: (value: string, record) => (
+    render: (_, record) => (
       <div>
-        {value}{' '}
+        {record.enemiesData[1].playerDivision}{' '}
         <CopyToClipboard text={record.enemiesData[1].playerDivision}>
           <CopyOutlined />
         </CopyToClipboard>
@@ -129,9 +136,11 @@ const columns: ColumnType<Replay2v2>[] = [
   },
   {
     title: 'Enemy 2 Rank',
-    dataIndex: 'enemy2Rank',
     key: 'enemy2Rank',
-    sorter: (a: Replay2v2, b: Replay2v2) => parseInt(a.enemiesData[1].playerRank) - parseInt(b.enemiesData[1].playerRank)
+    sorter: (a: Replay2v2, b: Replay2v2) => parseInt(a.enemiesData[1].playerRank) - parseInt(b.enemiesData[1].playerRank),
+    render: (_, record) => (
+      <div>{record.enemiesData[1].playerRank}</div>
+    )
   },
   {
     title: 'Duration',
@@ -171,7 +180,7 @@ export const ReplaysTable2v2 = ({ replays }: { replays: Replay2v2[] }) => {
   const filteredReplays = replays.filter((replay) => {
     const searchNames = replay.enemiesData.map(enemy => enemy.playerName);
     searchNames.push(replay.allyData.playerName);
-    transliterate(searchNames.join().toLowerCase()).includes(transliterate(searchText.toLowerCase()));
+    return transliterate(searchNames.join().toLowerCase()).includes(transliterate(searchText.toLowerCase()));
   });
 
   return (

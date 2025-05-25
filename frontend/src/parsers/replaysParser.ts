@@ -61,16 +61,11 @@ type ParserResult = {
 
 const lookup = new GenericLookupAdapter(typedUnits, typedDivisions);
 
-const getDivision = (code: string) => {
+export const getDivisionName = (code: string) => {
   const id = code ? decodeDeckString(code, lookup).division.id : null;
 
-  return divisions.find((division) => division.id === id);
-}
-
-export const getDivisionName = (code: string) => getDivision(code)?.name ?? 'Unknown';
-
-// may not be necessary if data is in warnodata
-export const getDivisionAlliance = (code: string) => getDivision(code)?.alliance ?? 'Unknown';
+  return divisions.find((division) => division.id === id)?.name || 'Unknown';
+};
 
 export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResult> => {
   const settings = await GetSettings();
@@ -79,14 +74,9 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
   const replays2v2: Replay2v2[] = [];
 
   data.forEach((replay: any) => {
-    const ingamePlayerId = String(replay.warno.ingamePlayerId);
-    const playersEntries = Object.entries(replay.warno.players) ?? {};
-    const playersArray = playersEntries.filter((playerObj: any) => playerObj[1].PlayerUserId.length > 0);
-    const playerCount = playersArray.length;
-    const playerKeyObject = playersArray.find((player: any) =>
-      String(player[1].PlayerAlliance) === ingamePlayerId
-    );
-    const playerKey = playerKeyObject?.[0] ?? '';
+    const players = Object.entries(replay.warno.players) ?? {};
+    const playerKey = replay.warno.localPlayerKey
+    const playerId = replay.warno.localPlayerEugenId
 
 
     if (settings.startDate && new Date(replay.createdAt) < new Date(settings.startDate)) {
@@ -120,7 +110,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
     const commonReplayData: CommonReplayData = {
       createdAt: replay.createdAt,
       fileName: replay.fileName,
-      playerId: replay.warno.players?.[playerKey].PlayerUserId,
+      playerId: playerId,
       playerName: replay.warno.players?.[playerKey].PlayerName,
       rank: replay.warno.players?.[playerKey].PlayerRank,
       deck: replay.warno.players?.[playerKey].PlayerDeckContent,
@@ -134,8 +124,12 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
           : 'Draw',
     }
 
-    if (playerCount == 2) {
-      const enemyKey = playerKey === 'player1' ? 'player2' : 'player1';
+    if (replay.warno.playerCount == 2) {
+      const enemyKey = Object.entries(replay.warno.players).find(([key, _]) => key != playerKey)?.[0]
+      if (!enemyKey) {
+        return
+      }
+      
       replays1v1.push({
         ...commonReplayData,
         enemyName: replay.warno.players[enemyKey].PlayerName,
@@ -145,7 +139,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
         enemyDeck: replay.warno.players?.[enemyKey]?.PlayerDeckContent
       });
 
-    } else if (playerCount == 4) {
+    } else if (replay.warno.playerCount  == 4) {
       if (settings.analyze2v2For4pMapsOnly) {
         // if settings invalid return
         // if map invalid return
@@ -153,9 +147,9 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
 
       let ally: PlayerData | undefined = undefined;
       const enemies: PlayerData[] = [];
-      const playerAlliance = getDivisionAlliance(replay.warno.players?.[playerKey].PlayerDeckContent);
-      playersArray
-        .filter((playerObj: any) => playerObj[1].PlayerUserId != commonReplayData.playerId)
+      const playerAlliance = replay.warno.players?.[playerKey].PlayerAlliance;
+      players
+        .filter((playerObj: any) => playerObj[1].PlayerUserId != playerId)
         .forEach((playerObj: any) => {
           const playerData = {
             playerName: playerObj[1].PlayerName,
@@ -165,7 +159,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
             playerDeck: playerObj[1].PlayerDeckContent
           }
 
-          if (getDivisionAlliance(playerObj[1].PlayerDeckContent) === playerAlliance) {
+          if (playerObj[1].PlayerAlliance === playerAlliance) {
             ally = playerData;
           } else {
             enemies.push(playerData);

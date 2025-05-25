@@ -184,42 +184,6 @@ export namespace main {
 	        this.value = source["value"];
 	    }
 	}
-	export class Players {
-	    player1: Player;
-	    player2: Player;
-	    player3: Player;
-	    player4: Player;
-	
-	    static createFrom(source: any = {}) {
-	        return new Players(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.player1 = this.convertValues(source["player1"], Player);
-	        this.player2 = this.convertValues(source["player2"], Player);
-	        this.player3 = this.convertValues(source["player3"], Player);
-	        this.player4 = this.convertValues(source["player4"], Player);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
 	export class PostUser {
 	    usernames: string[];
 	    ranks: number[];
@@ -272,9 +236,10 @@ export namespace main {
 	}
 	export class Warno {
 	    game: Game;
-	    ingamePlayerId: number;
-	    players: Players;
-	    PlayerCount: number;
+	    localPlayerEugenId: string;
+	    localPlayerKey: string;
+	    players: Record<string, Player>;
+	    playerCount: number;
 	    result: Result;
 	
 	    static createFrom(source: any = {}) {
@@ -284,9 +249,10 @@ export namespace main {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.game = this.convertValues(source["game"], Game);
-	        this.ingamePlayerId = source["ingamePlayerId"];
-	        this.players = this.convertValues(source["players"], Players);
-	        this.PlayerCount = source["PlayerCount"];
+	        this.localPlayerEugenId = source["localPlayerEugenId"];
+	        this.localPlayerKey = source["localPlayerKey"];
+	        this.players = this.convertValues(source["players"], Player, true);
+	        this.playerCount = source["playerCount"];
 	        this.result = this.convertValues(source["result"], Result);
 	    }
 	

@@ -250,7 +250,7 @@ export const getStats2v2 = (replays: Replay2v2[]): Statistics2v2 => {
     const compositeEnemyKey = JSON.stringify([sortedEnemies[0], sortedEnemies[1]]);
     sortedEnemyDivisions.sort((div1, div2) => div1.localeCompare(div2));
     const compositeAlliedDivisionKey
-      = JSON.stringify([getDivisionName(replay.division), getDivisionName(replay.allyData.playerDivision)]);
+      = JSON.stringify([getDivisionName(replay.deck), getDivisionName(replay.allyData.playerDeck)]);
     const compositeEnemyDivisionKey
       = JSON.stringify([getDivisionName(sortedEnemyDivisions[0]), getDivisionName(sortedEnemyDivisions[1])]);
 

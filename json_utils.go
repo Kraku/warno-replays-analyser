@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"os"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -50,19 +52,13 @@ type Result struct {
 	Victory  string `json:"Victory"`
 }
 
-type Players struct {
-	Player1 Player `json:"player1"`
-	Player2 Player `json:"player2"`
-	Player3 Player `json:"player3"`
-	Player4 Player `json:"player4"`
-}
-
 type Warno struct {
-	Game           Game    `json:"game"`
-	IngamePlayerId float64 `json:"ingamePlayerId"`
-	Players        Players `json:"players"`
-	PlayerCount    uint8   `json:"playerCount"`
-	Result         Result  `json:"result"`
+	Game               Game              `json:"game"`
+	LocalPlayerEugenId string            `json:"localPlayerEugenId"`
+	LocalPlayerKey     string            `json:"localPlayerKey"`
+	Players            map[string]Player `json:"players"`
+	PlayerCount        int               `json:"playerCount"`
+	Result             Result            `json:"result"`
 }
 
 type WarnoData struct {
@@ -72,10 +68,15 @@ type WarnoData struct {
 	Warno     Warno  `json:"warno"`
 }
 
+type KeyPlayerPair struct {
+	Key    string
+	Player Player
+}
+
 func extractJsons(data string) ([]map[string]any, error) {
 	cleanedData := strings.ReplaceAll(data, "\n", "")
 
-	gameRegex := regexp.MustCompile(`\{"game":.*?"ingamePlayerId":[0-4]\}`)
+	gameRegex := regexp.MustCompile(`\{"game":.*?"ingamePlayerId":[0-99]\}`)
 	resultRegex := regexp.MustCompile(`\{"result":.*?\}\}`)
 
 	gameMatch := gameRegex.FindString(cleanedData)
@@ -95,6 +96,43 @@ func extractJsons(data string) ([]map[string]any, error) {
 }
 
 func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) map[string]interface{} {
+	players := make(map[string]Player)
+	var orderedPlayerSlice = []KeyPlayerPair{}
+	ingamePlayerId := int(jsons[0]["ingamePlayerId"].(float64))
+	var localPlayerEugenId string
+	var localPlayerKey string
+
+	for key, val := range jsons[0] {
+		if strings.HasPrefix(key, "player_") {
+			playerData, _ := json.Marshal(val)
+			var player Player
+			if err := json.Unmarshal(playerData, &player); err == nil {
+				players[key] = player
+				orderedPlayerSlice = append(orderedPlayerSlice, KeyPlayerPair{Key: key, Player: player})
+			}
+		}
+	}
+
+	if len(players) == 4 {
+		sort.Slice(orderedPlayerSlice, func(i, j int) bool {
+			playerNumerici, _ := strconv.Atoi(strings.TrimPrefix(orderedPlayerSlice[i].Key, "player_"))
+			playerNumericj, _ := strconv.Atoi(strings.TrimPrefix(orderedPlayerSlice[j].Key, "player_"))
+			return playerNumerici < playerNumericj
+		})
+	}
+
+	var alliance0, alliance1 []KeyPlayerPair
+	for _, keyPlayerPair := range orderedPlayerSlice {
+		if keyPlayerPair.Player.PlayerAlliance == "0" {
+			alliance0 = append(alliance0, keyPlayerPair)
+		} else if keyPlayerPair.Player.PlayerAlliance == "1" {
+			alliance1 = append(alliance1, keyPlayerPair)
+		}
+	}
+	var orderedPlayers = append(alliance0, alliance1...)
+	localPlayerEugenId = orderedPlayers[ingamePlayerId].Player.PlayerUserId
+	localPlayerKey = orderedPlayers[ingamePlayerId].Key
+
 	merged := WarnoData{
 		FileName:  fileName,
 		Key:       fileName,
@@ -106,54 +144,16 @@ func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) m
 				_ = json.Unmarshal(gameData, &game)
 				return game
 			}(),
-			IngamePlayerId: jsons[0]["ingamePlayerId"].(float64),
+			LocalPlayerEugenId: localPlayerEugenId,
+			LocalPlayerKey:     localPlayerKey,
 			Result: func() Result {
 				resultData, _ := json.Marshal(jsons[1]["result"])
 				var result Result
 				_ = json.Unmarshal(resultData, &result)
 				return result
 			}(),
-			Players: struct {
-				Player1 Player `json:"player1"`
-				Player2 Player `json:"player2"`
-				Player3 Player `json:"player3"`
-				Player4 Player `json:"player4"`
-			}{
-				Player1: func() Player {
-					playerData, _ := json.Marshal(jsons[0]["player_2"])
-					var player Player
-					_ = json.Unmarshal(playerData, &player)
-					return player
-				}(),
-				Player2: func() Player {
-					playerData, _ := json.Marshal(jsons[0]["player_4"])
-					var player Player
-					_ = json.Unmarshal(playerData, &player)
-					return player
-				}(),
-				Player3: func() Player {
-					playerData, _ := json.Marshal(jsons[0]["player_1"])
-					var player Player
-					_ = json.Unmarshal(playerData, &player)
-					return player
-				}(),
-				Player4: func() Player {
-					playerData, _ := json.Marshal(jsons[0]["player_3"])
-					var player Player
-					_ = json.Unmarshal(playerData, &player)
-					return player
-				}(),
-			},
-			PlayerCount: func() uint8 {
-				playerKeys := []string{"player_1", "player_2", "player_3", "player_4"}
-				var playerCount uint8
-				for _, key := range playerKeys {
-					if _, exists := jsons[0][key]; exists {
-						playerCount++
-					}
-				}
-				return playerCount
-			}(),
+			Players:     players,
+			PlayerCount: len(players),
 		},
 	}
 
