@@ -50,12 +50,6 @@ const columns: ColumnType<Replay2v2>[] = [
     )
   },
   {
-    title: 'My Rank',
-    dataIndex: 'rank',
-    key: 'rank',
-    sorter: (a: Replay2v2, b: Replay2v2) => a.rank.localeCompare(b.rank)
-  },
-  {
     title: 'Teammate Name',
     key: 'teammateName',
     sorter: (a: Replay2v2, b: Replay2v2) => a.allyData.playerName.localeCompare(b.allyData.playerName),
@@ -74,14 +68,6 @@ const columns: ColumnType<Replay2v2>[] = [
           <CopyOutlined />
         </CopyToClipboard>
       </div>
-    )
-  },
-  {
-    title: 'Teammate Rank',
-    key: 'teammateRank',
-    sorter: (a: Replay2v2, b: Replay2v2) => parseInt(a.allyData.playerRank) - parseInt(b.allyData.playerRank),
-    render: (_, record) => (
-      <div>{record.allyData.playerRank}</div>
     )
   },
   {
@@ -106,14 +92,6 @@ const columns: ColumnType<Replay2v2>[] = [
     )
   },
   {
-    title: 'Enemy 1 Rank',
-    key: 'enemy1Rank',
-    sorter: (a: Replay2v2, b: Replay2v2) => parseInt(a.enemiesData[0].playerRank) - parseInt(b.enemiesData[0].playerRank),
-    render: (_, record) => (
-      <div>{record.enemiesData[0].playerRank}</div>
-    )
-  },
-  {
     title: 'Enemy 2 Name',
     key: 'enemy2Name',
     sorter: (a: Replay2v2, b: Replay2v2) => a.enemiesData[1].playerName.localeCompare(b.enemiesData[1].playerName),
@@ -132,14 +110,6 @@ const columns: ColumnType<Replay2v2>[] = [
           <CopyOutlined />
         </CopyToClipboard>
       </div>
-    )
-  },
-  {
-    title: 'Enemy 2 Rank',
-    key: 'enemy2Rank',
-    sorter: (a: Replay2v2, b: Replay2v2) => parseInt(a.enemiesData[1].playerRank) - parseInt(b.enemiesData[1].playerRank),
-    render: (_, record) => (
-      <div>{record.enemiesData[1].playerRank}</div>
     )
   },
   {
