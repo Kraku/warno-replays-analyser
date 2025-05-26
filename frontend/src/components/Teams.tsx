@@ -1,78 +1,15 @@
 import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { List, Input, Button, Card, Empty, Typography } from 'antd';
-import { ArrowRightOutlined, CopyOutlined } from '@ant-design/icons';
-import { ColumnType } from 'antd/es/table';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { List, Input, Button, Card, Empty, Typography, Flex } from 'antd';
+import { ArrowRightOutlined } from '@ant-design/icons';
 import { transliterate } from '../helpers/transliterate';
-import { Team, TeamHistory, teamsParser } from '../parsers/teamsParser';
+import { Team, teamsParser } from '../parsers/teamsParser';
 import { Replay2v2 } from '../parsers/replaysParser';
 import { renderVictoryRatio } from '../helpers/renderVictoryRatio';
 import { TeamDetails } from './TeamDetails/TeamDetails';
 
 dayjs.extend(relativeTime);
-
-const columns: ColumnType<TeamHistory>[] = [
-  {
-    title: 'Date',
-    dataIndex: 'createdAt',
-    key: 'createdAt',
-    render: (value: string) => `${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()})`
-  },
-  {
-    title: 'My Division',
-    dataIndex: 'division',
-    key: 'division'
-  },
-  {
-    title: 'Ally Division',
-    dataIndex: 'allyDivision',
-    key: 'allyDivision'
-  },
-  {
-    title: 'Enemy 1 Division',
-    dataIndex: 'enemy1Division',
-    key: 'enemy1Division',
-    render: (value: string, record) => (
-      <div>
-        {value}{' '}
-        <CopyToClipboard text={record.enemy1Deck}>
-          <CopyOutlined />
-        </CopyToClipboard>
-      </div>
-    )
-  },
-  {
-    title: 'Enemy 2 Division',
-    dataIndex: 'enemy2Division',
-    key: 'enemy2Division',
-    render: (value: string, record) => (
-      <div>
-        {value}{' '}
-        <CopyToClipboard text={record.enemy2Deck}>
-          <CopyOutlined />
-        </CopyToClipboard>
-      </div>
-    )
-  },
-  {
-    title: 'Duration',
-    dataIndex: 'duration',
-    key: 'duration',
-    render: (value: number) => dayjs.duration(value, 'seconds').format('mm:ss')
-  },
-  {
-    title: 'Map',
-    dataIndex: 'map',
-    key: 'map'
-  },
-  {
-    title: 'Result',
-    dataIndex: 'result',
-    key: 'result'
-  }
-];
 
 export const Teams = ({ replays }: { replays: Replay2v2[] }) => {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -138,18 +75,18 @@ export const Teams = ({ replays }: { replays: Replay2v2[] }) => {
                   <List.Item.Meta
                     title={
                       <div className="flex gap-1 items-center">
-                        <Typography.Text strong>`{team.getPlayer1CommonName()}, {team.getPlayer2CommonName()}`</Typography.Text>
+                        <Typography.Text strong>{team.getPlayer1CommonName()} | {team.getPlayer2CommonName()}</Typography.Text>
                       </div>
                     }
                     description={(
-                      <div className="flex items-center">
-                        <div className='w-2 h-2 rounded-full mr-1'>
-                        {`games: ${team.getGamesCount()}`}
+                      <Flex justify='space-between'>
+                        <div className='rounded-full mr-1'>
+                          {`games: ${team.getGamesCount()}`}
                         </div>
-                        <div className='w-2 h-2 rounded-full mr-1'>
-                        {`WR: ${renderVictoryRatio(team.getVictoryRatio())}%`}
+                        <div className='rounded-full mr-1'>
+                          {`WR: ${renderVictoryRatio(team.getVictoryRatio())}`}
                         </div>
-                      </div>
+                      </Flex>
                     )}
                   />
                 </List.Item>

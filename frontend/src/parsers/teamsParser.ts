@@ -6,8 +6,10 @@ export type TeamHistory = {
   division: string;
   allyName: string;
   allyDivision: string;
+  enemy1Name: string;
   enemy1Division: string;
   enemy1Deck: string;
+  enemy2Name: string;
   enemy2Division: string;
   enemy2Deck: string;
   createdAt: string;
@@ -42,8 +44,10 @@ const createTeamHistory = (replay: Replay2v2): TeamHistory => ({
   division: replay.division,
   allyName: replay.allyData.playerName,
   allyDivision: replay.allyData.playerDivision,
+  enemy1Name: replay.enemiesData[0].playerName,
   enemy1Division: replay.enemiesData[0].playerDivision,
   enemy1Deck: replay.enemiesData[0].playerDeck,
+  enemy2Name: replay.enemiesData[1].playerName,
   enemy2Division: replay.enemiesData[1].playerDivision,
   enemy2Deck: replay.enemiesData[1].playerDeck,
   createdAt: replay.createdAt,
@@ -81,7 +85,9 @@ export const teamsParser = (replays: Replay2v2[]): Team[] => {
   const teamsMap: Map<string, Team> = new Map();
 
   replays.forEach((replay) => {
-    const teamCompositeKey = JSON.stringify([replay.enemiesData[0].playerId, replay.enemiesData[1].playerId]);
+    const sortedEnemies = replay.enemiesData;
+    sortedEnemies.sort((enemy1, enemy2) => enemy1.playerId.localeCompare(enemy2.playerId));
+    const teamCompositeKey = JSON.stringify([sortedEnemies[0].playerId, sortedEnemies[1].playerId]);
     const existingTeam = teamsMap.get(teamCompositeKey);
 
     if (existingTeam) {
@@ -104,7 +110,7 @@ export const getPlayerIdCommonNameMap = (replays: Replay2v2[]): Map<string, stri
       if (existingPlayer) {
         existingPlayer.push(player.playerName);
       } else {
-        usedNamesMaps.set(player.playerId, [ player.playerName ]);
+        usedNamesMaps.set(player.playerId, [player.playerName]);
       }
     })
   })

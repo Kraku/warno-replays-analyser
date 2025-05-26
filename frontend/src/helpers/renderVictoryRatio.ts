@@ -1,1 +1,1 @@
-export const renderVictoryRatio = (value: number) => `${value.toFixed(2)}%`;
+export const renderVictoryRatio = (value: number) => value % 1 === 0 ? `${value.toFixed(0)}%` : `${value.toFixed(2)}%`;

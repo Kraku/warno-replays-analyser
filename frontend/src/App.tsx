@@ -154,7 +154,7 @@ function App() {
                           label: 'Teams',
                           children: (
                             <div className="pt-4 mb-10">
-                              {stats2v2 ? <Teams replays={replays2v2} /> : null}
+                              <Teams replays={replays2v2} />
                             </div>
                           )
                         },

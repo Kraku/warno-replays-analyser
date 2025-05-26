@@ -42,13 +42,13 @@ const columns: ColumnType<TeamHistory>[] = [
   },
   {
     title: 'Teammate Name',
-    dataIndex: 'teammateName',
-    key: 'teammateName',
+    dataIndex: 'allyName',
+    key: 'allyName',
   },
   {
     title: 'Teammate Division',
-    dataIndex: 'teammateDivision',
-    key: 'teammateDivision',
+    dataIndex: 'allyDivision',
+    key: 'allyDivision',
     render: (value: string, record) => (
       <div>
         {value}{' '}
