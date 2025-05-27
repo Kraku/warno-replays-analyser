@@ -55,8 +55,8 @@ export const Stats2v2 = ({ stats }: { stats: Statistics2v2 }) => {
   }
 
   const bestAllyColumns = [
-    createColumn('Name', 'name', 'name', undefined, (a, b) =>
-      a.playerName.localeCompare(b.playerName)
+    createColumn('Ally Name', 'allyPlayerName', 'allyPlayerName', undefined, (a, b) =>
+      a.allyPlayerName.localeCompare(b.allyPlayerName)
     ),
     createColumn(
       'Victory Ratio',
@@ -84,10 +84,10 @@ export const Stats2v2 = ({ stats }: { stats: Statistics2v2 }) => {
   ];
 
   const bestAllyDivisionColumns = [
-    createColumn('YourDivision', 'yourDivision', 'yourDivision', undefined, (a, b) =>
+    createColumn('Your Division', 'playerDivision', 'playerDivision', undefined, (a, b) =>
       a.playerDivision.localeCompare(b.playerDivision)
     ),
-    createColumn('AllyDivision', 'allyDivision', 'allyDivision', undefined, (a, b) =>
+    createColumn('Ally Division', 'allyDivision', 'allyDivision', undefined, (a, b) =>
       a.allyDivision.localeCompare(b.allyDivision)
     ),
     createColumn(
@@ -116,14 +116,14 @@ export const Stats2v2 = ({ stats }: { stats: Statistics2v2 }) => {
   ];
 
   const strongestTeamsColumns = [
-    createColumn('Player1Name', 'player1Name', 'player1Name', undefined, (a, b) =>
+    createColumn('Enemy 1 Name', 'enemyPlayer1Name', 'enemyPlayer1Name', undefined, (a, b) =>
       a.enemyPlayer1Name.localeCompare(b.enemyPlayer1Name)
     ),
-    createColumn('Player2Name', 'player2Name', 'player2Name', undefined, (a, b) =>
+    createColumn('Enemy 2 Name', 'enemyPlayer2Name', 'enemyPlayer2Name', undefined, (a, b) =>
       a.enemyPlayer2Name.localeCompare(b.enemyPlayer2Name)
     ),
     createColumn(
-      'Victory Ratio',
+      'Enemy Victory Ratio',
       'victoryRatio',
       'victoryRatio',
       renderVictoryRatio,
@@ -148,14 +148,14 @@ export const Stats2v2 = ({ stats }: { stats: Statistics2v2 }) => {
   ];
 
   const strongestTeamDivisionsColumns = [
-    createColumn('Division1', 'division1', 'division1', undefined, (a, b) =>
+    createColumn('Division 1', 'enemyDivision1', 'enemyDivision1', undefined, (a, b) =>
       a.enemyDivision1.localeCompare(b.enemyDivision1)
     ),
-    createColumn('Player2Name', 'player2Name', 'player2Name', undefined, (a, b) =>
+    createColumn('Division 2', 'enemyDivision2', 'enemyDivision2', undefined, (a, b) =>
       a.enemyDivision2.localeCompare(b.enemyDivision2)
     ),
     createColumn(
-      'Victory Ratio',
+      'Enemy Victory Ratio',
       'victoryRatio',
       'victoryRatio',
       renderVictoryRatio,
@@ -234,10 +234,6 @@ export const Stats2v2 = ({ stats }: { stats: Statistics2v2 }) => {
           <Statistic title="Longest Losing Streak" value={stats.longestLosingStreak} />
         </Col>
       </Row>
-
-      <Typography.Title level={4} className="mt-4">
-        Rank History
-      </Typography.Title>
 
       <TableComponent
         dataSource={stats.alliedTeamVictoryRatios}

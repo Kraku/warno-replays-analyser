@@ -1,5 +1,6 @@
+import { calculateWeightedWinRate } from './helpers/CalculatedWeightedWinrate';
 import { calculateVictoryRatio } from './helpers/calculateVictoryRatio';
-import { CommonReplayData, getDivisionName, Replay1v1, Replay2v2 } from './parsers/replaysParser';
+import { CommonReplayData, Replay1v1, Replay2v2 } from './parsers/replaysParser';
 import { getPlayerIdCommonNameMap } from './parsers/teamsParser';
 
 export type CommonStatistics = {
@@ -66,6 +67,24 @@ export type Statistics2v2 = CommonStatistics & {
     victoryRatio: number;
     games: number;
   }[];
+}
+
+type Counter = { victories: number, games: number };
+
+function incrementCounter(
+  map: Map<string, Counter>,
+  key: string,
+  isVictory: boolean
+) {
+  const counter = map.get(key);
+  if (counter) {
+    counter.games++;
+    if (isVictory) {
+      counter.victories++;
+    }
+  } else {
+    map.set(key, { victories: isVictory ? 1 : 0, games: 1 });
+  }
 }
 
 const getDivisionStats = (
@@ -247,108 +266,55 @@ export const getStats2v2 = (replays: Replay2v2[]): Statistics2v2 => {
     const sortedEnemies = replay.enemiesData;
     sortedEnemies.sort((enemy1, enemy2) => enemy1.playerId.localeCompare(enemy2.playerId));
     const sortedEnemyDivisions = replay.enemiesData.map(data => data.playerDivision);
-    const compositeEnemyKey = JSON.stringify([sortedEnemies[0], sortedEnemies[1]]);
+    const compositeEnemyKey = JSON.stringify([sortedEnemies[0].playerId, sortedEnemies[1].playerId]);
     sortedEnemyDivisions.sort((div1, div2) => div1.localeCompare(div2));
     const compositeAlliedDivisionKey
-      = JSON.stringify([getDivisionName(replay.deck), getDivisionName(replay.allyData.playerDeck)]);
+      = JSON.stringify([replay.division, replay.allyData.playerDivision]);
     const compositeEnemyDivisionKey
-      = JSON.stringify([getDivisionName(sortedEnemyDivisions[0]), getDivisionName(sortedEnemyDivisions[1])]);
+      = JSON.stringify([sortedEnemyDivisions[0], sortedEnemyDivisions[1]]);
+    const isVictory = replay.result === 'Victory';
+    const isDefeat = replay.result === 'Defeat';
 
-
-    if (replay.result == 'Victory') {
-      const existingalliedVictories = alliedVictories.get(replay.allyData.playerId);
-      const existingalliedDivisionVictories = alliedDivisionVictories.get(compositeAlliedDivisionKey);
-
-      if (existingalliedVictories) {
-        existingalliedVictories.victories++;
-        existingalliedVictories.games++;
-      } else {
-        alliedVictories.set(replay.allyData.playerId, { victories: 1, games: 1 });
-      }
-
-      if (existingalliedDivisionVictories) {
-        existingalliedDivisionVictories.victories++;
-        existingalliedDivisionVictories.games++;
-      } else {
-        alliedDivisionVictories.set(compositeAlliedDivisionKey, { victories: 1, games: 1 });
-      }
-    } else if (replay.result == 'Defeat') {
-      const existingEnemyVictories = enemyVictories.get(compositeEnemyKey);
-      const existingEnemyDivisionVictories = enemyDivisionVictories.get(compositeEnemyDivisionKey);
-      if (existingEnemyVictories) {
-        existingEnemyVictories.victories++;
-        existingEnemyVictories.games++;
-      } else {
-        enemyVictories.set(JSON.stringify(compositeEnemyKey), { victories: 1, games: 1 });
-      }
-
-      if (existingEnemyDivisionVictories) {
-        existingEnemyDivisionVictories.victories++;
-        existingEnemyDivisionVictories.games++;
-      } else {
-        enemyDivisionVictories.set(compositeEnemyDivisionKey, { victories: 1, games: 1 });
-      }
-    } else {
-      const existingAlliedVictory = alliedVictories.get(replay.allyData.playerId);
-      const existingEnemyVictory = enemyVictories.get(compositeEnemyKey);
-      const existingalliedDivisionVictories = alliedDivisionVictories.get(compositeAlliedDivisionKey);
-      const existingEnemyDivisionVictories = enemyDivisionVictories.get(compositeEnemyDivisionKey);
-
-      if (existingAlliedVictory) {
-        existingAlliedVictory.games++;
-      } else {
-        alliedVictories.set(replay.allyData.playerId, { victories: 0, games: 1 });
-      }
-
-      if (existingEnemyVictory) {
-        existingEnemyVictory.games++;
-      } else {
-        enemyVictories.set(compositeEnemyKey, { victories: 0, games: 1 });
-      }
-
-      if (existingalliedDivisionVictories) {
-        existingalliedDivisionVictories.games++;
-      } else {
-        alliedDivisionVictories.set(compositeAlliedDivisionKey, { victories: 0, games: 1 });
-      }
-
-      if (existingEnemyDivisionVictories) {
-        existingEnemyDivisionVictories.games++;
-      } else {
-        enemyDivisionVictories.set(compositeEnemyDivisionKey, { victories: 0, games: 1 });
-      }
-    }
+    incrementCounter(alliedVictories, replay.allyData.playerId, isVictory);
+    incrementCounter(alliedDivisionVictories, compositeAlliedDivisionKey, isVictory);
+    incrementCounter(enemyVictories, compositeEnemyKey, isDefeat);
+    incrementCounter(enemyDivisionVictories, compositeEnemyDivisionKey, isDefeat);
   })
 
   const playerIdMap = getPlayerIdCommonNameMap(replays);
   const alliedTeamVictoryRatios = Array.from(alliedVictories).map(([key, obj]) => ({
     allyPlayerId: key,
     allyPlayerName: playerIdMap.get(key) ?? 'unknown',
-    victoryRatio: obj.games ? obj.games / obj.victories : 0,
+    victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
+    victories: obj.victories,
     games: obj.games
-  })).sort((stat1, stat2) => stat1.games - stat2.games);
+  })).sort((stat1, stat2) => calculateWeightedWinRate(stat2.victories, stat2.games) - calculateWeightedWinRate(stat1.victories, stat1.games));
+
   const enemyTeamVictoryRatios = Array.from(enemyVictories).map(([key, obj]) => ({
     enemyPlayer1Id: JSON.parse(key)[0],
     enemyPlayer1Name: playerIdMap.get(JSON.parse(key)[0]) ?? 'unknown',
     enemyPlayer2Id: JSON.parse(key)[1],
     enemyPlayer2Name: playerIdMap.get(JSON.parse(key)[1]) ?? 'unknown',
-    victoryRatio: obj.games ? obj.games / obj.victories : 0,
+    victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
+    victories: obj.victories,
     games: obj.games
-  })).sort((stat1, stat2) => stat1.games - stat2.games);
+  })).sort((stat1, stat2) => calculateWeightedWinRate(stat2.victories, stat2.games) - calculateWeightedWinRate(stat1.victories, stat1.games));
 
   const alliedTeamDivisionVictoryRatios = Array.from(alliedDivisionVictories).map(([key, obj]) => ({
     playerDivision: JSON.parse(key)[0],
     allyDivision: JSON.parse(key)[1],
-    victoryRatio: obj.games ? obj.games / obj.victories : 0,
+    victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
+    victories: obj.victories,
     games: obj.games
-  })).sort((stat1, stat2) => stat1.games - stat2.games);
+  })).sort((stat1, stat2) => calculateWeightedWinRate(stat2.victories, stat2.games) - calculateWeightedWinRate(stat1.victories, stat1.games));
 
   const enemyTeamDivisionVictoryRatios = Array.from(enemyDivisionVictories).map(([key, obj]) => ({
     enemyDivision1: JSON.parse(key)[0],
     enemyDivision2: JSON.parse(key)[1],
-    victoryRatio: obj.games ? obj.games / obj.victories : 0,
+    victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
+    victories: obj.victories,
     games: obj.games
-  })).sort((stat1, stat2) => stat1.games - stat2.games);
+  })).sort((stat1, stat2) => calculateWeightedWinRate(stat2.victories, stat2.games) - calculateWeightedWinRate(stat1.victories, stat1.games));
 
   return {
     totalGames,

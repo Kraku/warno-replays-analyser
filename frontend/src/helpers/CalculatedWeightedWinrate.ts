@@ -1,0 +1,1 @@
+export const calculateWeightedWinRate = (victories: number, games: number) => (victories / games) * (1 - Math.exp(-games / 5));
