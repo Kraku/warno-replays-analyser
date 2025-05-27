@@ -148,10 +148,10 @@ export const Stats2v2 = ({ stats }: { stats: Statistics2v2 }) => {
   ];
 
   const strongestTeamDivisionsColumns = [
-    createColumn('Division 1', 'enemyDivision1', 'enemyDivision1', undefined, (a, b) =>
+    createColumn('Enemy Division 1', 'enemyDivision1', 'enemyDivision1', undefined, (a, b) =>
       a.enemyDivision1.localeCompare(b.enemyDivision1)
     ),
-    createColumn('Division 2', 'enemyDivision2', 'enemyDivision2', undefined, (a, b) =>
+    createColumn('Enemy Division 2', 'enemyDivision2', 'enemyDivision2', undefined, (a, b) =>
       a.enemyDivision2.localeCompare(b.enemyDivision2)
     ),
     createColumn(

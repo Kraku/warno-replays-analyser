@@ -20,8 +20,8 @@ const columns: ColumnType<TeamHistory>[] = [
           record.result === 'Victory'
             ? 'border-emerald-950'
             : record.result === 'Defeat'
-              ? 'border-rose-950'
-              : 'border-gray-500'
+            ? 'border-rose-950'
+            : 'border-gray-500'
         ].join(' ')}>
         {`${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()})`}
       </div>

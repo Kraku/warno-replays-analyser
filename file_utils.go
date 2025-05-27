@@ -115,7 +115,7 @@ func processFile(filePath string, result *sync.Map) error {
 		return writeEmptyCache(cacheFilePath)
 	}
 
-	merged := mergeJsons(filepath.Base(filePath), jsons, fileInfo)
+	merged := mergeJsons(filePath, jsons, fileInfo)
 	result.Store(filePath, merged)
 
 	cachedData, err := json.Marshal(merged)

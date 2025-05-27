@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -63,6 +64,7 @@ type Warno struct {
 
 type WarnoData struct {
 	FileName  string `json:"fileName"`
+	FilePath  string `json:"filePath"`
 	Key       string `json:"key"`
 	CreatedAt string `json:"createdAt"`
 	Warno     Warno  `json:"warno"`
@@ -95,7 +97,8 @@ func extractJsons(data string) ([]map[string]any, error) {
 	return []map[string]any{gameJson, resultJson}, nil
 }
 
-func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) map[string]interface{} {
+func mergeJsons(filePath string, jsons []map[string]any, fileInfo os.FileInfo) map[string]interface{} {
+	fileName := filepath.Base(filePath)
 	players := make(map[string]Player)
 	var orderedPlayerSlice = []KeyPlayerPair{}
 	ingamePlayerId := int(jsons[0]["ingamePlayerId"].(float64))
@@ -135,6 +138,7 @@ func mergeJsons(fileName string, jsons []map[string]any, fileInfo os.FileInfo) m
 
 	merged := WarnoData{
 		FileName:  fileName,
+		FilePath:  filePath,
 		Key:       fileName,
 		CreatedAt: fileInfo.ModTime().Format(time.RFC3339),
 		Warno: Warno{

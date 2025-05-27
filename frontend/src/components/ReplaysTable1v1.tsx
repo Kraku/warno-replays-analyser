@@ -30,7 +30,10 @@ const columns: ColumnType<Replay1v1>[] = [
             ? 'border-rose-950'
             : 'border-gray-500'
         ].join(' ')}>
-        {`${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()})`}
+        {`${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()}) `}
+        <CopyToClipboard text={record.filePath}>
+          <CopyOutlined />
+        </CopyToClipboard>
       </div>
     ),
     sorter: (a: Replay1v1, b: Replay1v1) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix()

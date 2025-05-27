@@ -35,6 +35,7 @@ export type EugenUser = {
 export type CommonReplayData = {
   createdAt: string;
   fileName: string;
+  filePath: string;
   playerId: string;
   playerName: string;
   rank: string;
@@ -110,6 +111,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
     const commonReplayData: CommonReplayData = {
       createdAt: replay.createdAt,
       fileName: replay.fileName,
+      filePath: replay.filePath,
       playerId: playerId,
       playerName: replay.warno.players?.[playerKey].PlayerName,
       rank: replay.warno.players?.[playerKey].PlayerRank,

@@ -212,10 +212,11 @@ export const getStats1v1 = (replays: Replay1v1[]): Statistics1v1 => {
       return {
         division,
         victoryRatio: calculateVictoryRatio(won, total),
+        victories: won,
         games: total
       };
     })
-    .sort((a, b) => b.victoryRatio - a.victoryRatio);
+    .sort((a, b) => calculateWeightedWinRate(b.victories, b.games) - calculateWeightedWinRate(a.victories, a.games));
 
   const enemyDivisionStats = getDivisionStats(replays, 'enemyDivision');
   const enemyDivisionVictoryRatios = Object.keys(enemyDivisionStats)
@@ -224,10 +225,11 @@ export const getStats1v1 = (replays: Replay1v1[]): Statistics1v1 => {
       return {
         division: enemyDivision,
         victoryRatio: calculateVictoryRatio(won, total),
+        victories: won,
         games: total
       };
     })
-    .sort((a, b) => b.victoryRatio - a.victoryRatio);
+    .sort((a, b) => calculateWeightedWinRate(b.victories, b.games) - calculateWeightedWinRate(a.victories, a.games));
 
   const { longestWinningStreak, longestLosingStreak } = calculateStreaks(replays);
   const mostFrequentOpponents = calculateMostFrequentOpponents(replays);

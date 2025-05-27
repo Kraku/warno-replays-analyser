@@ -27,13 +27,16 @@ const columns: ColumnType<Replay2v2>[] = [
           record.result === 'Victory'
             ? 'border-emerald-950'
             : record.result === 'Defeat'
-              ? 'border-rose-950'
-              : 'border-gray-500'
+            ? 'border-rose-950'
+            : 'border-gray-500'
         ].join(' ')}>
         {`${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()})`}
+        <CopyToClipboard text={record.filePath}>
+          <CopyOutlined />
+        </CopyToClipboard>
       </div>
     ),
-    sorter: (a: Replay2v2, b: Replay2v2) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix()
+    sorter: (a: Replay2v2, b: Replay2v2) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix(),
   },
   {
     title: 'My Division',

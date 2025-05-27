@@ -276,6 +276,7 @@ export namespace main {
 	}
 	export class WarnoData {
 	    fileName: string;
+	    filePath: string;
 	    key: string;
 	    createdAt: string;
 	    warno: Warno;
@@ -287,6 +288,7 @@ export namespace main {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.fileName = source["fileName"];
+	        this.filePath = source["filePath"];
 	        this.key = source["key"];
 	        this.createdAt = source["createdAt"];
 	        this.warno = this.convertValues(source["warno"], Warno);
