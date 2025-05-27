@@ -23,7 +23,10 @@ const columns: ColumnType<TeamHistory>[] = [
             ? 'border-rose-950'
             : 'border-gray-500'
         ].join(' ')}>
-        {`${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()})`}
+        {`${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()}) `}
+        <CopyToClipboard text={record.filePath}>
+          <CopyOutlined />
+        </CopyToClipboard>
       </div>
     )
   },

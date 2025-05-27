@@ -2,6 +2,7 @@ import { calculateVictoryRatio } from "../helpers/calculateVictoryRatio";
 import { Replay2v2 } from "./replaysParser";
 
 export type TeamHistory = {
+  filePath: string;
   result: 'Victory' | 'Defeat' | 'Draw';
   division: string;
   allyName: string;
@@ -40,6 +41,7 @@ const getMostCommonName = (names: string[]): string => {
 };
 
 const createTeamHistory = (replay: Replay2v2): TeamHistory => ({
+  filePath: replay.filePath,
   result: replay.result,
   division: replay.division,
   allyName: replay.allyData.playerName,
@@ -64,9 +66,7 @@ const createNewTeam = (replay: Replay2v2): Team => ({
   getPlayer1CommonName() { return getMostCommonName(this.player1Names); },
   getPlayer2CommonName() { return getMostCommonName(this.player2Names); },
   getGamesCount() { return this.history.length; },
-  getVictoryRatio() {
-    return calculateVictoryRatio(this.history.filter(h => h.result === 'Victory').length, this.history.length);
-  }
+  getVictoryRatio() { return calculateVictoryRatio(this.history.filter(h => h.result === 'Victory').length, this.history.length); },
 });
 
 const updateTeam = (existingTeam: Team, replay: Replay2v2): void => {

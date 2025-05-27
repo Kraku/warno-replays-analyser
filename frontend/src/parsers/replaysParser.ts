@@ -86,7 +86,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
 
     if (playerKey.length == 0 ||
       (settings.playerIds &&
-      !settings.playerIds?.includes(replay.warno.players?.[playerKey]?.PlayerUserId))
+        !settings.playerIds?.includes(replay.warno.players?.[playerKey]?.PlayerUserId))
     ) {
       return;
     }
@@ -131,7 +131,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
       if (!enemyKey) {
         return
       }
-      
+
       replays1v1.push({
         ...commonReplayData,
         enemyName: replay.warno.players[enemyKey].PlayerName,
@@ -141,10 +141,14 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
         enemyDeck: replay.warno.players?.[enemyKey]?.PlayerDeckContent
       });
 
-    } else if (replay.warno.playerCount  == 4) {
-      if (settings.analyze2v2For4pMapsOnly) {
-        // if settings invalid return
-        // if map invalid return
+    } else if (replay.warno.playerCount == 4) {
+      if (settings.analyze2v2OfficialOnly) {
+        // if (replay.warno.IncomeRate != "1" || replay.warno.InitMoney != "1500" || replay.warno.GameMode != "1" || replay.warno.TimeLimit != "2400" ||
+        //   replay.warno.ScoreLimit != "2000" || replay.warno.IncomeRate != "3"
+        // ) {
+        //   return;
+        // }
+        // check for valid map?
       }
 
       let ally: PlayerData | undefined = undefined;

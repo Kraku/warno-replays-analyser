@@ -1,6 +1,7 @@
 import { Replay1v1 } from './replaysParser';
 
 export type PlayerHistory = {
+  filePath: string;
   result: 'Victory' | 'Defeat' | 'Draw';
   division: string;
   rank: string;
@@ -21,6 +22,7 @@ export type Player = {
 };
 
 const createPlayerHistory = (replay: Replay1v1): PlayerHistory => ({
+  filePath: replay.filePath,
   result: replay.result,
   division: replay.division,
   rank: replay.rank,

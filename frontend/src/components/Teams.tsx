@@ -40,7 +40,8 @@ export const Teams = ({ replays }: { replays: Replay2v2[] }) => {
       transliterate(team.player1Id.toLowerCase()).includes(normalizedQuery) ||
       transliterate(team.player2Id.toLowerCase()).includes(normalizedQuery)
     );
-  });
+  }).sort((a, b) => b.getGamesCount() - a.getGamesCount());
+
 
   const selectedTeamData = teams
     .find((team) => JSON.stringify([team.player1Id, team.player2Id]) === selectedTeam);

@@ -1,5 +1,5 @@
 import { Button, Checkbox, DatePicker, Drawer, Form, Select, Switch } from 'antd';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useForm } from 'antd/es/form/Form';
 import { SaveSettings, GetSettings, GetPlayerIdsOptions } from '../../wailsjs/go/main/App';
@@ -25,7 +25,7 @@ export const SettingsDrawer = ({
           playerIds: settings.playerIds,
           startDate: settings.startDate ? dayjs(settings.startDate) : undefined,
           playerInfoSharingDisabled: settings.playerInfoSharingDisabled || false,
-          analyze2v2For4pMapsOnly: settings.analyze2v2For4pMapsOnly || false
+          analyze2v2OfficialOnly: settings.analyze2v2OfficialOnly || false
         });
 
         setOptions(data);
@@ -38,13 +38,13 @@ export const SettingsDrawer = ({
   }, []);
 
   const handleSave = async () => {
-    const { playerIds = [], startDate, playerInfoSharingDisabled, analyze2v2For4pMapsOnly } = form.getFieldsValue(true);
+    const { playerIds = [], startDate, playerInfoSharingDisabled, analyze2v2OfficialOnly } = form.getFieldsValue(true);
 
     const params = {
       playerIds,
       startDate: startDate?.toISOString(),
       playerInfoSharingDisabled,
-      analyze2v2For4pMapsOnly
+      analyze2v2OfficialOnly
     };
 
     await SaveSettings(params);
@@ -110,7 +110,7 @@ export const SettingsDrawer = ({
           <Checkbox>Disable Player Info Sharing</Checkbox>
         </Form.Item>
         <Form.Item
-          name="analyze2v2For4pMapsOnly"
+          name="analyze2v2OfficialOnly"
           valuePropName="checked"
           extra="When this is enabled, you will only analyze 2v2 games played on official 4 player maps under standard rules.">
           <Checkbox>Only Analyze Official 2v2 Games</Checkbox>

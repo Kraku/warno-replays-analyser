@@ -35,7 +35,7 @@ func main() {
 
 	err := wails.Run(&options.App{
 		Title:  "warno-replays-analyser (" + version + ")",
-		Width:  1248,
+		Width:  1600,
 		Height: 1024,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
