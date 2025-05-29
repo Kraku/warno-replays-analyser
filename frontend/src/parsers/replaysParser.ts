@@ -9,6 +9,7 @@ import divisions from '../data/divisions.json' assert { type: 'json' };
 import maps from '../data/maps.json' assert { type: 'json' };
 import { GetSettings } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
+import { PlayerNamesMap } from '../helpers/playerNamesMap';
 
 const typedUnits: GenericLookupAdapterObject[] = units as GenericLookupAdapterObject[];
 const typedDivisions: GenericLookupAdapterObject[] = divisions as GenericLookupAdapterObject[];
@@ -46,6 +47,8 @@ export type CommonReplayData = {
   result: 'Victory' | 'Defeat' | 'Draw';
 }
 
+
+
 type PlayerData = {
   playerId: string;
   playerName: string;
@@ -57,8 +60,9 @@ type PlayerData = {
 type ParserResult = {
   replays1v1: Replay1v1[];
   replays2v2: Replay2v2[];
+  playerNamesMap: PlayerNamesMap;
   eugenUsers: EugenUser[];
-};
+}
 
 const lookup = new GenericLookupAdapter(typedUnits, typedDivisions);
 
@@ -71,6 +75,7 @@ export const getDivisionName = (code: string) => {
 export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResult> => {
   const settings = await GetSettings();
   const eugenUsers: EugenUser[] = [];
+  const playerNamesMap = new PlayerNamesMap();
   const replays1v1: Replay1v1[] = [];
   const replays2v2: Replay2v2[] = [];
 
@@ -78,7 +83,6 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
     const players = Object.entries(replay.warno.players) ?? {};
     const playerKey = replay.warno.localPlayerKey
     const playerId = replay.warno.localPlayerEugenId
-
 
     if (settings.startDate && new Date(replay.createdAt) < new Date(settings.startDate)) {
       return;
@@ -132,6 +136,9 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
         return
       }
 
+      playerNamesMap.incrementPlayerNameCount(replay.warno.players[enemyKey].PlayerUserId,
+        replay.warno.players[enemyKey].PlayerName)
+
       replays1v1.push({
         ...commonReplayData,
         enemyName: replay.warno.players[enemyKey].PlayerName,
@@ -142,31 +149,41 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
       });
 
     } else if (replay.warno.playerCount == 4) {
-      let ally: PlayerData | undefined = undefined;
+      const allies: PlayerData[] = [];
       const enemies: PlayerData[] = [];
       const playerAlliance = replay.warno.players?.[playerKey].PlayerAlliance;
-      players
-        .filter((playerObj: any) => playerObj[1].PlayerUserId != playerId)
-        .forEach((playerObj: any) => {
-          const playerData = {
-            playerName: playerObj[1].PlayerName,
-            playerId: playerObj[1].PlayerUserId,
-            playerDivision: getDivisionName(playerObj[1].PlayerDeckContent),
-            playerRank: playerObj[1].PlayerRank,
-            playerDeck: playerObj[1].PlayerDeckContent
-          }
 
-          if (playerObj[1].PlayerAlliance === playerAlliance) {
-            ally = playerData;
-          } else {
-            enemies.push(playerData);
-          }
+      for (const [key, player] of players as [string, any][]) {
+        if (key === playerKey) {
+          continue;
+        }
+
+        const playerData: PlayerData = {
+          playerName: player.PlayerName,
+          playerId: player.PlayerUserId,
+          playerDivision: getDivisionName(player.PlayerDeckContent),
+          playerRank: player.PlayerRank,
+          playerDeck: player.PlayerDeckContent
+        };
+
+        playerNamesMap.incrementPlayerNameCount(player.PlayerUserId, player.PlayerName);
+
+        if (player.PlayerAlliance === playerAlliance) {
+          allies.push(playerData);
+        } else {
+          enemies.push(playerData);
+        }
+      }
+
+      if (allies.length == 1 && enemies.length == 2) {
+        playerNamesMap.incrementPlayerNameCount(allies[0].playerId, allies[0].playerName);
+        enemies.forEach(enemy => {
+          playerNamesMap.incrementPlayerNameCount(enemy.playerId, enemy.playerName);
         });
 
-      if (ally && enemies.length == 2) {
         replays2v2.push({
           ...commonReplayData,
-          allyData: ally,
+          allyData: allies[0],
           enemiesData: enemies
         });
       }
@@ -176,6 +193,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
   return {
     replays1v1: replays1v1,
     replays2v2: replays2v2,
+    playerNamesMap,
     eugenUsers
   };
 };

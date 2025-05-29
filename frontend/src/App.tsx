@@ -4,7 +4,7 @@ import { GetReplays } from '../wailsjs/go/main/App';
 import { Button, Card, Spin } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { replaysParser, Replay1v1, Replay2v2, EugenUser } from './parsers/replaysParser';
+import { replaysParser, Replay1v1, Replay2v2, EugenUser, PlayerNamesMap } from './parsers/replaysParser';
 import { getStats1v1, getStats2v2, Statistics1v1, Statistics2v2 } from './stats';
 import { ReplaysTable1v1 } from './components/ReplaysTable1v1';
 import { Stats1v1 } from './components/Statistics';
@@ -29,6 +29,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [eugenUsers, setEugenUsers] = useState<EugenUser[]>();
+  const [playerNamesMap, setPlayerNamesMap] = useState<PlayerNamesMap>(new PlayerNamesMap());
 
   const run = async () => {
     setLoading(true);
@@ -39,7 +40,7 @@ function App() {
 
     try {
       const data = await GetReplays(directories);
-      const { replays1v1, replays2v2, eugenUsers } = await replaysParser(data);
+      const { replays1v1, replays2v2, playerNamesMap, eugenUsers } = await replaysParser(data);
       const sorted1v1Replays = replays1v1.sort(
         (a, b) => dayjs(b.createdAt).unix() - dayjs(a.createdAt).unix()
       );
@@ -48,6 +49,7 @@ function App() {
       );
 
       setEugenUsers(eugenUsers);
+      setPlayerNamesMap(playerNamesMap);
 
       setReplays1v1(sorted1v1Replays);
       setReplays2v2(sorted2v2Replays);
@@ -154,7 +156,7 @@ function App() {
                           label: 'Teams',
                           children: (
                             <div className="pt-4 mb-10">
-                              <Teams replays={replays2v2} />
+                              <Teams replays={replays2v2} playerNamesMap={playerNamesMap} />
                             </div>
                           )
                         },

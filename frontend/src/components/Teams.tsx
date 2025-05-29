@@ -8,10 +8,11 @@ import { Team, teamsParser } from '../parsers/teamsParser';
 import { Replay2v2 } from '../parsers/replaysParser';
 import { renderVictoryRatio } from '../helpers/renderVictoryRatio';
 import { TeamDetails } from './TeamDetails/TeamDetails';
+import { PlayerNamesMap } from '../helpers/playerNamesMap';
 
 dayjs.extend(relativeTime);
 
-export const Teams = ({ replays }: { replays: Replay2v2[] }) => {
+export const Teams = ({ replays, playerNamesMap }: { replays: Replay2v2[], playerNamesMap: PlayerNamesMap }) => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTeam, setSelectedTeam] = useState<string>();
@@ -35,8 +36,8 @@ export const Teams = ({ replays }: { replays: Replay2v2[] }) => {
     const normalizedQuery = transliterate(searchQuery.toLowerCase());
 
     return (
-      team.player1Names.some((name) => transliterate(name.toLowerCase()).includes(normalizedQuery)) ||
-      team.player2Names.some((name) => transliterate(name.toLowerCase()).includes(normalizedQuery)) ||
+      playerNamesMap.nameMatches(team.player1Id, normalizedQuery) ||
+      playerNamesMap.nameMatches(team.player2Id, normalizedQuery) ||
       transliterate(team.player1Id.toLowerCase()).includes(normalizedQuery) ||
       transliterate(team.player2Id.toLowerCase()).includes(normalizedQuery)
     );
@@ -76,7 +77,7 @@ export const Teams = ({ replays }: { replays: Replay2v2[] }) => {
                   <List.Item.Meta
                     title={
                       <div className="flex gap-1 items-center">
-                        <Typography.Text strong>{team.getPlayer1CommonName()} | {team.getPlayer2CommonName()}</Typography.Text>
+                        <Typography.Text strong>{playerNamesMap.getPlayerCommonName(team.player1Id)} | {playerNamesMap.getPlayerCommonName(team.player2Id)}</Typography.Text>
                       </div>
                     }
                     description={(
