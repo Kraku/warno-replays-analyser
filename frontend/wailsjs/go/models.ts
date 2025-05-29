@@ -219,7 +219,6 @@ export namespace main {
 	    startDate?: string;
 	    dailyRecapUser?: string;
 	    playerInfoSharingDisabled?: boolean;
-	    analyze2v2OfficialOnly: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -231,7 +230,6 @@ export namespace main {
 	        this.startDate = source["startDate"];
 	        this.dailyRecapUser = source["dailyRecapUser"];
 	        this.playerInfoSharingDisabled = source["playerInfoSharingDisabled"];
-	        this.analyze2v2OfficialOnly = source["analyze2v2OfficialOnly"];
 	    }
 	}
 	export class Warno {

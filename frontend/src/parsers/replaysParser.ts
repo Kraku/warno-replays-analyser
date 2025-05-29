@@ -142,15 +142,6 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
       });
 
     } else if (replay.warno.playerCount == 4) {
-      if (settings.analyze2v2OfficialOnly) {
-        // if (replay.warno.IncomeRate != "1" || replay.warno.InitMoney != "1500" || replay.warno.GameMode != "1" || replay.warno.TimeLimit != "2400" ||
-        //   replay.warno.ScoreLimit != "2000" || replay.warno.IncomeRate != "3"
-        // ) {
-        //   return;
-        // }
-        // check for valid map?
-      }
-
       let ally: PlayerData | undefined = undefined;
       const enemies: PlayerData[] = [];
       const playerAlliance = replay.warno.players?.[playerKey].PlayerAlliance;

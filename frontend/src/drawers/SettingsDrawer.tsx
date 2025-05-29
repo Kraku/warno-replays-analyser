@@ -24,8 +24,7 @@ export const SettingsDrawer = ({
         form.setFieldsValue({
           playerIds: settings.playerIds,
           startDate: settings.startDate ? dayjs(settings.startDate) : undefined,
-          playerInfoSharingDisabled: settings.playerInfoSharingDisabled || false,
-          analyze2v2OfficialOnly: settings.analyze2v2OfficialOnly || false
+          playerInfoSharingDisabled: settings.playerInfoSharingDisabled || false
         });
 
         setOptions(data);
@@ -38,13 +37,12 @@ export const SettingsDrawer = ({
   }, []);
 
   const handleSave = async () => {
-    const { playerIds = [], startDate, playerInfoSharingDisabled, analyze2v2OfficialOnly } = form.getFieldsValue(true);
+    const { playerIds = [], startDate, playerInfoSharingDisabled } = form.getFieldsValue(true);
 
     const params = {
       playerIds,
       startDate: startDate?.toISOString(),
-      playerInfoSharingDisabled,
-      analyze2v2OfficialOnly
+      playerInfoSharingDisabled
     };
 
     await SaveSettings(params);
@@ -109,13 +107,6 @@ export const SettingsDrawer = ({
           extra="When this is enabled, your replay data stays private — we won’t collect any opponent names, ranks, or Eugen IDs. You’ll also only be able to search for players you’ve already played with.">
           <Checkbox>Disable Player Info Sharing</Checkbox>
         </Form.Item>
-        <Form.Item
-          name="analyze2v2OfficialOnly"
-          valuePropName="checked"
-          extra="When this is enabled, you will only analyze 2v2 games played on official 4 player maps under standard rules.">
-          <Checkbox>Only Analyze Official 2v2 Games</Checkbox>
-        </Form.Item>
-
       </Form>
     </Drawer>
   );
