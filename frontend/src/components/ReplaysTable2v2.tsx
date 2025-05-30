@@ -127,6 +127,7 @@ const columns: ColumnType<Replay2v2>[] = [
     title: 'Map',
     dataIndex: 'map',
     key: 'map',
+    ellipsis: true,
     sorter: (a: Replay2v2, b: Replay2v2) => a.map.localeCompare(b.map)
   },
   {

@@ -99,7 +99,7 @@ export const Teams = ({ replays, playerNamesMap }: { replays: Replay2v2[], playe
       </div>
       <div className="w-4/5">
         {selectedTeamData ? (
-          <TeamDetails team={selectedTeamData} />
+          <TeamDetails team={selectedTeamData} playerNamesMap={playerNamesMap} />
         ) : (
           <Card>
             <Empty description="Select a team" image={Empty.PRESENTED_IMAGE_SIMPLE} />

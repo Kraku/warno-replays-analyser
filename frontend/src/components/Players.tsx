@@ -11,6 +11,7 @@ import { PlayerDetails } from './PlayerDetails/PlayerDetails';
 import { getMinMax } from '../helpers/getMinMax';
 import { transliterate } from '../helpers/transliterate';
 import { GetSettings, SearchPlayerInApi, SendUsersToAPI } from '../../wailsjs/go/main/App';
+import { PlayerNamesMap } from '../helpers/playerNamesMap';
 
 dayjs.extend(relativeTime);
 
@@ -62,7 +63,7 @@ const columns: ColumnType<Pick<Player['history'][number], 'result' | 'division' 
   }
 ];
 
-export const Players = ({ replays }: { replays: Replay1v1[] }) => {
+export const Players = ({ replays, playerNamesMap }: { replays: Replay1v1[], playerNamesMap: PlayerNamesMap }) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedPlayer, setSelectedPlayer] = useState<string>();
@@ -84,7 +85,7 @@ export const Players = ({ replays }: { replays: Replay1v1[] }) => {
 
       SendUsersToAPI(
         players.map((player) => ({
-          usernames: player.names,
+          usernames: playerNamesMap.getNames(player.id),
           ranks: player.history.map((history) => parseInt(history.enemyRank)),
           eugenId: parseInt(player.id)
         }))
@@ -128,7 +129,7 @@ export const Players = ({ replays }: { replays: Replay1v1[] }) => {
     const normalizedQuery = transliterate(searchQuery.toLowerCase());
 
     return (
-      player.names.some((name) => transliterate(name.toLowerCase()).includes(normalizedQuery)) ||
+      playerNamesMap.nameMatches(player.id, normalizedQuery) ||
       transliterate(player.id.toLowerCase()).includes(normalizedQuery)
     );
   });
@@ -168,7 +169,7 @@ export const Players = ({ replays }: { replays: Replay1v1[] }) => {
                     title={
                       <div className="flex gap-1 items-center">
                         {player.api && <ApiOutlined />}
-                        <Typography.Text strong>{player.names.join(', ')}</Typography.Text>
+                        <Typography.Text strong>{playerNamesMap.getNames(player.id).join(', ')}</Typography.Text>
                       </div>
                     }
                     description={
@@ -203,7 +204,7 @@ export const Players = ({ replays }: { replays: Replay1v1[] }) => {
       </div>
       <div className="w-4/5">
         {selectedPlayerData ? (
-          <PlayerDetails player={selectedPlayerData} />
+          <PlayerDetails player={selectedPlayerData} playerNamesMap={playerNamesMap} />
         ) : (
           <Card>
             <Empty description="Select a player" image={Empty.PRESENTED_IMAGE_SIMPLE} />

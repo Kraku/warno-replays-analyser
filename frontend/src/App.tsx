@@ -4,7 +4,7 @@ import { GetReplays } from '../wailsjs/go/main/App';
 import { Button, Card, Spin } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { replaysParser, Replay1v1, Replay2v2, EugenUser, PlayerNamesMap } from './parsers/replaysParser';
+import { replaysParser, Replay1v1, Replay2v2, EugenUser } from './parsers/replaysParser';
 import { getStats1v1, getStats2v2, Statistics1v1, Statistics2v2 } from './stats';
 import { ReplaysTable1v1 } from './components/ReplaysTable1v1';
 import { Stats1v1 } from './components/Statistics';
@@ -17,6 +17,7 @@ import { Version } from './components/Version';
 import { ReplaysTable2v2 } from './components/ReplaysTable2v2';
 import { Teams } from './components/Teams';
 import { Stats2v2 } from './components/Statistics2v2';
+import { PlayerNamesMap } from './helpers/playerNamesMap';
 
 dayjs.extend(relativeTime);
 
@@ -54,7 +55,7 @@ function App() {
       setReplays1v1(sorted1v1Replays);
       setReplays2v2(sorted2v2Replays);
       setStats1v1(getStats1v1(replays1v1));
-      setStats2v2(getStats2v2(replays2v2));
+      setStats2v2(getStats2v2(replays2v2, playerNamesMap));
     } finally {
       setLoading(false);
     }
@@ -116,7 +117,7 @@ function App() {
                           label: 'Players',
                           children: (
                             <div className="pt-4 mb-10">
-                              {stats1v1 ? <Players replays={replays1v1} /> : null}
+                              {stats1v1 ? <Players replays={replays1v1} playerNamesMap={playerNamesMap} /> : null}
                             </div>
                           )
                         },

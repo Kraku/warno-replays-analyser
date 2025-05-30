@@ -7,7 +7,12 @@ export class PlayerNamesMap {
   }
 
   getNames(playerId: string): string[] {
-    return this.map.get(playerId) ? [...this.map.get(playerId)!.keys()] : [];
+    const inner = this.map.get(playerId);
+    if (!inner) return [];
+
+    return [...inner.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([name]) => name);
   }
 
   getNamesMap(playerId: string): Map<string, number> {

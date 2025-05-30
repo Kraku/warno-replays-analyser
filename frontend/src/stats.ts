@@ -1,7 +1,7 @@
 import { calculateWeightedWinRate } from './helpers/CalculatedWeightedWinrate';
 import { calculateVictoryRatio } from './helpers/calculateVictoryRatio';
+import { PlayerNamesMap } from './helpers/playerNamesMap';
 import { CommonReplayData, Replay1v1, Replay2v2 } from './parsers/replaysParser';
-import { getPlayerIdCommonNameMap } from './parsers/teamsParser';
 
 export type CommonStatistics = {
   totalGames: number;
@@ -252,7 +252,7 @@ export const getStats1v1 = (replays: Replay1v1[]): Statistics1v1 => {
   };
 };
 
-export const getStats2v2 = (replays: Replay2v2[]): Statistics2v2 => {
+export const getStats2v2 = (replays: Replay2v2[], playerNamesMap: PlayerNamesMap): Statistics2v2 => {
   const totalGames = replays.length;
   const wonGames = replays.filter((replay) => replay.result === 'Victory').length;
   const victoryRatio = calculateVictoryRatio(wonGames, totalGames);
@@ -283,10 +283,9 @@ export const getStats2v2 = (replays: Replay2v2[]): Statistics2v2 => {
     incrementCounter(enemyDivisionVictories, compositeEnemyDivisionKey, isDefeat);
   })
 
-  const playerIdMap = getPlayerIdCommonNameMap(replays);
   const alliedTeamVictoryRatios = Array.from(alliedVictories).map(([key, obj]) => ({
     allyPlayerId: key,
-    allyPlayerName: playerIdMap.get(key) ?? 'unknown',
+    allyPlayerName: playerNamesMap.getPlayerCommonName(key),
     victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
     victories: obj.victories,
     games: obj.games
@@ -294,9 +293,9 @@ export const getStats2v2 = (replays: Replay2v2[]): Statistics2v2 => {
 
   const enemyTeamVictoryRatios = Array.from(enemyVictories).map(([key, obj]) => ({
     enemyPlayer1Id: JSON.parse(key)[0],
-    enemyPlayer1Name: playerIdMap.get(JSON.parse(key)[0]) ?? 'unknown',
+    enemyPlayer1Name: playerNamesMap.getPlayerCommonName(JSON.parse(key)[0]),
     enemyPlayer2Id: JSON.parse(key)[1],
-    enemyPlayer2Name: playerIdMap.get(JSON.parse(key)[1]) ?? 'unknown',
+    enemyPlayer2Name: playerNamesMap.getPlayerCommonName(JSON.parse(key)[1]),
     victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
     victories: obj.victories,
     games: obj.games

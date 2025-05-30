@@ -47,8 +47,6 @@ export type CommonReplayData = {
   result: 'Victory' | 'Defeat' | 'Draw';
 }
 
-
-
 type PlayerData = {
   playerId: string;
   playerName: string;

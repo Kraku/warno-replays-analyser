@@ -107,6 +107,7 @@ const columns: ColumnType<TeamHistory>[] = [
     title: 'Map',
     dataIndex: 'map',
     key: 'map',
+    ellipsis: true,
   },
   {
     title: 'Result',
