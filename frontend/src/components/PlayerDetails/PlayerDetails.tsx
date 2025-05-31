@@ -62,11 +62,11 @@ export const PlayerDetails = ({ player, playerNamesMap }: { player: Player, play
         </div>
       }>
       <div>
-        <Typography.Title level={5} className="mb-2">
+        {/* <Typography.Title level={5} className="mb-2">
           Games History<span className="text-xs text-neutral-400 ml-2">(last 10)</span>
         </Typography.Title>
 
-        <GamesTable history={globalHistory} isLoading={isGlobalHistoryLoading} />
+        <GamesTable history={globalHistory} isLoading={isGlobalHistoryLoading} /> */}
 
         <Typography.Title level={5} className="mb-2">
           Our Games History

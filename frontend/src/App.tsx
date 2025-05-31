@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
-import { GetReplays } from '../wailsjs/go/main/App';
-import { Button, Card, Spin } from 'antd';
+import { GetReplays, GetSettings, SaveSettings } from '../wailsjs/go/main/App';
+import { Button, Card, Select, Spin } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { replaysParser, Replay1v1, Replay2v2, EugenUser } from './parsers/replaysParser';
@@ -18,6 +18,7 @@ import { ReplaysTable2v2 } from './components/ReplaysTable2v2';
 import { Teams } from './components/Teams';
 import { Stats2v2 } from './components/Statistics2v2';
 import { PlayerNamesMap } from './helpers/playerNamesMap';
+import { main } from '../wailsjs/go/models';
 
 dayjs.extend(relativeTime);
 
@@ -31,6 +32,17 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [eugenUsers, setEugenUsers] = useState<EugenUser[]>();
   const [playerNamesMap, setPlayerNamesMap] = useState<PlayerNamesMap>(new PlayerNamesMap());
+  const [gameMode, setGameMode] = useState<string>();
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const settings = await GetSettings();
+
+      setGameMode(settings.gameMode || '1v1');
+    };
+
+    fetchSettings();
+  }, []);
 
   const run = async () => {
     setLoading(true);
@@ -61,6 +73,13 @@ function App() {
     }
   };
 
+  const handleModeChange = async (value: string) => {
+    setGameMode(value);
+
+    const settings = await GetSettings();
+    SaveSettings({ ...settings, gameMode: value });
+  };
+
   return (
     <>
       <div className="p-4">
@@ -70,9 +89,20 @@ function App() {
             <Version />
           </div>
 
-          <Button icon={<SettingOutlined />} onClick={() => setShowSettings(true)}>
-            Settings
-          </Button>
+          <div className="flex items-center gap-2">
+            <Select
+              value={gameMode}
+              onChange={handleModeChange}
+              className="w-14"
+              options={[
+                { value: '1v1', label: '1v1' },
+                { value: '2v2', label: '2v2' }
+              ]}
+            />
+            <Button icon={<SettingOutlined />} onClick={() => setShowSettings(true)}>
+              Settings
+            </Button>
+          </div>
         </div>
 
         <div>
@@ -94,94 +124,83 @@ function App() {
           </div>
         ) : (
           <div className="flex flex-col gap-4 mt-4">
-            {replays1v1.length > 0 && eugenUsers ? <DailyRecap eugenUsers={eugenUsers} /> : null}
-            <Card
-              tabList={[
-                {
-                  key: '1',
-                  label: '1v1',
-                  children: (
-                    <Card
-                      tabList={[
-                        {
-                          key: '1',
-                          label: 'Summary',
-                          children: (
-                            <div className="pt-4 mb-10">
-                              <ReplaysTable1v1 replays={replays1v1} />
-                            </div>
-                          )
-                        },
-                        {
-                          key: '2',
-                          label: 'Players',
-                          children: (
-                            <div className="pt-4 mb-10">
-                              {stats1v1 ? <Players replays={replays1v1} playerNamesMap={playerNamesMap} /> : null}
-                            </div>
-                          )
-                        },
-                        {
-                          key: '3',
-                          label: 'Statistics',
-                          children: (
-                            <div className="pt-4 mb-10">
-                              {stats1v1 ? <Stats1v1 stats={stats1v1} /> : null
-                            }</div>
-                          )
-                        }
-                      ]}
-                      styles={{
-                        body: { padding: 0 }
-                      }}
-                    />
-                  )
-                },
-                {
-                  key: '2',
-                  label: '2v2',
-                  children: (
-                    <Card
-                      tabList={[
-                        {
-                          key: '1',
-                          label: 'Summary',
-                          children: (
-                            <div className="pt-4 mb-10">
-                              <ReplaysTable2v2 replays={replays2v2} />
-                            </div>
-                          )
-                        },
-                        {
-                          key: '2',
-                          label: 'Teams',
-                          children: (
-                            <div className="pt-4 mb-10">
-                              <Teams replays={replays2v2} playerNamesMap={playerNamesMap} />
-                            </div>
-                          )
-                        },
-                        {
-                          key: '3',
-                          label: 'Statistics',
-                          children: (
-                            <div className="pt-4 mb-10">
-                              {stats2v2 ? <Stats2v2 stats={stats2v2} /> : null}
-                            </div>
-                          )
-                        }
-                      ]}
-                      styles={{
-                        body: { padding: 0 }
-                      }}
-                    />
-                  )
-                }
-              ]}
-              styles={{
-                body: { padding: 0 }
-              }}
-            />
+            {/* {replays1v1.length > 0 && eugenUsers ? <DailyRecap eugenUsers={eugenUsers} /> : null} */}
+
+            {gameMode === '1v1' ? (
+              <Card
+                tabList={[
+                  {
+                    key: '1',
+                    label: 'Summary',
+                    children: (
+                      <div className="pt-4 mb-10">
+                        <ReplaysTable1v1 replays={replays1v1} />
+                      </div>
+                    )
+                  },
+                  {
+                    key: '2',
+                    label: 'Players',
+                    children: (
+                      <div className="pt-4 mb-10">
+                        {stats1v1 ? (
+                          <Players replays={replays1v1} playerNamesMap={playerNamesMap} />
+                        ) : null}
+                      </div>
+                    )
+                  },
+                  {
+                    key: '3',
+                    label: 'Statistics',
+                    children: (
+                      <div className="pt-4 mb-10">
+                        {stats1v1 ? <Stats1v1 stats={stats1v1} /> : null}
+                      </div>
+                    )
+                  }
+                ]}
+                styles={{
+                  body: { padding: 0 }
+                }}
+              />
+            ) : null}
+
+            {gameMode === '2v2' ? (
+              <Card
+                tabList={[
+                  {
+                    key: '1',
+                    label: 'Summary',
+                    children: (
+                      <div className="pt-4 mb-10">
+                        <ReplaysTable2v2 replays={replays2v2} />
+                      </div>
+                    )
+                  },
+                  {
+                    key: '2',
+                    label: 'Teams',
+                    children: (
+                      <div className="pt-4 mb-10">
+                        <Teams replays={replays2v2} playerNamesMap={playerNamesMap} />
+                      </div>
+                    )
+                  },
+                  {
+                    key: '3',
+                    label: 'Statistics',
+                    children: (
+                      <div className="pt-4 mb-10">
+                        {stats2v2 ? <Stats2v2 stats={stats2v2} /> : null}
+                      </div>
+                    )
+                  }
+                ]}
+                styles={{
+                  body: { padding: 0 }
+                }}
+              />
+            ) : null}
           </div>
         )}
       </div>

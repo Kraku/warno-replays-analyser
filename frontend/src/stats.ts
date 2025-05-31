@@ -1,5 +1,5 @@
-import { calculateWeightedWinRate } from './helpers/CalculatedWeightedWinrate';
 import { calculateVictoryRatio } from './helpers/calculateVictoryRatio';
+import { calculateWeightedWinRate } from './helpers/calculateWeightedWinRate';
 import { PlayerNamesMap } from './helpers/playerNamesMap';
 import { CommonReplayData, Replay1v1, Replay2v2 } from './parsers/replaysParser';
 

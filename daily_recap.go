@@ -16,6 +16,8 @@ type DailyRecap struct {
 }
 
 func (a *App) GetDailyRecap(playerId string) DailyRecap {
+	return DailyRecap{} // TODO: Remove when API is available again
+
 	url := fmt.Sprintf("https://api.eugnet.com/gamehistory/list?userid=%v&page=0", playerId)
 	fmt.Printf("Fetching URL: %s\n", url)
 	resp, err := http.Get(url)

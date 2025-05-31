@@ -92,7 +92,7 @@ export const DailyRecap = ({ eugenUsers = [] }: DailyRecapProps) => {
   );
 
   return (
-    <Card size="small" title="Daily Recap" extra={extraControls}>
+    <Card size="small" title="Daily Ranked Recap" extra={extraControls}>
       <Spin spinning={isLoading}>
         <Descriptions items={descriptionItems} column={4} size="small" />
       </Spin>

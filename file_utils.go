@@ -65,7 +65,7 @@ func processFile(filePath string, result *sync.Map) error {
 		return err
 	}
 
-	cacheDir, err := getLocalAppDataDir("warno-replays-analyser", "cache")
+	cacheDir, err := getLocalAppDataDir("warno-replays-analyser", filepath.Join("cache", version))
 	if err != nil {
 		return err
 	}

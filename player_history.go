@@ -23,6 +23,8 @@ type PlayerGame struct {
 }
 
 func (a *App) GetPlayerGameHistory(playerId string) []PlayerGame {
+	return []PlayerGame{} // TODO: Remove when API is available again
+
 	url := fmt.Sprintf("https://api.eugnet.com/gamehistory/list?userid=%v&page=0", playerId)
 	fmt.Printf("Fetching URL: %s\n", url)
 	resp, err := http.Get(url)

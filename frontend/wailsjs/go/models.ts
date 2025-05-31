@@ -219,6 +219,7 @@ export namespace main {
 	    startDate?: string;
 	    dailyRecapUser?: string;
 	    playerInfoSharingDisabled?: boolean;
+	    gameMode?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -230,6 +231,7 @@ export namespace main {
 	        this.startDate = source["startDate"];
 	        this.dailyRecapUser = source["dailyRecapUser"];
 	        this.playerInfoSharingDisabled = source["playerInfoSharingDisabled"];
+	        this.gameMode = source["gameMode"];
 	    }
 	}
 	export class Warno {
