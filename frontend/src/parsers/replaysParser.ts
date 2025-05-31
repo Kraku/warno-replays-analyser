@@ -123,7 +123,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
       map: typedMaps[replay.warno.game.Map] || replay.warno.game.Map,
       result: ['4', '5', '6'].includes(replay.warno.result.Victory)
         ? 'Victory'
-        : ['1', '2'].includes(replay.warno.result.Victory)
+        : ['0', '1', '2'].includes(replay.warno.result.Victory)
           ? 'Defeat'
           : 'Draw',
     }
