@@ -1,5 +1,5 @@
 import { Button, Checkbox, DatePicker, Drawer, Form, Select, Switch } from 'antd';
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useForm } from 'antd/es/form/Form';
 import { SaveSettings, GetSettings, GetPlayerIdsOptions } from '../../wailsjs/go/main/App';
@@ -89,7 +89,7 @@ export const SettingsDrawer = ({
           extra="Only replays after this date will be shown.">
           <DatePicker
             showTime
-            onOk={() => {}}
+            onOk={() => { }}
             className="w-full"
             needConfirm={false}
             showNow={false}

@@ -1,6 +1,7 @@
-import { Replay } from './replaysParser';
+import { Replay1v1 } from './replaysParser';
 
 export type PlayerHistory = {
+  filePath: string;
   result: 'Victory' | 'Defeat' | 'Draw';
   division: string;
   rank: string;
@@ -14,13 +15,13 @@ export type PlayerHistory = {
 
 export type Player = {
   id: string;
-  names: string[];
   history: PlayerHistory[];
   ranks: string[];
   api: boolean;
 };
 
-const createPlayerHistory = (replay: Replay): PlayerHistory => ({
+const createPlayerHistory = (replay: Replay1v1): PlayerHistory => ({
+  filePath: replay.filePath,
   result: replay.result,
   division: replay.division,
   rank: replay.rank,
@@ -32,27 +33,18 @@ const createPlayerHistory = (replay: Replay): PlayerHistory => ({
   enemyRank: replay.enemyRank,
 });
 
-const createNewPlayer = (replay: Replay): Player => ({
+const createNewPlayer = (replay: Replay1v1): Player => ({
   id: replay.enemyId,
-  names: [replay.enemyName],
   ranks: [replay.enemyRank],
   api: false,
   history: [createPlayerHistory(replay)],
 });
 
-const updatePlayer = (existingPlayer: Player, replay: Replay): void => {
-  if (!existingPlayer.names.includes(replay.enemyName)) {
-    existingPlayer.names.push(replay.enemyName);
-  }
-
-  if (!existingPlayer.ranks.includes(replay.enemyRank)) {
-    existingPlayer.ranks.push(replay.enemyRank);
-  }
-
+const updatePlayer = (existingPlayer: Player, replay: Replay1v1): void => {
   existingPlayer.history.push(createPlayerHistory(replay));
 };
 
-export const playersParser = async (replays: Replay[]): Promise<Player[]> => {
+export const playersParser = async (replays: Replay1v1[]): Promise<Player[]> => {
   const playersMap: Map<string, Player> = new Map();
 
   replays.forEach((replay) => {

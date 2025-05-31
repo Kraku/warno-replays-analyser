@@ -1,14 +1,15 @@
 import { Player } from '../../parsers/playersParser';
 import { Card, Typography, Tag } from 'antd';
-import { PlayerNotes } from '../PlayerNotes';
 import { useEffect, useState } from 'react';
 import { main } from '../../../wailsjs/go/models';
 import { GetPlayerGameHistory } from '../../../wailsjs/go/main/App';
 import { OurGamesTable } from './OurGamesTable';
 import { GamesTable } from './GamesTable';
 import { getMinMax } from '../../helpers/getMinMax';
+import { PlayerNotes } from './PlayerNotes';
+import { PlayerNamesMap } from '../../helpers/playerNamesMap';
 
-export const PlayerDetails = ({ player }: { player: Player }) => {
+export const PlayerDetails = ({ player, playerNamesMap }: { player: Player, playerNamesMap: PlayerNamesMap }) => {
   const [globalHistory, setGlobalHistory] = useState<main.PlayerGame[]>([]);
   const [isGlobalHistoryLoading, setIsGlobalHistoryLoading] = useState(true);
 
@@ -32,7 +33,7 @@ export const PlayerDetails = ({ player }: { player: Player }) => {
     <Card
       title={
         <div className="flex gap-2 items-center mb-2">
-          <Typography.Text>{player?.names.join(', ')}</Typography.Text>
+          <Typography.Text>{playerNamesMap.getNames(player.id).join(', ')}</Typography.Text>
           {rankMinMax.min ? (
             <div className="flex items-center gap-1">
               <div

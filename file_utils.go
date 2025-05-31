@@ -96,7 +96,9 @@ func processFile(filePath string, result *sync.Map) error {
 		return err
 	}
 
-	if !strings.Contains(content, `"NbMaxPlayer":"2"`) || !strings.Contains(content, `"IsNetworkMode":"1"`) {
+	is1v1 := strings.Contains(content, `"NbMaxPlayer":"2"`)
+	is2v2 := strings.Contains(content, `"NbMaxPlayer":"4"`)
+	if (!is1v1 && !is2v2) || !strings.Contains(content, `"IsNetworkMode":"1"`) {
 		return writeEmptyCache(cacheFilePath)
 	}
 
@@ -106,14 +108,14 @@ func processFile(filePath string, result *sync.Map) error {
 	}
 
 	game := jsons[0]["game"].(map[string]interface{})
-	if _, exists := game["WithHost"]; exists {
+	if _, exists := game["WithHost"]; exists && !is2v2 {
 		return writeEmptyCache(cacheFilePath)
 	}
-	if _, exists := game["ServerName"]; exists {
+	if _, exists := game["ServerName"]; exists && !is2v2 {
 		return writeEmptyCache(cacheFilePath)
 	}
 
-	merged := mergeJsons(filepath.Base(filePath), jsons, fileInfo)
+	merged := mergeJsons(filePath, jsons, fileInfo)
 	result.Store(filePath, merged)
 
 	cachedData, err := json.Marshal(merged)

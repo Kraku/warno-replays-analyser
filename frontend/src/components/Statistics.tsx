@@ -1,12 +1,11 @@
 import { Col, Row, Statistic, Table, Typography } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Statistics } from '../stats';
+import { Statistics1v1 } from '../stats';
 import { LineChart, Line, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { renderVictoryRatio } from '../helpers/renderVictoryRatio';
 
 dayjs.extend(relativeTime);
-
-const renderVictoryRatio = (value: number) => `${value.toFixed(2)}%`;
 
 const TableComponent = ({
   dataSource,
@@ -62,7 +61,7 @@ export const renderRankHistoryTooltip = ({ payload }: any) => {
   );
 };
 
-export const Stats = ({ stats }: { stats: Statistics }) => {
+export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
   if (!stats) {
     return null;
   }

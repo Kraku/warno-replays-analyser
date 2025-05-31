@@ -1,7 +1,7 @@
 import { Table } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Replay } from '../parsers/replaysParser';
+import { Replay1v1 } from '../parsers/replaysParser';
 import { ColumnType } from 'antd/es/table';
 import { Input } from 'antd';
 import { useState } from 'react';
@@ -15,7 +15,7 @@ dayjs.extend(duration);
 
 const { Search } = Input;
 
-const columns: ColumnType<Replay>[] = [
+const columns: ColumnType<Replay1v1>[] = [
   {
     title: 'Date',
     dataIndex: 'createdAt',
@@ -30,22 +30,25 @@ const columns: ColumnType<Replay>[] = [
             ? 'border-rose-950'
             : 'border-gray-500'
         ].join(' ')}>
-        {`${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()})`}
+        {`${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()}) `}
+        <CopyToClipboard text={record.filePath}>
+          <CopyOutlined />
+        </CopyToClipboard>
       </div>
     ),
-    sorter: (a: Replay, b: Replay) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix()
+    sorter: (a: Replay1v1, b: Replay1v1) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix()
   },
   {
     title: 'Enemy Name',
     dataIndex: 'enemyName',
     key: 'enemyName',
-    sorter: (a: Replay, b: Replay) => a.enemyName.localeCompare(b.enemyName)
+    sorter: (a: Replay1v1, b: Replay1v1) => a.enemyName.localeCompare(b.enemyName)
   },
   {
     title: 'My Division',
     dataIndex: 'division',
     key: 'division',
-    sorter: (a: Replay, b: Replay) => (a.division || '').localeCompare(b.division || ''),
+    sorter: (a: Replay1v1, b: Replay1v1) => (a.division || '').localeCompare(b.division || ''),
     render: (value: string, record) => (
       <div>
         {value}{' '}
@@ -59,7 +62,7 @@ const columns: ColumnType<Replay>[] = [
     title: 'Enemy Division',
     dataIndex: 'enemyDivision',
     key: 'enemyDivision',
-    sorter: (a: Replay, b: Replay) => (a.enemyDivision || '').localeCompare(b.enemyDivision || ''),
+    sorter: (a: Replay1v1, b: Replay1v1) => (a.enemyDivision || '').localeCompare(b.enemyDivision || ''),
     render: (value: string, record) => (
       <div>
         {value}{' '}
@@ -73,27 +76,27 @@ const columns: ColumnType<Replay>[] = [
     title: 'My Rank',
     dataIndex: 'rank',
     key: 'rank',
-    sorter: (a: Replay, b: Replay) => a.rank.localeCompare(b.rank)
+    sorter: (a: Replay1v1, b: Replay1v1) => a.rank.localeCompare(b.rank)
   },
   {
     title: 'Enemy Rank',
     dataIndex: 'enemyRank',
     key: 'enemyRank',
-    sorter: (a: Replay, b: Replay) => parseInt(a.enemyRank) - parseInt(b.enemyRank)
+    sorter: (a: Replay1v1, b: Replay1v1) => parseInt(a.enemyRank) - parseInt(b.enemyRank)
   },
   {
     title: 'Duration',
     dataIndex: 'duration',
     key: 'duration',
     render: (value: number) => dayjs.duration(value, 'seconds').format('mm:ss'),
-    sorter: (a: Replay, b: Replay) =>
+    sorter: (a: Replay1v1, b: Replay1v1) =>
       dayjs(a.duration, 'mm:ss').unix() - dayjs(b.duration, 'mm:ss').unix()
   },
   {
     title: 'Map',
     dataIndex: 'map',
     key: 'map',
-    sorter: (a: Replay, b: Replay) => a.map.localeCompare(b.map)
+    sorter: (a: Replay1v1, b: Replay1v1) => a.map.localeCompare(b.map)
   },
   {
     title: 'Result',
@@ -104,12 +107,12 @@ const columns: ColumnType<Replay>[] = [
       { text: 'Defeat', value: 'Defeat' },
       { text: 'Draw', value: 'Draw' }
     ],
-    onFilter: (value: boolean | React.Key, record: Replay) => record.result.includes(String(value)),
-    sorter: (a: Replay, b: Replay) => a.result.localeCompare(b.result)
+    onFilter: (value: boolean | React.Key, record: Replay1v1) => record.result.includes(String(value)),
+    sorter: (a: Replay1v1, b: Replay1v1) => a.result.localeCompare(b.result)
   }
 ];
 
-export const ReplaysTable = ({ replays }: { replays: Replay[] }) => {
+export const ReplaysTable1v1 = ({ replays }: { replays: Replay1v1[] }) => {
   const [searchText, setSearchText] = useState('');
 
   const handleSearch = (value: string) => {

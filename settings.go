@@ -88,19 +88,7 @@ func (a *App) GetPlayerIdsOptions() []PlayerIdsOption {
 	var options []PlayerIdsOption
 	playerMap := make(map[string]string)
 	for _, replay := range replays {
-		playerKey := ""
-		if fmt.Sprintf("%d", int(replay.Warno.IngamePlayerId)) == replay.Warno.Players.Player1.PlayerAlliance {
-			playerKey = "player1"
-		} else {
-			playerKey = "player2"
-		}
-
-		var player Player
-		if playerKey == "player1" {
-			player = replay.Warno.Players.Player1
-		} else {
-			player = replay.Warno.Players.Player2
-		}
+		var player = replay.Warno.Players[replay.Warno.LocalPlayerKey]
 
 		if existingNames, exists := playerMap[player.PlayerUserId]; exists {
 			nameSet := make(map[string]struct{})
