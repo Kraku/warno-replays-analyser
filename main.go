@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"embed"
+	"sync"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -18,8 +18,9 @@ var apiKey string
 var assets embed.FS
 
 type App struct {
-	ctx context.Context
-	DB  *sql.DB
+	ctx         context.Context
+	watchedDirs map[string]struct{}
+	mu          sync.Mutex
 }
 
 func NewApp() *App {
@@ -28,6 +29,7 @@ func NewApp() *App {
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+	a.watchedDirs = make(map[string]struct{})
 }
 
 func main() {

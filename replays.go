@@ -77,5 +77,16 @@ func getReplays(directories []string) []WarnoData {
 }
 
 func (a *App) GetReplays(directories []string) []WarnoData {
+	for _, dir := range directories {
+		a.mu.Lock()
+
+		if _, alreadyWatching := a.watchedDirs[dir]; !alreadyWatching {
+			a.watchedDirs[dir] = struct{}{}
+			go a.watchFolder(dir)
+		}
+
+		a.mu.Unlock()
+	}
+
 	return getReplays(directories)
 }

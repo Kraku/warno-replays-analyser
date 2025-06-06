@@ -12,13 +12,12 @@ import { DirectoriesSelect } from './components/DirectoriesSelect';
 import { Players } from './components/Players';
 import { SettingOutlined } from '@ant-design/icons';
 import { SettingsDrawer } from './drawers/SettingsDrawer';
-import { DailyRecap } from './components/DailyRecap';
 import { Version } from './components/Version';
 import { ReplaysTable2v2 } from './components/ReplaysTable2v2';
 import { Teams } from './components/Teams';
 import { Stats2v2 } from './components/Statistics2v2';
 import { PlayerNamesMap } from './helpers/playerNamesMap';
-import { main } from '../wailsjs/go/models';
+import { Events } from '@wailsio/runtime';
 
 dayjs.extend(relativeTime);
 
@@ -33,16 +32,6 @@ function App() {
   const [eugenUsers, setEugenUsers] = useState<EugenUser[]>();
   const [playerNamesMap, setPlayerNamesMap] = useState<PlayerNamesMap>(new PlayerNamesMap());
   const [gameMode, setGameMode] = useState<string>();
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      const settings = await GetSettings();
-
-      setGameMode(settings.gameMode || '1v1');
-    };
-
-    fetchSettings();
-  }, []);
 
   const run = async () => {
     setLoading(true);
@@ -79,6 +68,20 @@ function App() {
     const settings = await GetSettings();
     SaveSettings({ ...settings, gameMode: value });
   };
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const settings = await GetSettings();
+
+      setGameMode(settings.gameMode || '1v1');
+    };
+
+    fetchSettings();
+  }, []);
+
+  Events.On('replay-file-added', () => {
+    run();
+  });
 
   return (
     <>
