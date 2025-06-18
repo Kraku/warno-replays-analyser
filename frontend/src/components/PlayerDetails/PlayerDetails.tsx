@@ -1,15 +1,25 @@
 import { Player } from '../../parsers/playersParser';
-import { Card, Typography, Tag } from 'antd';
+import { Card, Typography, Tag, Descriptions } from 'antd';
 import { useEffect, useState } from 'react';
 import { main } from '../../../wailsjs/go/models';
 import { GetPlayerGameHistory } from '../../../wailsjs/go/main/App';
 import { OurGamesTable } from './OurGamesTable';
-import { GamesTable } from './GamesTable';
 import { getMinMax } from '../../helpers/getMinMax';
 import { PlayerNotes } from './PlayerNotes';
 import { PlayerNamesMap } from '../../helpers/playerNamesMap';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { RankIndicator } from '../RankIndicator';
 
-export const PlayerDetails = ({ player, playerNamesMap }: { player: Player, playerNamesMap: PlayerNamesMap }) => {
+dayjs.extend(relativeTime);
+
+export const PlayerDetails = ({
+  player,
+  playerNamesMap
+}: {
+  player: Player;
+  playerNamesMap: PlayerNamesMap;
+}) => {
   const [globalHistory, setGlobalHistory] = useState<main.PlayerGame[]>([]);
   const [isGlobalHistoryLoading, setIsGlobalHistoryLoading] = useState(true);
 
@@ -33,31 +43,11 @@ export const PlayerDetails = ({ player, playerNamesMap }: { player: Player, play
     <Card
       title={
         <div className="flex gap-2 items-center mb-2">
-          <Typography.Text>{playerNamesMap.getNames(player.id).join(', ')}</Typography.Text>
-          {rankMinMax.min ? (
-            <div className="flex items-center gap-1">
-              <div
-                className={[
-                  'w-2 h-2 rounded-full mt-0.5',
-                  rankMinMax.min <= 50
-                    ? 'bg-rose-600'
-                    : rankMinMax.min <= 100
-                    ? 'bg-orange-600'
-                    : rankMinMax.min <= 200
-                    ? 'bg-yellow-600'
-                    : rankMinMax.min <= 500
-                    ? 'bg-emerald-600'
-                    : 'bg-neutral-600'
-                ].join(' ')}
-              />
+          <div className="max-w-[80%] truncate">
+            {playerNamesMap.getNames(player.id).join(', ')}
+          </div>
 
-              <Typography.Text type="secondary">
-                {rankMinMax.min === rankMinMax.max
-                  ? `${rankMinMax.min}`
-                  : `${rankMinMax.min} - ${rankMinMax.max}`}
-              </Typography.Text>
-            </div>
-          ) : null}
+          <RankIndicator player={player} rankMinMax={rankMinMax} />
           <Tag bordered={false}>#{player?.id}</Tag>
         </div>
       }>
@@ -67,18 +57,37 @@ export const PlayerDetails = ({ player, playerNamesMap }: { player: Player, play
         </Typography.Title>
 
         <GamesTable history={globalHistory} isLoading={isGlobalHistoryLoading} /> */}
+        <Descriptions
+          rootClassName="mb-4"
+          items={[
+            {
+              key: '2',
+              label: 'Age of Last Known Rank',
+              children: player.lastKnownRankCreatedAt
+                ? dayjs(player.lastKnownRankCreatedAt).fromNow(true)
+                : 'N/A'
+            },
+            {
+              key: '3',
+              label: 'First Seen',
+              children: player.oldestReplayCreatedAt
+                ? dayjs(player.oldestReplayCreatedAt).fromNow()
+                : 'N/A'
+            }
+          ]}
+        />
 
         <Typography.Title level={5} className="mb-2">
           Our Games History
           <span className="text-xs text-neutral-400 ml-2">
             {player.history.length > 0
               ? `${player.history.filter((game) => game.result === 'Victory').length}/${
-                player.history.length
-              } (${(
-                (player.history.filter((game) => game.result === 'Victory').length /
-                player.history.length) *
-                100
-              ).toFixed(1)}%)`
+                  player.history.length
+                } (${(
+                  (player.history.filter((game) => game.result === 'Victory').length /
+                    player.history.length) *
+                  100
+                ).toFixed(1)}%)`
               : ''}
           </span>
         </Typography.Title>

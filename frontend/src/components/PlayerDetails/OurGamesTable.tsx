@@ -98,7 +98,6 @@ const columns: ColumnType<PlayerHistory>[] = [
 export const OurGamesTable = ({ history }: { history: PlayerHistory[] }) => {
   return (
     <Table
-      className="mb-4"
       dataSource={history}
       columns={columns}
       size="small"

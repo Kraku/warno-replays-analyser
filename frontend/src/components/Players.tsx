@@ -4,102 +4,115 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { Replay1v1 } from '../parsers/replaysParser';
 import { Player, playersParser } from '../parsers/playersParser';
 import { List, Input, Button, Card, Empty, Typography } from 'antd';
-import { ApiOutlined, ArrowRightOutlined, CopyOutlined } from '@ant-design/icons';
-import { ColumnType } from 'antd/es/table';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { ApiOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { PlayerDetails } from './PlayerDetails/PlayerDetails';
 import { getMinMax } from '../helpers/getMinMax';
 import { transliterate } from '../helpers/transliterate';
 import { GetSettings, SearchPlayerInApi, SendUsersToAPI } from '../../wailsjs/go/main/App';
 import { PlayerNamesMap } from '../helpers/playerNamesMap';
+import { main } from '../../wailsjs/go/models';
+import {RankIndicator} from './RankIndicator';
 
 dayjs.extend(relativeTime);
 
-const columns: ColumnType<Pick<Player['history'][number], 'result' | 'division' | 'enemyDivision' | 'enemyDeck' | 'createdAt' | 'duration' | 'map' | 'enemyRank'>>[] = [
-  {
-    title: 'Date',
-    dataIndex: 'createdAt',
-    key: 'createdAt',
-    render: (value: string) => `${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()})`
-  },
-  {
-    title: 'My Division',
-    dataIndex: 'division',
-    key: 'division'
-  },
-  {
-    title: 'Enemy Division',
-    dataIndex: 'enemyDivision',
-    key: 'enemyDivision',
-    render: (value: string, record) => (
-      <div>
-        {value}{' '}
-        <CopyToClipboard text={record.enemyDeck}>
-          <CopyOutlined />
-        </CopyToClipboard>
-      </div>
-    )
-  },
-  {
-    title: 'Enemy Rank',
-    dataIndex: 'enemyRank',
-    key: 'enemyRank'
-  },
-  {
-    title: 'Duration',
-    dataIndex: 'duration',
-    key: 'duration',
-    render: (value: number) => dayjs.duration(value, 'seconds').format('mm:ss')
-  },
-  {
-    title: 'Map',
-    dataIndex: 'map',
-    key: 'map'
-  },
-  {
-    title: 'Result',
-    dataIndex: 'result',
-    key: 'result'
-  }
-];
-
-export const Players = ({ replays, playerNamesMap }: { replays: Replay1v1[], playerNamesMap: PlayerNamesMap }) => {
+export const Players = ({
+  replays,
+  playerNamesMap
+}: {
+  replays: Replay1v1[];
+  playerNamesMap: PlayerNamesMap;
+}) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedPlayer, setSelectedPlayer] = useState<string>();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const mergeWithApiPlayers = (
+    parsedPlayers: Player[],
+    apiPlayers: main.GetUser[] = []
+  ): Player[] => {
+    return parsedPlayers.map((player) => {
+      const apiPlayer = apiPlayers.find((apiPlayer) => apiPlayer.eugenId.toString() === player.id);
+
+      if (!apiPlayer) return player;
+
+      apiPlayer?.usernames.forEach((username) => {
+        playerNamesMap.incrementPlayerNameCount(player.id, username);
+      });
+
+      const ranks = Array.from(
+        new Set([
+          ...player.history.map((history) => history.enemyRank),
+          ...(apiPlayer?.ranks || [])
+        ])
+      )
+        .map(String)
+        .filter((rank) => rank !== '0');
+
+      return {
+        ...player,
+        ranks,
+        lastKnownRank: apiPlayer.lastKnownRank,
+        lastKnownRankCreatedAt: apiPlayer.lastKnownRankCreatedAt,
+        oldestReplayCreatedAt: apiPlayer.oldestReplayCreatedAt
+      };
+    });
+  };
 
   useEffect(() => {
-    const fetchPlayers = async () => {
-      const parsedPlayers = await playersParser(replays);
-      setPlayers(parsedPlayers);
-    };
+    const fetch = async () => {
+      setIsLoading(true);
 
-    fetchPlayers();
-  }, [replays]);
-
-  useEffect(() => {
-    const fetchSettingsAndSendUsers = async () => {
       const settings = await GetSettings();
+      const parsedPlayers = await playersParser(replays);
+      const apiPlayers = (await SearchPlayerInApi('')) || [];
+
+      if (!settings.playerInfoSharingDisabled) {
+        setPlayers(mergeWithApiPlayers(parsedPlayers, apiPlayers));
+      } else {
+        setPlayers(
+          parsedPlayers.map((player) => ({
+            ...player,
+            ranks: player.history.map((history) => history.enemyRank)
+          }))
+        );
+      }
+
+      setIsLoading(false);
 
       if (settings.playerInfoSharingDisabled || !players.length) return;
 
       SendUsersToAPI(
-        players.map((player) => ({
-          usernames: playerNamesMap.getNames(player.id),
-          ranks: player.history.map((history) => parseInt(history.enemyRank)),
-          eugenId: parseInt(player.id)
-        }))
+        players.map((player) => {
+          const sortedHistory = [...player.history].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          const newest = sortedHistory[0];
+          const oldest = sortedHistory[sortedHistory.length - 1];
+
+          return {
+            usernames: playerNamesMap.getNames(player.id),
+            ranks: player.history.map((history) => parseInt(history.enemyRank)),
+            eugenId: parseInt(player.id),
+            lastKnownRank: newest ? parseInt(newest.enemyRank) : undefined,
+            lastKnownRankCreatedAt: newest ? dayjs(newest.createdAt).toISOString() : undefined,
+            oldestReplayCreatedAt: oldest ? dayjs(oldest.createdAt).toISOString() : undefined
+          };
+        }) as main.PostUser[]
       );
     };
 
-    fetchSettingsAndSendUsers();
-  }, [players]);
+    fetch();
+  }, [players.length, replays.length]);
 
   const handleApiSearch = async (query: string) => {
-    const apiPlayers = await SearchPlayerInApi(query) || [];
+    const apiPlayers = (await SearchPlayerInApi(query)) || [];
+
     setPlayers((prevPlayers) => {
       const newPlayers = apiPlayers
-        .filter((apiPlayer) => !prevPlayers.some((player) => player.id === apiPlayer.eugenId.toString()))
+        .filter(
+          (apiPlayer) => !prevPlayers.some((player) => player.id === apiPlayer.eugenId.toString())
+        )
         .map((apiPlayer) => ({
           id: apiPlayer.eugenId.toString(),
           names: apiPlayer.usernames,
@@ -150,6 +163,7 @@ export const Players = ({ replays, playerNamesMap }: { replays: Replay1v1[], pla
           <List
             dataSource={filteredPlayers}
             size="small"
+            loading={isLoading}
             renderItem={(player) => {
               const rankMinMax = getMinMax(player.ranks.flatMap((rank) => parseInt(rank)));
 
@@ -162,39 +176,20 @@ export const Players = ({ replays, playerNamesMap }: { replays: Replay1v1[], pla
                       key="open"
                     />
                   ]}
-                  className={selectedPlayer === player.id ? 'bg-neutral-800' : 'hover:bg-neutral-900'}
-                  key={player.id}
-                >
+                  className={
+                    selectedPlayer === player.id ? 'bg-neutral-800' : 'hover:bg-neutral-900'
+                  }
+                  key={player.id}>
                   <List.Item.Meta
                     title={
                       <div className="flex gap-1 items-center">
                         {player.api && <ApiOutlined />}
-                        <Typography.Text strong>{playerNamesMap.getNames(player.id).join(', ')}</Typography.Text>
+                        <Typography.Text strong>
+                          {playerNamesMap.getNames(player.id).join(', ')}
+                        </Typography.Text>
                       </div>
                     }
-                    description={
-                      rankMinMax.min ? (
-                        <div className="flex items-center">
-                          <div
-                            className={[
-                              'w-2 h-2 rounded-full mr-1',
-                              rankMinMax.min <= 50
-                                ? 'bg-rose-600'
-                                : rankMinMax.min <= 100
-                                ? 'bg-orange-600'
-                                : rankMinMax.min <= 200
-                                ? 'bg-yellow-600'
-                                : rankMinMax.min <= 500
-                                ? 'bg-emerald-600'
-                                : 'bg-neutral-600'
-                            ].join(' ')}
-                          />
-                          {rankMinMax.min === rankMinMax.max
-                            ? `${rankMinMax.min}`
-                            : `${rankMinMax.min} - ${rankMinMax.max}`}
-                        </div>
-                      ) : null
-                    }
+                    description={<RankIndicator player={player} rankMinMax={rankMinMax} />}
                   />
                 </List.Item>
               );

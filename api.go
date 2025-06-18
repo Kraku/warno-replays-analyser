@@ -10,17 +10,23 @@ import (
 )
 
 type PostUser struct {
-	Usernames []string `json:"usernames"`
-	Ranks     []uint   `json:"ranks"`
-	EugenId   uint     `json:"eugenId"`
+	Usernames              []string  `json:"usernames"`
+	Ranks                  []uint    `json:"ranks"`
+	EugenId                uint      `json:"eugenId"`
+	LastKnownRank          uint      `json:"lastKnownRank"`
+	LastKnownRankCreatedAt time.Time `json:"lastKnownRankCreatedAt"`
+	OldestReplayCreatedAt  time.Time `json:"oldestReplayCreatedAt"`
 }
 
 type GetUser struct {
-	Usernames []string  `json:"usernames"`
-	Ranks     []uint    `json:"ranks"`
-	EugenId   uint      `json:"eugenId"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	Usernames              []string  `json:"usernames"`
+	Ranks                  []uint    `json:"ranks"`
+	EugenId                uint      `json:"eugenId"`
+	CreatedAt              time.Time `json:"createdAt"`
+	UpdatedAt              time.Time `json:"updatedAt"`
+	LastKnownRank          uint      `json:"lastKnownRank"`
+	LastKnownRankCreatedAt time.Time `json:"lastKnownRankCreatedAt"`
+	OldestReplayCreatedAt  time.Time `json:"oldestReplayCreatedAt"`
 }
 
 func makeRequest(method, url string, body []byte, headers map[string]string) (*http.Response, error) {

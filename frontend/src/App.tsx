@@ -18,6 +18,7 @@ import { Teams } from './components/Teams';
 import { Stats2v2 } from './components/Statistics2v2';
 import { PlayerNamesMap } from './helpers/playerNamesMap';
 import { Events } from '@wailsio/runtime';
+import { DailyRecap } from './components/DailyRecap';
 
 dayjs.extend(relativeTime);
 
@@ -127,82 +128,89 @@ function App() {
           </div>
         ) : (
           <div className="flex flex-col gap-4 mt-4">
-            {/* {replays1v1.length > 0 && eugenUsers ? <DailyRecap eugenUsers={eugenUsers} /> : null} */}
-
             {gameMode === '1v1' ? (
-              <Card
-                tabList={[
-                  {
-                    key: '1',
-                    label: 'Summary',
-                    children: (
-                      <div className="pt-4 mb-10">
-                        <ReplaysTable1v1 replays={replays1v1} />
-                      </div>
-                    )
-                  },
-                  {
-                    key: '2',
-                    label: 'Players',
-                    children: (
-                      <div className="pt-4 mb-10">
-                        {stats1v1 ? (
-                          <Players replays={replays1v1} playerNamesMap={playerNamesMap} />
-                        ) : null}
-                      </div>
-                    )
-                  },
-                  {
-                    key: '3',
-                    label: 'Statistics',
-                    children: (
-                      <div className="pt-4 mb-10">
-                        {stats1v1 ? <Stats1v1 stats={stats1v1} /> : null}
-                      </div>
-                    )
-                  }
-                ]}
-                styles={{
-                  body: { padding: 0 }
-                }}
-              />
+              <>
+                <DailyRecap replays={replays1v1} />
+                <Card
+                  tabList={[
+                    {
+                      key: '1',
+                      label: 'Summary',
+                      children: (
+                        <div className="pt-4 mb-10">
+                          <ReplaysTable1v1 replays={replays1v1} />
+                        </div>
+                      )
+                    },
+                    {
+                      key: '2',
+                      label: 'Players',
+                      children: (
+                        <div className="pt-4 mb-10">
+                          {stats1v1 ? (
+                            <Players replays={replays1v1} playerNamesMap={playerNamesMap} />
+                          ) : null}
+                        </div>
+                      )
+                    },
+                    {
+                      key: '3',
+                      label: 'Statistics',
+                      children: (
+                        <div className="pt-4 mb-10">
+                          {stats1v1 ? <Stats1v1 stats={stats1v1} /> : null}
+                        </div>
+                      )
+                    }
+                  ]}
+                  styles={{
+                    body: { padding: 0 }
+                  }}
+                />
+
+                <div className="text-xs flex justify-end">Brought to you by Grand Potato</div>
+              </>
             ) : null}
 
             {gameMode === '2v2' ? (
-              <Card
-                tabList={[
-                  {
-                    key: '1',
-                    label: 'Summary',
-                    children: (
-                      <div className="pt-4 mb-10">
-                        <ReplaysTable2v2 replays={replays2v2} />
-                      </div>
-                    )
-                  },
-                  {
-                    key: '2',
-                    label: 'Teams',
-                    children: (
-                      <div className="pt-4 mb-10">
-                        <Teams replays={replays2v2} playerNamesMap={playerNamesMap} />
-                      </div>
-                    )
-                  },
-                  {
-                    key: '3',
-                    label: 'Statistics',
-                    children: (
-                      <div className="pt-4 mb-10">
-                        {stats2v2 ? <Stats2v2 stats={stats2v2} /> : null}
-                      </div>
-                    )
-                  }
-                ]}
-                styles={{
-                  body: { padding: 0 }
-                }}
-              />
+              <>
+                <Card
+                  tabList={[
+                    {
+                      key: '1',
+                      label: 'Summary',
+                      children: (
+                        <div className="pt-4 mb-10">
+                          <ReplaysTable2v2 replays={replays2v2} />
+                        </div>
+                      )
+                    },
+                    {
+                      key: '2',
+                      label: 'Teams',
+                      children: (
+                        <div className="pt-4 mb-10">
+                          <Teams replays={replays2v2} playerNamesMap={playerNamesMap} />
+                        </div>
+                      )
+                    },
+                    {
+                      key: '3',
+                      label: 'Statistics',
+                      children: (
+                        <div className="pt-4 mb-10">
+                          {stats2v2 ? <Stats2v2 stats={stats2v2} /> : null}
+                        </div>
+                      )
+                    }
+                  ]}
+                  styles={{
+                    body: { padding: 0 }
+                  }}
+                />
+
+                <div className="text-xs flex justify-end">Brought to you by Suojeluskunta</div>
+              </>
             ) : null}
           </div>
         )}

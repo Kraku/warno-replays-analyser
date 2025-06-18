@@ -1,100 +1,76 @@
-import { ReloadOutlined } from '@ant-design/icons';
-import { Button, Card, Descriptions, DescriptionsProps, Select, Spin } from 'antd';
+import { Card, Descriptions, DescriptionsProps, Spin } from 'antd';
 import { useEffect, useState } from 'react';
-import { EugenUser } from '../parsers/replaysParser';
-import { main } from '../../wailsjs/go/models';
-import { GetDailyRecap, GetSettings, SaveSettings } from '../../wailsjs/go/main/App';
+import { Replay1v1 } from '../parsers/replaysParser';
+import dayjs from 'dayjs';
+import { formatDuration } from '../helpers/formatDuration';
 
-interface DailyRecapProps {
-  eugenUsers: EugenUser[];
-}
+type DailyRecapProps = {
+  replays: Replay1v1[];
+};
 
-export const DailyRecap = ({ eugenUsers = [] }: DailyRecapProps) => {
-  const [selectedUser, setSelectedUser] = useState<string>();
-  const [settings, setSettings] = useState<main.Settings>();
-  const [stats, setStats] = useState<main.DailyRecap>();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+const isToday = (dateStr: string) => dayjs(dateStr).isSame(dayjs(), 'day');
 
-  useEffect(() => {
-    const initialize = async () => {
-      const savedSettings = await GetSettings();
-      const fallbackUserId = eugenUsers[0]?.eugenId;
-      const userId = savedSettings.dailyRecapUser || fallbackUserId;
+const ColoredCircle = ({ winRate }: { winRate: number }) => {
+  const getWinRateColorClass = () => {
+    if (winRate >= 70) return 'bg-green-500';
+    if (winRate >= 60) return 'bg-orange-500';
 
-      if (!userId) return;
-
-      const exists = !savedSettings.dailyRecapUser;
-      const updatedSettings = exists ? { ...savedSettings, dailyRecapUser: userId } : savedSettings;
-
-      if (exists) {
-        await SaveSettings(updatedSettings);
-      }
-
-      setSettings(updatedSettings);
-      setSelectedUser(userId);
-
-      await fetchStats(userId);
-    };
-
-    initialize();
-  }, [eugenUsers]);
-
-  const fetchStats = async (eugenId: string) => {
-    setIsLoading(true);
-
-    try {
-      const data = await GetDailyRecap(eugenId);
-
-      setStats(data);
-    } finally {
-      setIsLoading(false);
-    }
+    return 'bg-red-500';
   };
-
-  const handleUserChange = async (userId: string) => {
-    setSelectedUser(userId);
-    if (settings) {
-      await SaveSettings({ ...settings, dailyRecapUser: userId });
-    }
-    await fetchStats(userId);
-  };
-
-  const descriptionItems: DescriptionsProps['items'] = [
-    { key: 'elo', label: 'Elo Change', children: stats?.eloChange ?? 0 },
-    { key: 'games', label: 'Games Played', children: stats?.gamesPlayed ?? 0 },
-    { key: 'wins', label: 'Wins', children: stats?.wins ?? 0 },
-    { key: 'losses', label: 'Losses', children: stats?.losses ?? 0 }
-  ];
-
-  const userOptions = eugenUsers.map(({ eugenId, playerNames }) => ({
-    label: playerNames.join(', '),
-    value: eugenId
-  }));
-
-  const extraControls = (
-    <div className="flex items-center gap-2 w-42">
-      <Select
-        size="small"
-        className="w-full"
-        options={userOptions}
-        value={selectedUser}
-        onChange={handleUserChange}
-        disabled={isLoading}
-      />
-      <Button
-        type="text"
-        size="small"
-        icon={<ReloadOutlined spin={isLoading} />}
-        disabled={!selectedUser || isLoading}
-        onClick={() => selectedUser && fetchStats(selectedUser)}
-      />
-    </div>
-  );
 
   return (
-    <Card size="small" title="Daily Ranked Recap" extra={extraControls}>
-      <Spin spinning={isLoading}>
-        <Descriptions items={descriptionItems} column={4} size="small" />
+    <span className={`${getWinRateColorClass()} inline-block w-2.5 h-2.5 rounded-full ml-2`} />
+  );
+};
+
+const calculateStats = (replays: Replay1v1[]) => {
+  const todaysReplays = replays.filter((r) => isToday(r.createdAt));
+  if (!todaysReplays.length) return undefined;
+
+  const gamesPlayed = todaysReplays.length;
+  const timeSpent = todaysReplays.reduce((acc, r) => acc + r.duration, 0);
+  const wins = todaysReplays.filter((r) => r.result === 'Victory').length;
+  const losses = todaysReplays.filter((r) => r.result === 'Defeat').length;
+  const draws = todaysReplays.filter((r) => r.result === 'Draw').length;
+  const winRate = Math.round((wins / gamesPlayed) * 100);
+
+  return { gamesPlayed, timeSpent, wins, losses, draws, winRate };
+};
+
+export const DailyRecap = ({ replays }: DailyRecapProps) => {
+  const [stats, setStats] = useState<ReturnType<typeof calculateStats>>();
+
+  useEffect(() => {
+    setStats(calculateStats(replays));
+  }, [replays]);
+
+  const descriptionItems: DescriptionsProps['items'] = [
+    { key: 'gamesPlayed', label: 'Games Played', children: stats?.gamesPlayed ?? 0 },
+    {
+      key: 'timeSpent',
+      label: 'Time Spent',
+      children: stats ? formatDuration(stats.timeSpent) : '0m'
+    },
+    {
+      key: 'winRate',
+      label: 'Win Rate',
+      children: stats ? (
+        <div className="flex items-center">
+          {stats.winRate}% <ColoredCircle winRate={stats.winRate} />
+        </div>
+      ) : (
+        '0%'
+      )
+    },
+    { key: 'wins', label: 'Wins', children: stats?.wins ?? 0 },
+    { key: 'losses', label: 'Losses', children: stats?.losses ?? 0 },
+    { key: 'draws', label: 'Draws', children: stats?.draws ?? 0 }
+  ];
+
+  return (
+    <Card size="small" title="Daily Ranked Recap">
+      <Spin spinning={false}>
+        <Descriptions items={descriptionItems} column={3} size="small" />
       </Spin>
     </Card>
   );

@@ -15,15 +15,17 @@ export type CommonStatistics = {
     victoryRatio: number;
     games: number;
   }[];
-}
+};
 
 export type DivisionStats = {
   total: number;
   won: number;
 };
 
+export type RankHistory = { date: string; rank: number }[];
+
 export type Statistics1v1 = CommonStatistics & {
-  rankHistory: { date: string; rank: number }[];
+  rankHistory: RankHistory;
   enemyDivisionVictoryRatios: {
     division: string;
     victoryRatio: number;
@@ -38,6 +40,14 @@ export type Statistics1v1 = CommonStatistics & {
     enemyDivision: string;
     count: number;
   }[];
+  timeSpent: number;
+  winrateByEnemyRank: Record<
+    string,
+    {
+      wins: number;
+      total: number;
+    }
+  >;
 };
 
 export type Statistics2v2 = CommonStatistics & {
@@ -67,15 +77,11 @@ export type Statistics2v2 = CommonStatistics & {
     victoryRatio: number;
     games: number;
   }[];
-}
+};
 
-type Counter = { victories: number, games: number };
+type Counter = { victories: number; games: number };
 
-function incrementCounter(
-  map: Map<string, Counter>,
-  key: string,
-  isVictory: boolean
-) {
+function incrementCounter(map: Map<string, Counter>, key: string, isVictory: boolean) {
   const counter = map.get(key);
   if (counter) {
     counter.games++;
@@ -159,8 +165,8 @@ const getMapVictoryRatios = (replays: CommonReplayData[]) => {
         games: total
       };
     })
-    .sort((a, b) => b.victoryRatio - a.victoryRatio)
-}
+    .sort((a, b) => b.victoryRatio - a.victoryRatio);
+};
 
 const calculateMostFrequentOpponents = (
   replays: Replay1v1[]
@@ -191,6 +197,58 @@ const calculateAverageGameDuration = (replays: CommonReplayData[]): number => {
   return totalDuration / replays.length || 0;
 };
 
+const calculateEnemyRankBuckets = (
+  replays: Replay1v1[]
+): Record<
+  string,
+  {
+    wins: number;
+    total: number;
+  }
+> => {
+  const enemyRankBuckets: Record<
+    string,
+    {
+      wins: number;
+      total: number;
+    }
+  > = {};
+
+  const getBucket = (rank: number): string | null => {
+    if (rank === 0) return null;
+    if (rank <= 50) return '1-50';
+    if (rank <= 100) return '51-100';
+    if (rank <= 150) return '101-150';
+    if (rank <= 200) return '151-200';
+    if (rank <= 300) return '201-300';
+    if (rank <= 400) return '301-400';
+    if (rank <= 500) return '401-500';
+    return '501+';
+  };
+
+  for (const replay of replays) {
+    const enemyRank = parseInt(replay.enemyRank);
+
+    if (isNaN(enemyRank)) continue;
+
+    const bucket = getBucket(enemyRank);
+
+    if (!bucket) continue;
+
+    if (!enemyRankBuckets[bucket]) {
+      enemyRankBuckets[bucket] = { wins: 0, total: 0 };
+    }
+
+    enemyRankBuckets[bucket].total += 1;
+
+    if (replay.result === 'Victory') {
+      enemyRankBuckets[bucket].wins += 1;
+    }
+  }
+
+  return enemyRankBuckets;
+};
+
 const trackRankHistory = (replays: Replay1v1[]): { date: string; rank: number }[] => {
   return replays
     .map((replay) => ({
@@ -205,6 +263,8 @@ export const getStats1v1 = (replays: Replay1v1[]): Statistics1v1 => {
   const wonGames = replays.filter((replay) => replay.result === 'Victory').length;
   const victoryRatio = calculateVictoryRatio(wonGames, totalGames);
   const divisionStats = getDivisionStats(replays, 'division');
+  const timeSpent = replays.reduce((acc, r) => acc + r.duration, 0);
+  const winrateByEnemyRank = calculateEnemyRankBuckets(replays);
 
   const divisionVictoryRatios = Object.keys(divisionStats)
     .map((division) => {
@@ -216,7 +276,11 @@ export const getStats1v1 = (replays: Replay1v1[]): Statistics1v1 => {
         games: total
       };
     })
-    .sort((a, b) => calculateWeightedWinRate(b.victories, b.games) - calculateWeightedWinRate(a.victories, a.games));
+    .sort(
+      (a, b) =>
+        calculateWeightedWinRate(b.victories, b.games) -
+        calculateWeightedWinRate(a.victories, a.games)
+    );
 
   const enemyDivisionStats = getDivisionStats(replays, 'enemyDivision');
   const enemyDivisionVictoryRatios = Object.keys(enemyDivisionStats)
@@ -229,7 +293,11 @@ export const getStats1v1 = (replays: Replay1v1[]): Statistics1v1 => {
         games: total
       };
     })
-    .sort((a, b) => calculateWeightedWinRate(b.victories, b.games) - calculateWeightedWinRate(a.victories, a.games));
+    .sort(
+      (a, b) =>
+        calculateWeightedWinRate(b.victories, b.games) -
+        calculateWeightedWinRate(a.victories, a.games)
+    );
 
   const { longestWinningStreak, longestLosingStreak } = calculateStreaks(replays);
   const mostFrequentOpponents = calculateMostFrequentOpponents(replays);
@@ -248,32 +316,44 @@ export const getStats1v1 = (replays: Replay1v1[]): Statistics1v1 => {
     longestWinningStreak,
     longestLosingStreak,
     rankHistory,
-    mapVictoryRatios
+    mapVictoryRatios,
+    timeSpent,
+    winrateByEnemyRank
   };
 };
 
-export const getStats2v2 = (replays: Replay2v2[], playerNamesMap: PlayerNamesMap): Statistics2v2 => {
+export const getStats2v2 = (
+  replays: Replay2v2[],
+  playerNamesMap: PlayerNamesMap
+): Statistics2v2 => {
   const totalGames = replays.length;
   const wonGames = replays.filter((replay) => replay.result === 'Victory').length;
   const victoryRatio = calculateVictoryRatio(wonGames, totalGames);
   const { longestWinningStreak, longestLosingStreak } = calculateStreaks(replays);
   const mapVictoryRatios = getMapVictoryRatios(replays);
   const averageGameDuration = calculateAverageGameDuration(replays);
-  const alliedVictories = new Map<string, { victories: number, games: number }>();
-  const enemyVictories = new Map<string, { victories: number, games: number }>();
-  const alliedDivisionVictories = new Map<string, { victories: number, games: number }>();
-  const enemyDivisionVictories = new Map<string, { victories: number, games: number }>();
+  const alliedVictories = new Map<string, { victories: number; games: number }>();
+  const enemyVictories = new Map<string, { victories: number; games: number }>();
+  const alliedDivisionVictories = new Map<string, { victories: number; games: number }>();
+  const enemyDivisionVictories = new Map<string, { victories: number; games: number }>();
 
-  replays.forEach(replay => {
+  replays.forEach((replay) => {
     const sortedEnemies = replay.enemiesData;
     sortedEnemies.sort((enemy1, enemy2) => enemy1.playerId.localeCompare(enemy2.playerId));
-    const sortedEnemyDivisions = replay.enemiesData.map(data => data.playerDivision);
-    const compositeEnemyKey = JSON.stringify([sortedEnemies[0].playerId, sortedEnemies[1].playerId]);
+    const sortedEnemyDivisions = replay.enemiesData.map((data) => data.playerDivision);
+    const compositeEnemyKey = JSON.stringify([
+      sortedEnemies[0].playerId,
+      sortedEnemies[1].playerId
+    ]);
     sortedEnemyDivisions.sort((div1, div2) => div1.localeCompare(div2));
-    const compositeAlliedDivisionKey
-      = JSON.stringify([replay.division, replay.allyData.playerDivision]);
-    const compositeEnemyDivisionKey
-      = JSON.stringify([sortedEnemyDivisions[0], sortedEnemyDivisions[1]]);
+    const compositeAlliedDivisionKey = JSON.stringify([
+      replay.division,
+      replay.allyData.playerDivision
+    ]);
+    const compositeEnemyDivisionKey = JSON.stringify([
+      sortedEnemyDivisions[0],
+      sortedEnemyDivisions[1]
+    ]);
     const isVictory = replay.result === 'Victory';
     const isDefeat = replay.result === 'Defeat';
 
@@ -281,41 +361,65 @@ export const getStats2v2 = (replays: Replay2v2[], playerNamesMap: PlayerNamesMap
     incrementCounter(alliedDivisionVictories, compositeAlliedDivisionKey, isVictory);
     incrementCounter(enemyVictories, compositeEnemyKey, isDefeat);
     incrementCounter(enemyDivisionVictories, compositeEnemyDivisionKey, isDefeat);
-  })
+  });
 
-  const alliedTeamVictoryRatios = Array.from(alliedVictories).map(([key, obj]) => ({
-    allyPlayerId: key,
-    allyPlayerName: playerNamesMap.getPlayerCommonName(key),
-    victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
-    victories: obj.victories,
-    games: obj.games
-  })).sort((stat1, stat2) => calculateWeightedWinRate(stat2.victories, stat2.games) - calculateWeightedWinRate(stat1.victories, stat1.games));
+  const alliedTeamVictoryRatios = Array.from(alliedVictories)
+    .map(([key, obj]) => ({
+      allyPlayerId: key,
+      allyPlayerName: playerNamesMap.getPlayerCommonName(key),
+      victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
+      victories: obj.victories,
+      games: obj.games
+    }))
+    .sort(
+      (stat1, stat2) =>
+        calculateWeightedWinRate(stat2.victories, stat2.games) -
+        calculateWeightedWinRate(stat1.victories, stat1.games)
+    );
 
-  const enemyTeamVictoryRatios = Array.from(enemyVictories).map(([key, obj]) => ({
-    enemyPlayer1Id: JSON.parse(key)[0],
-    enemyPlayer1Name: playerNamesMap.getPlayerCommonName(JSON.parse(key)[0]),
-    enemyPlayer2Id: JSON.parse(key)[1],
-    enemyPlayer2Name: playerNamesMap.getPlayerCommonName(JSON.parse(key)[1]),
-    victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
-    victories: obj.victories,
-    games: obj.games
-  })).sort((stat1, stat2) => calculateWeightedWinRate(stat2.victories, stat2.games) - calculateWeightedWinRate(stat1.victories, stat1.games));
+  const enemyTeamVictoryRatios = Array.from(enemyVictories)
+    .map(([key, obj]) => ({
+      enemyPlayer1Id: JSON.parse(key)[0],
+      enemyPlayer1Name: playerNamesMap.getPlayerCommonName(JSON.parse(key)[0]),
+      enemyPlayer2Id: JSON.parse(key)[1],
+      enemyPlayer2Name: playerNamesMap.getPlayerCommonName(JSON.parse(key)[1]),
+      victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
+      victories: obj.victories,
+      games: obj.games
+    }))
+    .sort(
+      (stat1, stat2) =>
+        calculateWeightedWinRate(stat2.victories, stat2.games) -
+        calculateWeightedWinRate(stat1.victories, stat1.games)
+    );
 
-  const alliedTeamDivisionVictoryRatios = Array.from(alliedDivisionVictories).map(([key, obj]) => ({
-    playerDivision: JSON.parse(key)[0],
-    allyDivision: JSON.parse(key)[1],
-    victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
-    victories: obj.victories,
-    games: obj.games
-  })).sort((stat1, stat2) => calculateWeightedWinRate(stat2.victories, stat2.games) - calculateWeightedWinRate(stat1.victories, stat1.games));
+  const alliedTeamDivisionVictoryRatios = Array.from(alliedDivisionVictories)
+    .map(([key, obj]) => ({
+      playerDivision: JSON.parse(key)[0],
+      allyDivision: JSON.parse(key)[1],
+      victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
+      victories: obj.victories,
+      games: obj.games
+    }))
+    .sort(
+      (stat1, stat2) =>
+        calculateWeightedWinRate(stat2.victories, stat2.games) -
+        calculateWeightedWinRate(stat1.victories, stat1.games)
+    );
 
-  const enemyTeamDivisionVictoryRatios = Array.from(enemyDivisionVictories).map(([key, obj]) => ({
-    enemyDivision1: JSON.parse(key)[0],
-    enemyDivision2: JSON.parse(key)[1],
-    victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
-    victories: obj.victories,
-    games: obj.games
-  })).sort((stat1, stat2) => calculateWeightedWinRate(stat2.victories, stat2.games) - calculateWeightedWinRate(stat1.victories, stat1.games));
+  const enemyTeamDivisionVictoryRatios = Array.from(enemyDivisionVictories)
+    .map(([key, obj]) => ({
+      enemyDivision1: JSON.parse(key)[0],
+      enemyDivision2: JSON.parse(key)[1],
+      victoryRatio: calculateVictoryRatio(obj.victories, obj.games),
+      victories: obj.victories,
+      games: obj.games
+    }))
+    .sort(
+      (stat1, stat2) =>
+        calculateWeightedWinRate(stat2.victories, stat2.games) -
+        calculateWeightedWinRate(stat1.victories, stat1.games)
+    );
 
   return {
     totalGames,

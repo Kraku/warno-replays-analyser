@@ -18,6 +18,9 @@ export type Player = {
   history: PlayerHistory[];
   ranks: string[];
   api: boolean;
+  lastKnownRank?: number | null;
+  lastKnownRankCreatedAt?: string | null;
+  oldestReplayCreatedAt?: string | null;
 };
 
 const createPlayerHistory = (replay: Replay1v1): PlayerHistory => ({
@@ -30,14 +33,14 @@ const createPlayerHistory = (replay: Replay1v1): PlayerHistory => ({
   createdAt: replay.createdAt,
   duration: replay.duration,
   map: replay.map,
-  enemyRank: replay.enemyRank,
+  enemyRank: replay.enemyRank
 });
 
 const createNewPlayer = (replay: Replay1v1): Player => ({
   id: replay.enemyId,
   ranks: [replay.enemyRank],
   api: false,
-  history: [createPlayerHistory(replay)],
+  history: [createPlayerHistory(replay)]
 });
 
 const updatePlayer = (existingPlayer: Player, replay: Replay1v1): void => {

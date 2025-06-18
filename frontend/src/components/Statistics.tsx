@@ -2,8 +2,9 @@ import { Col, Row, Statistic, Table, Typography } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Statistics1v1 } from '../stats';
-import { LineChart, Line, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { renderVictoryRatio } from '../helpers/renderVictoryRatio';
+import RankHistoryChart from './RankHistoryChart';
+import { formatDuration } from '../helpers/formatDuration';
 
 dayjs.extend(relativeTime);
 
@@ -52,6 +53,7 @@ const createColumn = (
 
 export const renderRankHistoryTooltip = ({ payload }: any) => {
   if (payload?.length === 0) return null;
+
   return (
     <div className="bg-gray-800 p-2">
       <Typography.Text>{dayjs(payload[0].payload.date).format('YYYY-MM-DD HH:mm')}</Typography.Text>
@@ -95,6 +97,29 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
     )
   ];
 
+  const winrateByEnemyRankColumns = [
+    {
+      title: 'Rank Bucket',
+      dataIndex: 'bucket',
+      key: 'bucket'
+    },
+    {
+      title: 'Wins',
+      dataIndex: 'wins',
+      key: 'wins'
+    },
+    {
+      title: 'Total Games',
+      dataIndex: 'total',
+      key: 'total'
+    },
+    {
+      title: 'Win Rate',
+      dataIndex: 'winRate',
+      key: 'winRate'
+    }
+  ];
+
   const mapVictoryRatioColumns = [
     createColumn('Map', 'map', 'map', undefined, (a, b) => a.map.localeCompare(b.map)),
     createColumn(
@@ -122,6 +147,20 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
     )
   ];
 
+  const winrateByEnemyRankData = Object.entries(stats.winrateByEnemyRank)
+    .map(([bucket, stats]) => ({
+      key: bucket,
+      bucket,
+      wins: stats.wins,
+      total: stats.total,
+      winRate: ((stats.wins / stats.total) * 100).toFixed(1) + '%'
+    }))
+    .sort(
+      (a, b) =>
+        parseInt((a.bucket.match(/\d+/) || ['0'])[0], 10) -
+        parseInt((b.bucket.match(/\d+/) || ['0'])[0], 10)
+    );
+
   return (
     <>
       <Row gutter={16}>
@@ -132,6 +171,9 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
           <Statistic title="Games Won" value={stats.wonGames} />
         </Col>
         <Col span={6}>
+          <Statistic title="Time Spent" value={formatDuration(stats.timeSpent)} />
+        </Col>
+        <Col span={6}>
           <Statistic title="Victory Ratio" value={renderVictoryRatio(stats.victoryRatio)} />
         </Col>
         <Col span={6}>
@@ -140,9 +182,7 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
             value={`${(stats.averageGameDuration / 60).toFixed(2)} min`}
           />
         </Col>
-      </Row>
 
-      <Row gutter={16} className="mt-4">
         <Col span={6}>
           <Statistic title="Longest Winning Streak" value={stats.longestWinningStreak} />
         </Col>
@@ -155,38 +195,27 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
         Rank History
       </Typography.Title>
 
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={stats.rankHistory}>
-          <YAxis type="number" domain={['auto', 'auto']} reversed={true} />
-          <Tooltip
-            content={renderRankHistoryTooltip}
-            contentStyle={{ backgroundColor: '#333', borderColor: '#333', color: '#fff' }}
-          />
-          <Line
-            type="monotone"
-            dataKey="rank"
-            stroke="#6EACDA"
-            strokeWidth={3}
-            dot={{ r: 0, fill: '#6EACDA' }}
-            activeDot={{ r: 3, fill: '#6EACDA' }}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <RankHistoryChart rankHistory={stats.rankHistory} />
+
+      <TableComponent
+        columns={winrateByEnemyRankColumns}
+        dataSource={winrateByEnemyRankData}
+        rowKey="bucket"
+        title="Victory Ratio by Enemy Rank"
+      />
 
       <TableComponent
         dataSource={stats.divisionVictoryRatios}
         columns={rankHistoryColumns}
         rowKey="division"
-        title="Division Victory Ratio"
+        title="Victory Ratio per Division"
       />
 
       <TableComponent
         dataSource={stats.enemyDivisionVictoryRatios}
         columns={rankHistoryColumns}
         rowKey="enemyDivision"
-        title="Enemy Division Victory Ratio"
+        title="Victory Ratio Against Enemy Divisions"
       />
 
       <TableComponent
