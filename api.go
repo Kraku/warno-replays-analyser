@@ -54,7 +54,7 @@ func (a *App) SearchPlayerInApi(q string) []GetUser {
 		return []GetUser{}
 	}
 
-	query := fmt.Sprintf("%s?q=%s", apiUrl, q)
+	query := fmt.Sprintf("%s?q=%s", apiUrl+"/players", q)
 
 	headers := map[string]string{
 		"Authorization": "Bearer " + apiKey,
@@ -98,7 +98,7 @@ func (a *App) SendUsersToAPI(users []PostUser) map[string]bool {
 		"Authorization": "Bearer " + apiKey,
 	}
 
-	resp, err := makeRequest("POST", apiUrl, payload, headers)
+	resp, err := makeRequest("POST", apiUrl+"/players", payload, headers)
 	if err != nil {
 		log.Println(err)
 		return map[string]bool{"success": false}

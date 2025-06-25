@@ -11,7 +11,7 @@ import { transliterate } from '../helpers/transliterate';
 import { GetSettings, SearchPlayerInApi, SendUsersToAPI } from '../../wailsjs/go/main/App';
 import { PlayerNamesMap } from '../helpers/playerNamesMap';
 import { main } from '../../wailsjs/go/models';
-import {RankIndicator} from './RankIndicator';
+import { RankIndicator } from './RankIndicator';
 
 dayjs.extend(relativeTime);
 
@@ -65,41 +65,43 @@ export const Players = ({
 
       const settings = await GetSettings();
       const parsedPlayers = await playersParser(replays);
-      const apiPlayers = (await SearchPlayerInApi('')) || [];
 
       if (!settings.playerInfoSharingDisabled) {
-        setPlayers(mergeWithApiPlayers(parsedPlayers, apiPlayers));
-      } else {
+        await SendUsersToAPI(
+          players.map((player) => {
+            const sortedHistory = [...player.history].sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+            const newest = sortedHistory[0];
+            const oldest = sortedHistory[sortedHistory.length - 1];
+
+            return {
+              usernames: playerNamesMap.getNames(player.id),
+              ranks: player.history.map((history) => parseInt(history.enemyRank)),
+              eugenId: parseInt(player.id),
+              lastKnownRank: newest ? parseInt(newest.enemyRank) : undefined,
+              lastKnownRankCreatedAt: newest ? dayjs(newest.createdAt).toISOString() : undefined,
+              oldestReplayCreatedAt: oldest ? dayjs(oldest.createdAt).toISOString() : undefined
+            };
+          }) as main.PostUser[]
+        );
+      }
+
+      const apiPlayers = (await SearchPlayerInApi('')) || [];
+
+      if (settings.playerInfoSharingDisabled) {
         setPlayers(
           parsedPlayers.map((player) => ({
             ...player,
             ranks: player.history.map((history) => history.enemyRank)
           }))
         );
+      } else {
+        console.log('Merging parsed players with API players', parsedPlayers, apiPlayers);
+        setPlayers(mergeWithApiPlayers(parsedPlayers, apiPlayers));
       }
 
       setIsLoading(false);
-
-      if (settings.playerInfoSharingDisabled || !players.length) return;
-
-      SendUsersToAPI(
-        players.map((player) => {
-          const sortedHistory = [...player.history].sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-          const newest = sortedHistory[0];
-          const oldest = sortedHistory[sortedHistory.length - 1];
-
-          return {
-            usernames: playerNamesMap.getNames(player.id),
-            ranks: player.history.map((history) => parseInt(history.enemyRank)),
-            eugenId: parseInt(player.id),
-            lastKnownRank: newest ? parseInt(newest.enemyRank) : undefined,
-            lastKnownRankCreatedAt: newest ? dayjs(newest.createdAt).toISOString() : undefined,
-            oldestReplayCreatedAt: oldest ? dayjs(oldest.createdAt).toISOString() : undefined
-          };
-        }) as main.PostUser[]
-      );
     };
 
     fetch();
@@ -129,7 +131,7 @@ export const Players = ({
     const query = e.target.value.trim();
     setSearchQuery(query);
 
-    if (query.length >= 2) {
+    if (query.length >= 1) {
       const settings = await GetSettings();
 
       if (settings.playerInfoSharingDisabled || !players.length) return;
