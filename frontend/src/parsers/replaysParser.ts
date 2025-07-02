@@ -10,6 +10,7 @@ import maps from '../data/maps.json' assert { type: 'json' };
 import { GetSettings } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import { PlayerNamesMap } from '../helpers/playerNamesMap';
+import { expectedEloChange } from '../helpers/expectedEloChange';
 
 const typedUnits: GenericLookupAdapterObject[] = units as GenericLookupAdapterObject[];
 const typedDivisions: GenericLookupAdapterObject[] = divisions as GenericLookupAdapterObject[];
@@ -21,12 +22,15 @@ export type Replay1v1 = CommonReplayData & {
   enemyDivision: string;
   enemyRank: string;
   enemyDeck: string;
+  enemyElo: string;
+  playerElo: string;
+  eloChange: number;
 };
 
 export type Replay2v2 = CommonReplayData & {
-  allyData: PlayerData,
+  allyData: PlayerData;
   enemiesData: PlayerData[];
-}
+};
 
 export type EugenUser = {
   eugenId: string;
@@ -45,7 +49,7 @@ export type CommonReplayData = {
   duration: number;
   map: string;
   result: 'Victory' | 'Defeat' | 'Draw';
-}
+};
 
 type PlayerData = {
   playerId: string;
@@ -53,14 +57,14 @@ type PlayerData = {
   playerDivision: string;
   playerRank: string;
   playerDeck: string;
-}
+};
 
 type ParserResult = {
   replays1v1: Replay1v1[];
   replays2v2: Replay2v2[];
   playerNamesMap: PlayerNamesMap;
   eugenUsers: EugenUser[];
-}
+};
 
 const lookup = new GenericLookupAdapter(typedUnits, typedDivisions);
 
@@ -79,14 +83,15 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
 
   data.forEach((replay: any) => {
     const players = Object.entries(replay.warno.players) ?? {};
-    const playerKey = replay.warno.localPlayerKey
-    const playerId = replay.warno.localPlayerEugenId
+    const playerKey = replay.warno.localPlayerKey;
+    const playerId = replay.warno.localPlayerEugenId;
 
     if (settings.startDate && new Date(replay.createdAt) < new Date(settings.startDate)) {
       return;
     }
 
-    if (playerKey.length == 0 ||
+    if (
+      playerKey.length == 0 ||
       (settings.playerIds &&
         !settings.playerIds?.includes(replay.warno.players?.[playerKey]?.PlayerUserId))
     ) {
@@ -103,12 +108,16 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
         playerNames: [replay.warno.players?.[playerKey].PlayerName]
       });
     } else if (
-      !eugenUsers[eugenUserIndex].playerNames.includes(
-        replay.warno.players?.[playerKey].PlayerName
-      )
+      !eugenUsers[eugenUserIndex].playerNames.includes(replay.warno.players?.[playerKey].PlayerName)
     ) {
       eugenUsers[eugenUserIndex].playerNames.push(replay.warno.players?.[playerKey].PlayerName);
     }
+
+    const result = ['4', '5', '6'].includes(replay.warno.result.Victory)
+      ? 'Victory'
+      : ['0', '1', '2'].includes(replay.warno.result.Victory)
+      ? 'Defeat'
+      : 'Draw';
 
     const commonReplayData: CommonReplayData = {
       createdAt: replay.createdAt,
@@ -121,31 +130,37 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
       division: getDivisionName(replay.warno.players?.[playerKey].PlayerDeckContent),
       duration: parseInt(replay.warno.result.Duration),
       map: typedMaps[replay.warno.game.Map] || replay.warno.game.Map,
-      result: ['4', '5', '6'].includes(replay.warno.result.Victory)
-        ? 'Victory'
-        : ['0', '1', '2'].includes(replay.warno.result.Victory)
-          ? 'Defeat'
-          : 'Draw',
-    }
+      result
+    };
 
     if (replay.warno.playerCount == 2) {
-      const enemyKey = Object.entries(replay.warno.players).find(([key, _]) => key != playerKey)?.[0]
+      const enemyKey = Object.entries(replay.warno.players).find(
+        ([key, _]) => key != playerKey
+      )?.[0];
       if (!enemyKey) {
-        return
+        return;
       }
 
-      playerNamesMap.incrementPlayerNameCount(replay.warno.players[enemyKey].PlayerUserId,
-        replay.warno.players[enemyKey].PlayerName)
+      playerNamesMap.incrementPlayerNameCount(
+        replay.warno.players[enemyKey].PlayerUserId,
+        replay.warno.players[enemyKey].PlayerName
+      );
 
       replays1v1.push({
         ...commonReplayData,
+        playerElo: replay.warno.players?.[playerKey].PlayerElo,
         enemyName: replay.warno.players[enemyKey].PlayerName,
         enemyId: replay.warno.players[enemyKey].PlayerUserId,
         enemyDivision: getDivisionName(replay.warno.players?.[enemyKey].PlayerDeckContent),
         enemyRank: replay.warno.players[enemyKey].PlayerRank,
-        enemyDeck: replay.warno.players?.[enemyKey]?.PlayerDeckContent
+        enemyDeck: replay.warno.players?.[enemyKey]?.PlayerDeckContent,
+        enemyElo: replay.warno.players?.[enemyKey]?.PlayerElo,
+        eloChange: expectedEloChange(
+          parseInt(replay.warno.players?.[playerKey].PlayerElo),
+          parseInt(replay.warno.players?.[enemyKey].PlayerElo),
+          result === 'Victory' ? 1 : result === 'Defeat' ? 0 : 0.5
+        )
       });
-
     } else if (replay.warno.playerCount == 4) {
       const allies: PlayerData[] = [];
       const enemies: PlayerData[] = [];
@@ -175,7 +190,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
 
       if (allies.length == 1 && enemies.length == 2) {
         playerNamesMap.incrementPlayerNameCount(allies[0].playerId, allies[0].playerName);
-        enemies.forEach(enemy => {
+        enemies.forEach((enemy) => {
           playerNamesMap.incrementPlayerNameCount(enemy.playerId, enemy.playerName);
         });
 
@@ -186,7 +201,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
         });
       }
     }
-  })
+  });
 
   return {
     replays1v1: replays1v1,

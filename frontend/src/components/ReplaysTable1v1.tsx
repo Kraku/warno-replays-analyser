@@ -62,7 +62,8 @@ const columns: ColumnType<Replay1v1>[] = [
     title: 'Enemy Division',
     dataIndex: 'enemyDivision',
     key: 'enemyDivision',
-    sorter: (a: Replay1v1, b: Replay1v1) => (a.enemyDivision || '').localeCompare(b.enemyDivision || ''),
+    sorter: (a: Replay1v1, b: Replay1v1) =>
+      (a.enemyDivision || '').localeCompare(b.enemyDivision || ''),
     render: (value: string, record) => (
       <div>
         {value}{' '}
@@ -107,8 +108,15 @@ const columns: ColumnType<Replay1v1>[] = [
       { text: 'Defeat', value: 'Defeat' },
       { text: 'Draw', value: 'Draw' }
     ],
-    onFilter: (value: boolean | React.Key, record: Replay1v1) => record.result.includes(String(value)),
+    onFilter: (value: boolean | React.Key, record: Replay1v1) =>
+      record.result.includes(String(value)),
     sorter: (a: Replay1v1, b: Replay1v1) => a.result.localeCompare(b.result)
+  },
+  {
+    title: 'Elo Change',
+    dataIndex: 'eloChange',
+    key: 'eloChange',
+    sorter: (a: Replay1v1, b: Replay1v1) => parseInt(a.enemyElo) - parseInt(b.enemyElo)
   }
 ];
 

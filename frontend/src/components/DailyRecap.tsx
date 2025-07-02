@@ -23,6 +23,9 @@ const ColoredCircle = ({ winRate }: { winRate: number }) => {
   );
 };
 
+const pluralize = (count: number, singular: string, plural: string) =>
+  count === 1 ? singular : plural;
+
 const calculateStats = (replays: Replay1v1[]) => {
   const todaysReplays = replays.filter((r) => isToday(r.createdAt));
   if (!todaysReplays.length) return undefined;
@@ -33,8 +36,9 @@ const calculateStats = (replays: Replay1v1[]) => {
   const losses = todaysReplays.filter((r) => r.result === 'Defeat').length;
   const draws = todaysReplays.filter((r) => r.result === 'Draw').length;
   const winRate = Math.round((wins / gamesPlayed) * 100);
+  const eloChange = Number(todaysReplays.reduce((acc, r) => acc + r.eloChange, 0).toFixed(2));
 
-  return { gamesPlayed, timeSpent, wins, losses, draws, winRate };
+  return { gamesPlayed, timeSpent, wins, losses, draws, winRate, eloChange };
 };
 
 export const DailyRecap = ({ replays }: DailyRecapProps) => {
@@ -45,11 +49,20 @@ export const DailyRecap = ({ replays }: DailyRecapProps) => {
   }, [replays]);
 
   const descriptionItems: DescriptionsProps['items'] = [
-    { key: 'gamesPlayed', label: 'Games Played', children: stats?.gamesPlayed ?? 0 },
+    {
+      key: 'gamesPlayed',
+      label: 'Games Played',
+      children: `${stats?.gamesPlayed ?? 0} ${pluralize(stats?.gamesPlayed ?? 0, 'game', 'games')}`
+    },
     {
       key: 'timeSpent',
       label: 'Time Spent',
       children: stats ? formatDuration(stats.timeSpent) : '0m'
+    },
+    {
+      key: 'empty',
+      label: '',
+      children: ''
     },
     {
       key: 'winRate',
@@ -62,9 +75,22 @@ export const DailyRecap = ({ replays }: DailyRecapProps) => {
         '0%'
       )
     },
-    { key: 'wins', label: 'Wins', children: stats?.wins ?? 0 },
-    { key: 'losses', label: 'Losses', children: stats?.losses ?? 0 },
-    { key: 'draws', label: 'Draws', children: stats?.draws ?? 0 }
+    {
+      key: 'results',
+      label: 'Results',
+      children: `${stats?.wins ?? 0} ${pluralize(stats?.wins ?? 0, 'win', 'wins')} / ${
+        stats?.losses ?? 0
+      } ${pluralize(stats?.losses ?? 0, 'loss', 'losses')} / ${stats?.draws ?? 0} ${pluralize(
+        stats?.draws ?? 0,
+        'draw',
+        'draws'
+      )}`
+    },
+    {
+      key: 'eloChange',
+      label: 'Elo Change',
+      children: stats ? `${stats.eloChange > 0 ? '+' : ''}${stats.eloChange}` : '0'
+    }
   ];
 
   return (
