@@ -13,6 +13,7 @@ type PostUser struct {
 	Usernames              []string  `json:"usernames"`
 	Ranks                  []uint    `json:"ranks"`
 	EugenId                uint      `json:"eugenId"`
+	SteamId                string    `json:"steamId"`
 	LastKnownRank          uint      `json:"lastKnownRank"`
 	LastKnownRankCreatedAt time.Time `json:"lastKnownRankCreatedAt"`
 	OldestReplayCreatedAt  time.Time `json:"oldestReplayCreatedAt"`
@@ -22,6 +23,7 @@ type GetUser struct {
 	Usernames              []string  `json:"usernames"`
 	Ranks                  []uint    `json:"ranks"`
 	EugenId                uint      `json:"eugenId"`
+	SteamId                string    `json:"steamId"`
 	CreatedAt              time.Time `json:"createdAt"`
 	UpdatedAt              time.Time `json:"updatedAt"`
 	LastKnownRank          uint      `json:"lastKnownRank"`

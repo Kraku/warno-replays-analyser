@@ -25,6 +25,7 @@ export type Replay1v1 = CommonReplayData & {
   enemyElo: string;
   playerElo: string;
   eloChange: number;
+  enemySteamId?: string;
 };
 
 export type Replay2v2 = CommonReplayData & {
@@ -81,7 +82,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
   const replays1v1: Replay1v1[] = [];
   const replays2v2: Replay2v2[] = [];
 
-  data.forEach((replay: any) => {
+  data.forEach((replay: main.WarnoData) => {
     const players = Object.entries(replay.warno.players) ?? {};
     const playerKey = replay.warno.localPlayerKey;
     const playerId = replay.warno.localPlayerEugenId;
@@ -155,6 +156,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
         enemyRank: replay.warno.players[enemyKey].PlayerRank,
         enemyDeck: replay.warno.players?.[enemyKey]?.PlayerDeckContent,
         enemyElo: replay.warno.players?.[enemyKey]?.PlayerElo,
+        enemySteamId: replay.warno.players?.[enemyKey]?.PlayerAvatar.split('/').pop(),
         eloChange: expectedEloChange(
           parseInt(replay.warno.players?.[playerKey].PlayerElo),
           parseInt(replay.warno.players?.[enemyKey].PlayerElo),

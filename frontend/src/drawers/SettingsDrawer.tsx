@@ -89,14 +89,18 @@ export const SettingsDrawer = ({
           extra="Only replays after this date will be shown.">
           <DatePicker
             showTime
-            onOk={() => { }}
+            onOk={() => {}}
             className="w-full"
             needConfirm={false}
             showNow={false}
             presets={[
               {
-                label: 'Last reset',
+                label: 'Season 2',
                 value: dayjs('2025-02-28 08:25', 'YYYY-MM-DD HH:mm')
+              },
+              {
+                label: 'Season 3',
+                value: dayjs('2025-07-07 10:00', 'YYYY-MM-DD HH:mm')
               }
             ]}
           />

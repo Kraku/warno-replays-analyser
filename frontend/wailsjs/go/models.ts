@@ -66,6 +66,7 @@ export namespace main {
 	    usernames: string[];
 	    ranks: number[];
 	    eugenId: number;
+	    steamId: string;
 	    // Go type: time
 	    createdAt: any;
 	    // Go type: time
@@ -85,6 +86,7 @@ export namespace main {
 	        this.usernames = source["usernames"];
 	        this.ranks = source["ranks"];
 	        this.eugenId = source["eugenId"];
+	        this.steamId = source["steamId"];
 	        this.createdAt = this.convertValues(source["createdAt"], null);
 	        this.updatedAt = this.convertValues(source["updatedAt"], null);
 	        this.lastKnownRank = source["lastKnownRank"];
@@ -196,6 +198,7 @@ export namespace main {
 	    usernames: string[];
 	    ranks: number[];
 	    eugenId: number;
+	    steamId: string;
 	    lastKnownRank: number;
 	    // Go type: time
 	    lastKnownRankCreatedAt: any;
@@ -211,6 +214,7 @@ export namespace main {
 	        this.usernames = source["usernames"];
 	        this.ranks = source["ranks"];
 	        this.eugenId = source["eugenId"];
+	        this.steamId = source["steamId"];
 	        this.lastKnownRank = source["lastKnownRank"];
 	        this.lastKnownRankCreatedAt = this.convertValues(source["lastKnownRankCreatedAt"], null);
 	        this.oldestReplayCreatedAt = this.convertValues(source["oldestReplayCreatedAt"], null);
@@ -266,6 +270,50 @@ export namespace main {
 	        this.dailyRecapUser = source["dailyRecapUser"];
 	        this.playerInfoSharingDisabled = source["playerInfoSharingDisabled"];
 	        this.gameMode = source["gameMode"];
+	    }
+	}
+	export class SteamPlayer {
+	    steamid: string;
+	    communityvisibilitystate: number;
+	    profilestate: number;
+	    personaname: string;
+	    profileurl: string;
+	    avatar: string;
+	    avatarmedium: string;
+	    avatarfull: string;
+	    avatarhash: string;
+	    lastlogoff: number;
+	    personastate: number;
+	    primaryclanid: string;
+	    timecreated: number;
+	    personastateflags: number;
+	    gameextrainfo?: string;
+	    gameid?: string;
+	    loccountrycode?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SteamPlayer(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.steamid = source["steamid"];
+	        this.communityvisibilitystate = source["communityvisibilitystate"];
+	        this.profilestate = source["profilestate"];
+	        this.personaname = source["personaname"];
+	        this.profileurl = source["profileurl"];
+	        this.avatar = source["avatar"];
+	        this.avatarmedium = source["avatarmedium"];
+	        this.avatarfull = source["avatarfull"];
+	        this.avatarhash = source["avatarhash"];
+	        this.lastlogoff = source["lastlogoff"];
+	        this.personastate = source["personastate"];
+	        this.primaryclanid = source["primaryclanid"];
+	        this.timecreated = source["timecreated"];
+	        this.personastateflags = source["personastateflags"];
+	        this.gameextrainfo = source["gameextrainfo"];
+	        this.gameid = source["gameid"];
+	        this.loccountrycode = source["loccountrycode"];
 	    }
 	}
 	export class Warno {

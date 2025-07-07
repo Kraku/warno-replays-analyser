@@ -24,6 +24,8 @@ export function GetReplays(arg1:Array<string>):Promise<Array<main.WarnoData>>;
 
 export function GetSettings():Promise<main.Settings>;
 
+export function GetSteamPlayer(arg1:string):Promise<main.SteamPlayer>;
+
 export function GetTeamNotes(arg1:string,arg2:string):Promise<string>;
 
 export function GetWarnoSaveFolders():Promise<string>;

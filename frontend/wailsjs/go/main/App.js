@@ -46,6 +46,10 @@ export function GetSettings() {
   return window['go']['main']['App']['GetSettings']();
 }
 
+export function GetSteamPlayer(arg1) {
+  return window['go']['main']['App']['GetSteamPlayer'](arg1);
+}
+
 export function GetTeamNotes(arg1, arg2) {
   return window['go']['main']['App']['GetTeamNotes'](arg1, arg2);
 }

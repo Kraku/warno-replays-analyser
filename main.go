@@ -10,9 +10,10 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
-var version = "v1.7.0"
+var version = "v1.7.1"
 var apiUrl string
 var apiKey string
+var steamApiKey string
 
 //go:embed all:frontend/dist
 var assets embed.FS

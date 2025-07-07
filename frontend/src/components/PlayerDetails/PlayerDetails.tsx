@@ -1,8 +1,7 @@
 import { Player } from '../../parsers/playersParser';
-import { Card, Typography, Tag, Descriptions } from 'antd';
+import { Card, Typography, Tag, Descriptions, Avatar, Spin } from 'antd';
 import { useEffect, useState } from 'react';
-import { main } from '../../../wailsjs/go/models';
-import { GetPlayerGameHistory } from '../../../wailsjs/go/main/App';
+import { GetSteamPlayer } from '../../../wailsjs/go/main/App';
 import { OurGamesTable } from './OurGamesTable';
 import { getMinMax } from '../../helpers/getMinMax';
 import { PlayerNotes } from './PlayerNotes';
@@ -10,8 +9,37 @@ import { PlayerNamesMap } from '../../helpers/playerNamesMap';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { RankIndicator } from '../RankIndicator';
+import { main } from '../../../wailsjs/go/models';
+import ReactCountryFlag from 'react-country-flag';
 
 dayjs.extend(relativeTime);
+
+const getPersonaStateLabel = (steamPlayer?: main.SteamPlayer) => {
+  switch (steamPlayer?.personastate) {
+    case 0:
+      return 'Offline';
+    case 1:
+      return (
+        <div className="flex items-center gap-1">
+          <span className="inline-block w-2.5 h-2.5 rounded-full bg-green-500" />
+          Online
+          {steamPlayer.gameextrainfo === 'WARNO' && (
+            <Tag color="green" bordered={false}>
+              WARNO
+            </Tag>
+          )}
+        </div>
+      );
+    case 2:
+      return 'Busy';
+    case 3:
+      return 'Away';
+    case 4:
+      return 'Snooze';
+    default:
+      return 'Unknown';
+  }
+};
 
 export const PlayerDetails = ({
   player,
@@ -20,22 +48,20 @@ export const PlayerDetails = ({
   player: Player;
   playerNamesMap: PlayerNamesMap;
 }) => {
-  const [globalHistory, setGlobalHistory] = useState<main.PlayerGame[]>([]);
-  const [isGlobalHistoryLoading, setIsGlobalHistoryLoading] = useState(true);
+  const [steamPlayer, setSteamPlayer] = useState<main.SteamPlayer>();
+  const [isSteamPlayerLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    setGlobalHistory([]);
+    const fetcSteamData = async () => {
+      setIsLoading(true);
+      const steamPlayer = await GetSteamPlayer(player.steamId);
 
-    const fetchPlayers = async () => {
-      const data = await GetPlayerGameHistory(player.id);
-
-      setGlobalHistory(data.filter(({ enemyName }) => enemyName));
-      setIsGlobalHistoryLoading(false);
+      setSteamPlayer(steamPlayer);
+      setIsLoading(false);
     };
 
-    setIsGlobalHistoryLoading(true);
-    fetchPlayers();
-  }, [player.id]);
+    fetcSteamData();
+  }, [player.steamId]);
 
   const rankMinMax = getMinMax(player.ranks.flatMap((ranks) => parseInt(ranks)));
 
@@ -43,20 +69,25 @@ export const PlayerDetails = ({
     <Card
       title={
         <div className="flex gap-2 items-center mb-2">
-          <div className="max-w-[80%] truncate">
-            {playerNamesMap.getNames(player.id).join(', ')}
+          <div className="flex items-center justify-center w-10 h-10">
+            {isSteamPlayerLoading ? <Spin /> : <Avatar src={steamPlayer?.avatarmedium} size={38} />}
           </div>
 
-          <RankIndicator player={player} rankMinMax={rankMinMax} />
-          <Tag bordered={false}>#{player?.id}</Tag>
+          <div className="flex gap-2 items-center">
+            {steamPlayer?.loccountrycode ? (
+              <ReactCountryFlag countryCode={steamPlayer.loccountrycode} svg />
+            ) : null}
+
+            <div className="max-w-[80%] truncate">
+              {playerNamesMap.getNames(player.id).join(', ')}
+            </div>
+
+            <RankIndicator player={player} rankMinMax={rankMinMax} />
+            <Tag bordered={false}>#{player?.id}</Tag>
+          </div>
         </div>
       }>
       <div>
-        {/* <Typography.Title level={5} className="mb-2">
-          Games History<span className="text-xs text-neutral-400 ml-2">(last 10)</span>
-        </Typography.Title>
-
-        <GamesTable history={globalHistory} isLoading={isGlobalHistoryLoading} /> */}
         <Descriptions
           rootClassName="mb-4"
           items={[
@@ -73,6 +104,15 @@ export const PlayerDetails = ({
               children: player.oldestReplayCreatedAt
                 ? dayjs(player.oldestReplayCreatedAt).fromNow()
                 : 'N/A'
+            },
+            {
+              key: '4',
+              label: 'Steam',
+              children: isSteamPlayerLoading ? (
+                <Spin size="small" />
+              ) : (
+                getPersonaStateLabel(steamPlayer)
+              )
             }
           ]}
         />

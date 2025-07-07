@@ -21,6 +21,7 @@ export type Player = {
   lastKnownRank?: number | null;
   lastKnownRankCreatedAt?: string | null;
   oldestReplayCreatedAt?: string | null;
+  steamId: string;
 };
 
 const createPlayerHistory = (replay: Replay1v1): PlayerHistory => ({
@@ -40,6 +41,7 @@ const createNewPlayer = (replay: Replay1v1): Player => ({
   id: replay.enemyId,
   ranks: [replay.enemyRank],
   api: false,
+  steamId: replay.enemySteamId || '',
   history: [createPlayerHistory(replay)]
 });
 

@@ -79,6 +79,7 @@ export const Players = ({
               usernames: playerNamesMap.getNames(player.id),
               ranks: player.history.map((history) => parseInt(history.enemyRank)),
               eugenId: parseInt(player.id),
+              steamId: player.steamId || '',
               lastKnownRank: newest ? parseInt(newest.enemyRank) : undefined,
               lastKnownRankCreatedAt: newest ? dayjs(newest.createdAt).toISOString() : undefined,
               oldestReplayCreatedAt: oldest ? dayjs(oldest.createdAt).toISOString() : undefined
@@ -97,7 +98,6 @@ export const Players = ({
           }))
         );
       } else {
-        console.log('Merging parsed players with API players', parsedPlayers, apiPlayers);
         setPlayers(mergeWithApiPlayers(parsedPlayers, apiPlayers));
       }
 
@@ -119,6 +119,7 @@ export const Players = ({
           id: apiPlayer.eugenId.toString(),
           names: apiPlayer.usernames,
           ranks: apiPlayer.ranks.map(String),
+          steamId: apiPlayer.steamId || '',
           history: [],
           api: true
         }));
