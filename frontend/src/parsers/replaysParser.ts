@@ -87,10 +87,6 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
     const playerKey = replay.warno.localPlayerKey;
     const playerId = replay.warno.localPlayerEugenId;
 
-    if (settings.startDate && new Date(replay.createdAt) < new Date(settings.startDate)) {
-      return;
-    }
-
     if (
       playerKey.length == 0 ||
       (settings.playerIds &&

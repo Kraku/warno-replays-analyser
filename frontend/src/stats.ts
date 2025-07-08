@@ -1,3 +1,4 @@
+import { GetSettings } from '../wailsjs/go/main/App';
 import { calculateVictoryRatio } from './helpers/calculateVictoryRatio';
 import { calculateWeightedWinRate } from './helpers/calculateWeightedWinRate';
 import { PlayerNamesMap } from './helpers/playerNamesMap';
@@ -258,7 +259,24 @@ const trackRankHistory = (replays: Replay1v1[]): { date: string; rank: number }[
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 };
 
-export const getStats1v1 = (replays: Replay1v1[]): Statistics1v1 => {
+export const getStats1v1 = async (replays: Replay1v1[]) => {
+  const settings = await GetSettings();
+
+  replays = replays.filter((replay) => {
+    const replayDate = new Date(replay.createdAt);
+    const fromDate = settings.dateRangeFrom ? new Date(settings.dateRangeFrom) : null;
+    const toDate = settings.dateRangeTo ? new Date(settings.dateRangeTo) : null;
+
+    if (fromDate && toDate) {
+      return replayDate >= fromDate && replayDate <= toDate;
+    } else if (fromDate) {
+      return replayDate >= fromDate;
+    } else if (toDate) {
+      return replayDate <= toDate;
+    }
+    return true; // no filtering if no dates provided
+  });
+
   const totalGames = replays.length;
   const wonGames = replays.filter((replay) => replay.result === 'Victory').length;
   const victoryRatio = calculateVictoryRatio(wonGames, totalGames);

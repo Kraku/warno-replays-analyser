@@ -7,9 +7,15 @@ import (
 	"strings"
 )
 
+type DateRange struct {
+	From *string `json:"from,omitempty"`
+	To   *string `json:"to,omitempty"`
+}
+
 type Settings struct {
 	PlayerIds                 []string `json:"playerIds,omitempty"`
-	StartDate                 string   `json:"startDate,omitempty"`
+	DateRangeFrom             string   `json:"dateRangeFrom,omitempty"`
+	DateRangeTo               string   `json:"dateRangeTo,omitempty"`
 	DailyRecapUser            string   `json:"dailyRecapUser,omitempty"`
 	PlayerInfoSharingDisabled bool     `json:"playerInfoSharingDisabled,omitempty"`
 	GameMode                  string   `json:"gameMode,omitempty"`

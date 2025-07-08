@@ -1,5 +1,5 @@
-import { Button, Checkbox, DatePicker, Drawer, Form, Select, Switch } from 'antd';
-import dayjs from 'dayjs';
+import { Button, Checkbox, Drawer, Form, Select } from 'antd';
+
 import { useEffect, useState } from 'react';
 import { useForm } from 'antd/es/form/Form';
 import { SaveSettings, GetSettings, GetPlayerIdsOptions } from '../../wailsjs/go/main/App';
@@ -23,7 +23,6 @@ export const SettingsDrawer = ({
 
         form.setFieldsValue({
           playerIds: settings.playerIds,
-          startDate: settings.startDate ? dayjs(settings.startDate) : undefined,
           playerInfoSharingDisabled: settings.playerInfoSharingDisabled || false
         });
 
@@ -37,11 +36,12 @@ export const SettingsDrawer = ({
   }, []);
 
   const handleSave = async () => {
+    const settings = await GetSettings();
     const { playerIds = [], startDate, playerInfoSharingDisabled } = form.getFieldsValue(true);
 
     const params = {
+      ...settings,
       playerIds,
-      startDate: startDate?.toISOString(),
       playerInfoSharingDisabled
     };
 
@@ -81,28 +81,6 @@ export const SettingsDrawer = ({
               ),
               value: item.value
             }))}
-          />
-        </Form.Item>
-        <Form.Item
-          label="Start Date"
-          name="startDate"
-          extra="Only replays after this date will be shown.">
-          <DatePicker
-            showTime
-            onOk={() => {}}
-            className="w-full"
-            needConfirm={false}
-            showNow={false}
-            presets={[
-              {
-                label: 'Season 2',
-                value: dayjs('2025-02-28 08:25', 'YYYY-MM-DD HH:mm')
-              },
-              {
-                label: 'Season 3',
-                value: dayjs('2025-07-07 10:00', 'YYYY-MM-DD HH:mm')
-              }
-            ]}
           />
         </Form.Item>
         <Form.Item

@@ -254,7 +254,8 @@ export namespace main {
 	}
 	export class Settings {
 	    playerIds?: string[];
-	    startDate?: string;
+	    dateRangeFrom?: string;
+	    dateRangeTo?: string;
 	    dailyRecapUser?: string;
 	    playerInfoSharingDisabled?: boolean;
 	    gameMode?: string;
@@ -266,7 +267,8 @@ export namespace main {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.playerIds = source["playerIds"];
-	        this.startDate = source["startDate"];
+	        this.dateRangeFrom = source["dateRangeFrom"];
+	        this.dateRangeTo = source["dateRangeTo"];
 	        this.dailyRecapUser = source["dailyRecapUser"];
 	        this.playerInfoSharingDisabled = source["playerInfoSharingDisabled"];
 	        this.gameMode = source["gameMode"];

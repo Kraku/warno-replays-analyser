@@ -1,10 +1,11 @@
 import { Col, Row, Statistic, Table, Typography } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Statistics1v1 } from '../stats';
-import { renderVictoryRatio } from '../helpers/renderVictoryRatio';
+import { Statistics1v1 } from '../../stats';
+import { renderVictoryRatio } from '../../helpers/renderVictoryRatio';
 import RankHistoryChart from './RankHistoryChart';
-import { formatDuration } from '../helpers/formatDuration';
+import { formatDuration } from '../../helpers/formatDuration';
+import { StartDateSelect } from './StartDateSelect';
 
 dayjs.extend(relativeTime);
 
@@ -67,6 +68,7 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
   if (!stats) {
     return null;
   }
+
 
   const rankHistoryColumns = [
     createColumn('Division', 'division', 'division', undefined, (a, b) =>
@@ -163,6 +165,10 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
 
   return (
     <>
+      <div className="flex justify-end mb-4">
+        <StartDateSelect />
+      </div>
+
       <Row gutter={16}>
         <Col span={6}>
           <Statistic title="Games Total" value={stats.totalGames} />

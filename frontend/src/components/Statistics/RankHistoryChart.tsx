@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Select } from 'antd';
 import { ResponsiveContainer, LineChart, Line, YAxis, XAxis, Tooltip, Brush } from 'recharts';
 import dayjs from 'dayjs';
-import { RankHistory } from '../stats';
+import { RankHistory } from '../../stats';
 
 const { Option } = Select;
 
@@ -14,12 +14,23 @@ const RANGE_OPTIONS = [
 ];
 
 export default function RankHistoryChart({ rankHistory }: { rankHistory: RankHistory }) {
-  const [range, setRange] = useState('30');
+  const [range, setRange] = useState('all');
 
   const filteredData = useMemo(() => {
-    if (range === 'all') return rankHistory;
-    const cutoff = dayjs().subtract(Number(range), 'day');
-    return rankHistory.filter((item) => dayjs(item.date).isAfter(cutoff));
+    let data = rankHistory.filter((item) => item.rank !== 0);
+
+    if (data.length === 0) return [];
+    if (range === 'all') return data;
+
+    const newestDate = dayjs(
+      data.reduce(
+        (max, item) => (dayjs(item.date).isAfter(dayjs(max)) ? item.date : max),
+        data[0].date
+      )
+    );
+    const cutoff = newestDate.subtract(Number(range), 'day');
+
+    return data.filter((item) => dayjs(item.date).isAfter(cutoff));
   }, [rankHistory, range]);
 
   return (
