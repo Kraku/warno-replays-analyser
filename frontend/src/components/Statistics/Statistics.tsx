@@ -5,7 +5,7 @@ import { Statistics1v1 } from '../../stats';
 import { renderVictoryRatio } from '../../helpers/renderVictoryRatio';
 import RankHistoryChart from './RankHistoryChart';
 import { formatDuration } from '../../helpers/formatDuration';
-import { StartDateSelect } from './StartDateSelect';
+import { SeasonSelect } from './StartDateSelect';
 
 dayjs.extend(relativeTime);
 
@@ -68,7 +68,6 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
   if (!stats) {
     return null;
   }
-
 
   const rankHistoryColumns = [
     createColumn('Division', 'division', 'division', undefined, (a, b) =>
@@ -164,82 +163,71 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
     );
 
   return (
-    <>
-      <div className="flex justify-end mb-4">
-        <StartDateSelect />
+    <div className="flex w-full gap-4">
+      <div className="w-full pr-4 border-r border-neutral-800">
+        <Typography.Title level={4} className="mt-4">
+          Rank History
+        </Typography.Title>
+
+        <RankHistoryChart rankHistory={stats.rankHistory} />
+
+        <TableComponent
+          columns={winrateByEnemyRankColumns}
+          dataSource={winrateByEnemyRankData}
+          rowKey="bucket"
+          title="Victory Ratio by Enemy Rank"
+        />
+
+        <TableComponent
+          dataSource={stats.divisionVictoryRatios}
+          columns={rankHistoryColumns}
+          rowKey="division"
+          title="Victory Ratio per Division"
+        />
+
+        <TableComponent
+          dataSource={stats.enemyDivisionVictoryRatios}
+          columns={rankHistoryColumns}
+          rowKey="enemyDivision"
+          title="Victory Ratio Against Enemy Divisions"
+        />
+
+        <TableComponent
+          dataSource={stats.mostFrequentOpponents}
+          columns={[
+            createColumn('Enemy Division', 'enemyDivision', 'enemyDivision'),
+            createColumn('Count', 'count', 'count', undefined, (a, b) => a.count - b.count)
+          ]}
+          rowKey="enemyDivision"
+          title="Most Frequent Opponents"
+        />
+
+        <TableComponent
+          dataSource={stats.mapVictoryRatios}
+          columns={mapVictoryRatioColumns}
+          rowKey="map"
+          title="Map Victory Ratio"
+        />
       </div>
 
-      <Row gutter={16}>
-        <Col span={6}>
+      <div className="w-44">
+        <div className="flex mb-4 border-b border-neutral-800 pb-6">
+          <SeasonSelect />
+        </div>
+
+        <div className="flex flex-col gap-4">
           <Statistic title="Games Total" value={stats.totalGames} />
-        </Col>
-        <Col span={6}>
           <Statistic title="Games Won" value={stats.wonGames} />
-        </Col>
-        <Col span={6}>
           <Statistic title="Time Spent" value={formatDuration(stats.timeSpent)} />
-        </Col>
-        <Col span={6}>
           <Statistic title="Victory Ratio" value={renderVictoryRatio(stats.victoryRatio)} />
-        </Col>
-        <Col span={6}>
           <Statistic
             title="Average Game Duration"
             value={`${(stats.averageGameDuration / 60).toFixed(2)} min`}
           />
-        </Col>
-
-        <Col span={6}>
           <Statistic title="Longest Winning Streak" value={stats.longestWinningStreak} />
-        </Col>
-        <Col span={6}>
-          <Statistic title="Longest Losing Streak" value={stats.longestLosingStreak} />
-        </Col>
-      </Row>
-
-      <Typography.Title level={4} className="mt-4">
-        Rank History
-      </Typography.Title>
-
-      <RankHistoryChart rankHistory={stats.rankHistory} />
-
-      <TableComponent
-        columns={winrateByEnemyRankColumns}
-        dataSource={winrateByEnemyRankData}
-        rowKey="bucket"
-        title="Victory Ratio by Enemy Rank"
-      />
-
-      <TableComponent
-        dataSource={stats.divisionVictoryRatios}
-        columns={rankHistoryColumns}
-        rowKey="division"
-        title="Victory Ratio per Division"
-      />
-
-      <TableComponent
-        dataSource={stats.enemyDivisionVictoryRatios}
-        columns={rankHistoryColumns}
-        rowKey="enemyDivision"
-        title="Victory Ratio Against Enemy Divisions"
-      />
-
-      <TableComponent
-        dataSource={stats.mostFrequentOpponents}
-        columns={[
-          createColumn('Enemy Division', 'enemyDivision', 'enemyDivision'),
-          createColumn('Count', 'count', 'count', undefined, (a, b) => a.count - b.count)
-        ]}
-        rowKey="enemyDivision"
-        title="Most Frequent Opponents"
-      />
-
-      <TableComponent
-        dataSource={stats.mapVictoryRatios}
-        columns={mapVictoryRatioColumns}
-        rowKey="map"
-        title="Map Victory Ratio"
-      />
-    </>
+          <Statistic title="Longest Losing Streak" value={stats.longestLosingStreak} />{' '}
+        </div>
+      </div>
+    </div>
   );
 };

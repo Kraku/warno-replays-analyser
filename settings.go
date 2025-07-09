@@ -7,11 +7,6 @@ import (
 	"strings"
 )
 
-type DateRange struct {
-	From *string `json:"from,omitempty"`
-	To   *string `json:"to,omitempty"`
-}
-
 type Settings struct {
 	PlayerIds                 []string `json:"playerIds,omitempty"`
 	DateRangeFrom             string   `json:"dateRangeFrom,omitempty"`

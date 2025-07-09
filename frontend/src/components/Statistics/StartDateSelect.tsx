@@ -15,10 +15,10 @@ const seasonPresets: Record<SeasonKey, [dayjs.Dayjs | null, dayjs.Dayjs | null]>
   'Season 3': [dayjs('2025-07-07 10:00', 'YYYY-MM-DD HH:mm'), null]
 };
 
-export const StartDateSelect = () => {
+export const SeasonSelect = () => {
   const { refresh1v1Stats } = useReplayContext();
 
-  const [selectedSeason, setSelectedSeason] = useState<SeasonKey | null>(null);
+  const [selectedSeason, setSelectedSeason] = useState<SeasonKey>();
 
   useEffect(() => {
     const loadInitialDateRange = async () => {
@@ -33,32 +33,39 @@ export const StartDateSelect = () => {
           (pFrom?.isSame(from) ?? from === null) && (pTo?.isSame(to) ?? to === null)
       );
 
-      setSelectedSeason(matchedSeason?.[0] ?? null);
+      setSelectedSeason(matchedSeason?.[0]);
     };
 
     loadInitialDateRange();
   }, []);
 
-  const handleSeasonChange = async (seasonKey: SeasonKey) => {
+  const handleSeasonChange = async (seasonKey?: SeasonKey) => {
     setSelectedSeason(seasonKey);
 
     const settings = await GetSettings();
-    const [from, to] = seasonPresets[seasonKey];
 
-    const updatedSettings = {
-      ...settings,
-      dateRangeFrom: from?.toISOString(),
-      dateRangeTo: to?.toISOString()
-    };
+    let updatedSettings;
+    if (seasonKey) {
+      const [from, to] = seasonPresets[seasonKey];
+      updatedSettings = {
+        ...settings,
+        dateRangeFrom: from?.toISOString(),
+        dateRangeTo: to?.toISOString()
+      };
+    } else {
+      const { dateRangeFrom, dateRangeTo, ...rest } = settings;
+      updatedSettings = rest;
+    }
 
     await SaveSettings(updatedSettings);
-
     refresh1v1Stats();
   };
 
   return (
     <Select
       placeholder="Select a season"
+      allowClear
+      onClear={() => handleSeasonChange()}
       value={selectedSeason}
       onChange={handleSeasonChange}
       style={{ width: 240 }}
