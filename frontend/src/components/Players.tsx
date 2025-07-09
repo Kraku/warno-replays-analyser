@@ -6,12 +6,12 @@ import { Player, playersParser } from '../parsers/playersParser';
 import { List, Input, Button, Card, Empty, Typography } from 'antd';
 import { ApiOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { PlayerDetails } from './PlayerDetails/PlayerDetails';
-import { getMinMax } from '../helpers/getMinMax';
 import { transliterate } from '../helpers/transliterate';
-import { GetSettings, SearchPlayerInApi, SendUsersToAPI } from '../../wailsjs/go/main/App';
+import { GetSettings, SearchPlayerInApi, SendPlayersToAPI } from '../../wailsjs/go/main/App';
 import { PlayerNamesMap } from '../helpers/playerNamesMap';
 import { main } from '../../wailsjs/go/models';
 import { RankIndicator } from './RankIndicator';
+import { getMinMax } from '../helpers/getMinMax';
 
 dayjs.extend(relativeTime);
 
@@ -67,7 +67,7 @@ export const Players = ({
       const parsedPlayers = await playersParser(replays);
 
       if (!settings.playerInfoSharingDisabled) {
-        await SendUsersToAPI(
+         SendPlayersToAPI(
           players.map((player) => {
             const sortedHistory = [...player.history].sort(
               (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -82,7 +82,14 @@ export const Players = ({
               steamId: player.steamId || '',
               lastKnownRank: newest ? parseInt(newest.enemyRank) : undefined,
               lastKnownRankCreatedAt: newest ? dayjs(newest.createdAt).toISOString() : undefined,
-              oldestReplayCreatedAt: oldest ? dayjs(oldest.createdAt).toISOString() : undefined
+              oldestReplayCreatedAt: oldest ? dayjs(oldest.createdAt).toISOString() : undefined,
+              replays: player.history
+                .map((history) => ({
+                  eugenId: history.id,
+                  division: history.enemyDivision,
+                  createdAt: dayjs(history.createdAt).toISOString()
+                }))
+                .filter(({ division }) => division !== 'Unknown')
             };
           }) as main.PostUser[]
         );

@@ -11,6 +11,7 @@ export type PlayerHistory = {
   duration: number;
   map: string;
   enemyRank: string;
+  id: string;
 };
 
 export type Player = {
@@ -34,7 +35,8 @@ const createPlayerHistory = (replay: Replay1v1): PlayerHistory => ({
   createdAt: replay.createdAt,
   duration: replay.duration,
   map: replay.map,
-  enemyRank: replay.enemyRank
+  enemyRank: replay.enemyRank,
+  id: replay.id
 });
 
 const createNewPlayer = (replay: Replay1v1): Player => ({

@@ -86,7 +86,7 @@ export const SettingsDrawer = ({
         <Form.Item
           name="playerInfoSharingDisabled"
           valuePropName="checked"
-          extra="When this is enabled, your replay data stays private — we won’t collect any opponent names, ranks, or Eugen IDs. You’ll also only be able to search for players you’ve already played with.">
+          extra="When this is enabled, your replay data stays private — we won’t collect any opponent names, ranks, or Eugen IDs, etc. You’ll also only be able to search for players you’ve already played with.">
           <Checkbox>Disable Player Info Sharing</Checkbox>
         </Form.Item>
       </Form>

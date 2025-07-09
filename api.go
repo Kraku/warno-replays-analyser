@@ -9,14 +9,29 @@ import (
 	"time"
 )
 
+type GetReplay struct {
+	ID        uint      `json:"id"`
+	Division  string    `json:"division"`
+	EugenId   string    `json:"eugenId"`
+	CreatedAt time.Time `json:"createdAt"`
+	UserID    uint      `json:"userID"`
+}
+
+type PostReplay struct {
+	Division  string    `json:"division"`
+	EugenId   string    `json:"eugenId"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
 type PostUser struct {
-	Usernames              []string  `json:"usernames"`
-	Ranks                  []uint    `json:"ranks"`
-	EugenId                uint      `json:"eugenId"`
-	SteamId                string    `json:"steamId"`
-	LastKnownRank          uint      `json:"lastKnownRank"`
-	LastKnownRankCreatedAt time.Time `json:"lastKnownRankCreatedAt"`
-	OldestReplayCreatedAt  time.Time `json:"oldestReplayCreatedAt"`
+	Usernames              []string     `json:"usernames"`
+	Ranks                  []uint       `json:"ranks"`
+	EugenId                uint         `json:"eugenId"`
+	SteamId                string       `json:"steamId"`
+	LastKnownRank          uint         `json:"lastKnownRank"`
+	LastKnownRankCreatedAt time.Time    `json:"lastKnownRankCreatedAt"`
+	OldestReplayCreatedAt  time.Time    `json:"oldestReplayCreatedAt"`
+	Replays                []PostReplay `json:"replays,omitempty"`
 }
 
 type GetUser struct {
@@ -83,7 +98,7 @@ func (a *App) SearchPlayerInApi(q string) []GetUser {
 	return result
 }
 
-func (a *App) SendUsersToAPI(users []PostUser) map[string]bool {
+func (a *App) SendPlayersToAPI(users []PostUser) map[string]bool {
 	if apiUrl == "" || apiKey == "" {
 		log.Println("Error: API_URL or API_KEY is not set")
 		return map[string]bool{"success": false}
@@ -113,4 +128,37 @@ func (a *App) SendUsersToAPI(users []PostUser) map[string]bool {
 	}
 
 	return map[string]bool{"success": true}
+}
+
+func (a *App) GetPlayerReplays(id string) []GetReplay {
+	if apiUrl == "" || apiKey == "" {
+		log.Println("Error: API_URL or API_KEY is not set")
+		return []GetReplay{}
+	}
+
+	query := fmt.Sprintf("%s/players/%s/replays", apiUrl, id)
+
+	headers := map[string]string{
+		"Authorization": "Bearer " + apiKey,
+	}
+
+	resp, err := makeRequest("GET", query, nil, headers)
+	if err != nil {
+		log.Println(err)
+		return []GetReplay{}
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("Error: received non-OK HTTP status: %d", resp.StatusCode)
+		return []GetReplay{}
+	}
+
+	var result []GetReplay
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		log.Printf("Error decoding response body: %v", err)
+		return nil
+	}
+
+	return result
 }

@@ -62,6 +62,45 @@ export namespace main {
 	        this.Version = source["Version"];
 	    }
 	}
+	export class GetReplay {
+	    id: number;
+	    division: string;
+	    eugenId: string;
+	    // Go type: time
+	    createdAt: any;
+	    userID: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new GetReplay(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.division = source["division"];
+	        this.eugenId = source["eugenId"];
+	        this.createdAt = this.convertValues(source["createdAt"], null);
+	        this.userID = source["userID"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class GetUser {
 	    usernames: string[];
 	    ranks: number[];
@@ -194,6 +233,41 @@ export namespace main {
 	        this.value = source["value"];
 	    }
 	}
+	export class PostReplay {
+	    division: string;
+	    eugenId: string;
+	    // Go type: time
+	    createdAt: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new PostReplay(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.division = source["division"];
+	        this.eugenId = source["eugenId"];
+	        this.createdAt = this.convertValues(source["createdAt"], null);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
 	export class PostUser {
 	    usernames: string[];
 	    ranks: number[];
@@ -204,6 +278,7 @@ export namespace main {
 	    lastKnownRankCreatedAt: any;
 	    // Go type: time
 	    oldestReplayCreatedAt: any;
+	    replays?: PostReplay[];
 	
 	    static createFrom(source: any = {}) {
 	        return new PostUser(source);
@@ -218,6 +293,7 @@ export namespace main {
 	        this.lastKnownRank = source["lastKnownRank"];
 	        this.lastKnownRankCreatedAt = this.convertValues(source["lastKnownRankCreatedAt"], null);
 	        this.oldestReplayCreatedAt = this.convertValues(source["oldestReplayCreatedAt"], null);
+	        this.replays = this.convertValues(source["replays"], PostReplay);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

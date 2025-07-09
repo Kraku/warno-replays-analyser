@@ -1,9 +1,8 @@
 import { Player } from '../../parsers/playersParser';
 import { Card, Typography, Tag, Descriptions, Avatar, Spin } from 'antd';
 import { useEffect, useState } from 'react';
-import { GetSteamPlayer } from '../../../wailsjs/go/main/App';
+import {  GetSteamPlayer } from '../../../wailsjs/go/main/App';
 import { OurGamesTable } from './OurGamesTable';
-import { getMinMax } from '../../helpers/getMinMax';
 import { PlayerNotes } from './PlayerNotes';
 import { PlayerNamesMap } from '../../helpers/playerNamesMap';
 import dayjs from 'dayjs';
@@ -11,6 +10,8 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { RankIndicator } from '../RankIndicator';
 import { main } from '../../../wailsjs/go/models';
 import ReactCountryFlag from 'react-country-flag';
+import { getMinMax } from '../../helpers/getMinMax';
+import { Divisions } from './Divisions';
 
 dayjs.extend(relativeTime);
 
@@ -49,15 +50,15 @@ export const PlayerDetails = ({
   playerNamesMap: PlayerNamesMap;
 }) => {
   const [steamPlayer, setSteamPlayer] = useState<main.SteamPlayer>();
-  const [isSteamPlayerLoading, setIsLoading] = useState<boolean>(true);
+  const [isSteamPlayerLoading, setSteamPlayerLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetcSteamData = async () => {
-      setIsLoading(true);
+      setSteamPlayerLoading(true);
       const steamPlayer = await GetSteamPlayer(player.steamId);
 
       setSteamPlayer(steamPlayer);
-      setIsLoading(false);
+      setSteamPlayerLoading(false);
     };
 
     fetcSteamData();
@@ -133,6 +134,12 @@ export const PlayerDetails = ({
         </Typography.Title>
 
         <OurGamesTable history={player.history} />
+
+        <Typography.Title level={5} className="mb-2">
+          Divisions
+        </Typography.Title>
+
+        <Divisions playerId={player.id} />
 
         <PlayerNotes player={player} />
       </div>

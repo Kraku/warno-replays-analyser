@@ -20,6 +20,8 @@ export function GetPlayerIdsOptions():Promise<Array<main.PlayerIdsOption>>;
 
 export function GetPlayerNotes(arg1:string):Promise<string>;
 
+export function GetPlayerReplays(arg1:string):Promise<Array<main.GetReplay>>;
+
 export function GetReplays(arg1:Array<string>):Promise<Array<main.WarnoData>>;
 
 export function GetSettings():Promise<main.Settings>;
@@ -34,4 +36,4 @@ export function SaveSettings(arg1:main.Settings):Promise<void>;
 
 export function SearchPlayerInApi(arg1:string):Promise<Array<main.GetUser>>;
 
-export function SendUsersToAPI(arg1:Array<main.PostUser>):Promise<Record<string, boolean>>;
+export function SendPlayersToAPI(arg1:Array<main.PostUser>):Promise<Record<string, boolean>>;

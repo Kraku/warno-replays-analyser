@@ -13,7 +13,10 @@ import { PlayerNamesMap } from '../helpers/playerNamesMap';
 import { expectedEloChange } from '../helpers/expectedEloChange';
 
 const typedUnits: GenericLookupAdapterObject[] = units as GenericLookupAdapterObject[];
-const typedDivisions: GenericLookupAdapterObject[] = divisions as GenericLookupAdapterObject[];
+const typedDivisions: GenericLookupAdapterObject[] = (divisions as any[]).map((division) => ({
+  id: division.id,
+  descriptor: division.name
+}));
 const typedMaps: Record<string, string> = maps as Record<string, string>;
 
 export type Replay1v1 = CommonReplayData & {
@@ -49,6 +52,7 @@ export type CommonReplayData = {
   deck: string;
   duration: number;
   map: string;
+  id: string;
   result: 'Victory' | 'Defeat' | 'Draw';
 };
 
@@ -71,6 +75,10 @@ const lookup = new GenericLookupAdapter(typedUnits, typedDivisions);
 
 export const getDivisionName = (code: string) => {
   const id = code ? decodeDeckString(code, lookup).division.id : null;
+
+  if (id && !divisions.find((division) => division.id === id)) {
+    console.warn(`Unknown division id: ${id}`, code);
+  }
 
   return divisions.find((division) => division.id === id)?.name || 'Unknown';
 };
@@ -127,6 +135,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
       division: getDivisionName(replay.warno.players?.[playerKey].PlayerDeckContent),
       duration: parseInt(replay.warno.result.Duration),
       map: typedMaps[replay.warno.game.Map] || replay.warno.game.Map,
+      id: replay.warno.game.UniqueSessionId,
       result
     };
 

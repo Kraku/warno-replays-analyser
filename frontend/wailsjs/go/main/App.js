@@ -38,6 +38,10 @@ export function GetPlayerNotes(arg1) {
   return window['go']['main']['App']['GetPlayerNotes'](arg1);
 }
 
+export function GetPlayerReplays(arg1) {
+  return window['go']['main']['App']['GetPlayerReplays'](arg1);
+}
+
 export function GetReplays(arg1) {
   return window['go']['main']['App']['GetReplays'](arg1);
 }
@@ -66,6 +70,6 @@ export function SearchPlayerInApi(arg1) {
   return window['go']['main']['App']['SearchPlayerInApi'](arg1);
 }
 
-export function SendUsersToAPI(arg1) {
-  return window['go']['main']['App']['SendUsersToAPI'](arg1);
+export function SendPlayersToAPI(arg1) {
+  return window['go']['main']['App']['SendPlayersToAPI'](arg1);
 }
