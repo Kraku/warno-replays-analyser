@@ -244,5 +244,17 @@
     "alliance": "ECoalition/Axis",
     "country": "SOV",
     "id": 321
+  },
+  {
+    "name": "DIVMOB",
+    "alliance": "ECoalition/Allied",
+    "country": "BEL",
+    "id": 302
+  },
+  {
+    "name": "CLKA",
+    "alliance": "ECoalition/Allied",
+    "country": "NL",
+    "id": 306
   }
 ]

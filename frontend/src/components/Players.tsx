@@ -67,7 +67,7 @@ export const Players = ({
       const parsedPlayers = await playersParser(replays);
 
       if (!settings.playerInfoSharingDisabled) {
-         SendPlayersToAPI(
+        await SendPlayersToAPI(
           players.map((player) => {
             const sortedHistory = [...player.history].sort(
               (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

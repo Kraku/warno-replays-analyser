@@ -10,7 +10,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 )
 
-var version = "v1.8.0"
+var version = "v1.8.1"
 var apiUrl string
 var apiKey string
 var steamApiKey string
