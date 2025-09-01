@@ -15,6 +15,7 @@ import { Teams } from './components/Teams';
 import { SettingsDrawer } from './drawers/SettingsDrawer';
 import { DailyRecap } from './components/DailyRecap';
 import { useReplayContext } from './contexts/ReplayContext';
+import { Leaderboard } from './components/Leaderboard';
 
 function App() {
   const {
@@ -114,6 +115,15 @@ function App() {
                       children: (
                         <div className="pt-4 mb-10">
                           {stats1v1 && <Stats1v1 stats={stats1v1} />}
+                        </div>
+                      )
+                    },
+                    {
+                      key: '4',
+                      label: 'Leaderboard',
+                      children: (
+                        <div className="pt-4 mb-10">
+                          <Leaderboard />
                         </div>
                       )
                     }

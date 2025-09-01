@@ -125,7 +125,7 @@ export const Players = ({
         .map((apiPlayer) => ({
           id: apiPlayer.eugenId.toString(),
           names: apiPlayer.usernames,
-          ranks: apiPlayer.ranks.map(String),
+          ranks: apiPlayer.ranks?.map(String),
           steamId: apiPlayer.steamId || '',
           history: [],
           api: true

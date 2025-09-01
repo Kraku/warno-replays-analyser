@@ -7,20 +7,21 @@ type RankIndicatorProps = {
     min: number | null;
     max: number | null;
   };
+  rank?: number;
 };
 
-export const RankIndicator: React.FC<RankIndicatorProps> = ({ player, rankMinMax }) => {
-  const rankMin = player.lastKnownRank ?? rankMinMax.min;
-  const rankMax = player.lastKnownRank ?? rankMinMax.max;
+export const RankIndicator: React.FC<RankIndicatorProps> = ({ player, rankMinMax, rank }) => {
+  // Prefer `rank` if available, otherwise use min/max
+  const rankMin = rank ?? rankMinMax.min;
+  const rankMax = rank ?? rankMinMax.max;
 
   if (!rankMin) return null;
 
-  const getRankColor = (rank: number) => {
-    if (rank <= 50) return 'bg-rose-600';
-    if (rank <= 100) return 'bg-orange-600';
-    if (rank <= 200) return 'bg-yellow-600';
-    if (rank <= 500) return 'bg-emerald-600';
-
+  const getRankColor = (r: number) => {
+    if (r <= 50) return 'bg-rose-600';
+    if (r <= 100) return 'bg-orange-600';
+    if (r <= 200) return 'bg-yellow-600';
+    if (r <= 500) return 'bg-emerald-600';
     return 'bg-neutral-600';
   };
 

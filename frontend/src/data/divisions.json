@@ -256,5 +256,53 @@
     "alliance": "ECoalition/Allied",
     "country": "NL",
     "id": 306
+  },
+  {
+    "name": "6e Division Legere Blindee",
+    "alliance": "ECoalition/Allied",
+    "country": "FR",
+    "id": 197
+  },
+  {
+    "name": "1 Canadian Division",
+    "alliance": "ECoalition/Allied",
+    "country": "CAN",
+    "id": 311
+  },
+  {
+    "name": "1. Luftlande Division",
+    "alliance": "ECoalition/Allied",
+    "country": "GER",
+    "id": 312
+  },
+  {
+    "name": "Division Acorazada Brunete",
+    "alliance": "ECoalition/Allied",
+    "country": "ESP",
+    "id": 313
+  },
+  {
+    "name": "31-Ya Tank. Div.",
+    "alliance": "ECoalition/Axis",
+    "country": "SOV",
+    "id": 315
+  },
+  {
+    "name": "19. Motostrelecke Divize",
+    "alliance": "ECoalition/Axis",
+    "country": "CZE",
+    "id": 316
+  },
+  {
+    "name": "1. Tankova Divize",
+    "alliance": "ECoalition/Axis",
+    "country": "CZE",
+    "id": 317
+  },
+  {
+    "name": "303. Tankova Divize",
+    "alliance": "ECoalition/Allied",
+    "country": "CZE",
+    "id": 318
   }
 ]

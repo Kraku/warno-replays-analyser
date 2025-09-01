@@ -1,7 +1,7 @@
 import { Player } from '../../parsers/playersParser';
 import { Card, Typography, Tag, Descriptions, Avatar, Spin } from 'antd';
 import { useEffect, useState } from 'react';
-import {  GetSteamPlayer } from '../../../wailsjs/go/main/App';
+import { GetEugenPlayer, GetSteamPlayer } from '../../../wailsjs/go/main/App';
 import { OurGamesTable } from './OurGamesTable';
 import { PlayerNotes } from './PlayerNotes';
 import { PlayerNamesMap } from '../../helpers/playerNamesMap';
@@ -50,14 +50,17 @@ export const PlayerDetails = ({
   playerNamesMap: PlayerNamesMap;
 }) => {
   const [steamPlayer, setSteamPlayer] = useState<main.SteamPlayer>();
+  const [eugenPlayer, setEugenPlayer] = useState<main.EugenPlayer>();
   const [isSteamPlayerLoading, setSteamPlayerLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetcSteamData = async () => {
       setSteamPlayerLoading(true);
       const steamPlayer = await GetSteamPlayer(player.steamId);
+      const eugenPlayer = await GetEugenPlayer(player.id);
 
       setSteamPlayer(steamPlayer);
+      setEugenPlayer(eugenPlayer);
       setSteamPlayerLoading(false);
     };
 
@@ -83,7 +86,7 @@ export const PlayerDetails = ({
               {playerNamesMap.getNames(player.id).join(', ')}
             </div>
 
-            <RankIndicator player={player} rankMinMax={rankMinMax} />
+            <RankIndicator player={player} rankMinMax={rankMinMax} rank={parseInt(eugenPlayer?.ELO_LB_rank ?? '0')} />
             <Tag bordered={false}>#{player?.id}</Tag>
           </div>
         </div>
@@ -94,7 +97,7 @@ export const PlayerDetails = ({
           items={[
             {
               key: '2',
-              label: 'Age of Last Known Rank',
+              label: 'Last Seen',
               children: player.lastKnownRankCreatedAt
                 ? dayjs(player.lastKnownRankCreatedAt).fromNow(true)
                 : 'N/A'

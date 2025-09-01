@@ -26,6 +26,14 @@ export function GetDailyRecap(arg1) {
   return window['go']['main']['App']['GetDailyRecap'](arg1);
 }
 
+export function GetEugenPlayer(arg1) {
+  return window['go']['main']['App']['GetEugenPlayer'](arg1);
+}
+
+export function GetLeaderboard() {
+  return window['go']['main']['App']['GetLeaderboard']();
+}
+
 export function GetPlayerGameHistory(arg1) {
   return window['go']['main']['App']['GetPlayerGameHistory'](arg1);
 }

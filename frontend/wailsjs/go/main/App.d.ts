@@ -14,6 +14,10 @@ export function GetAppVersions():Promise<Array<string>>;
 
 export function GetDailyRecap(arg1:string):Promise<main.DailyRecap>;
 
+export function GetEugenPlayer(arg1:string):Promise<main.EugenPlayer>;
+
+export function GetLeaderboard():Promise<Array<main.LeaderboardEntry>>;
+
 export function GetPlayerGameHistory(arg1:string):Promise<Array<main.PlayerGame>>;
 
 export function GetPlayerIdsOptions():Promise<Array<main.PlayerIdsOption>>;
