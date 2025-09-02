@@ -58,18 +58,25 @@ export const DailyRecap = ({ replays }: DailyRecapProps) => {
   >({});
 
   useEffect(() => {
-    const uniquePlayerIds = Array.from(new Set(replays.map((r) => r.playerId)));
-    const newStats: Record<string, ReturnType<typeof calculateStats>> = {};
+    const fetchStats = async () => {
+      const uniquePlayerIds = Array.from(new Set(replays.map((r) => r.playerId)));
+      const newStats: Record<string, ReturnType<typeof calculateStats>> = {};
 
-    uniquePlayerIds.forEach(async (playerId) => {
-      const playerReplays = replays.filter((r) => r.playerId === playerId);
+      await Promise.all(
+        uniquePlayerIds.map(async (playerId) => {
+          const playerReplays = replays.filter((r) => r.playerId === playerId);
 
-      const { ELO_LB_rank } = await GetEugenPlayer(playerId);
-      const stats = calculateStats(playerReplays, ELO_LB_rank);
-      if (stats) newStats[playerId] = stats;
-    });
+          const { ELO_LB_rank } = await GetEugenPlayer(playerId);
+          const stats = calculateStats(playerReplays, ELO_LB_rank);
 
-    setStatsByPlayer(newStats);
+          if (stats) newStats[playerId] = stats;
+        })
+      );
+
+      setStatsByPlayer(newStats);
+    };
+
+    fetchStats();
   }, [replays]);
 
   return (

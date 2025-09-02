@@ -15,6 +15,28 @@ import { Divisions } from './Divisions';
 
 dayjs.extend(relativeTime);
 
+const getRankedWinrate = (eugenPlayer?: main.EugenPlayer) => {
+  if (!eugenPlayer) return <span>N/A</span>;
+
+  const wins = Number(eugenPlayer.ranked_win) || 0;
+  const losses = Number(eugenPlayer.ranked_loss) || 0;
+  const fouls = Number(eugenPlayer.ranked_foul) || 0;
+
+  const totalGames = wins + losses + fouls;
+  if (totalGames === 0) return <span>N/A</span>;
+
+  const winrate = ((wins / totalGames) * 100).toFixed(0);
+
+  return (
+    <div className="flex items-center gap-1">
+      <span className="text-green-600">{wins}</span>/
+      <span className="text-red-600 ">{losses}</span>
+      {fouls > 0 && <span>/ {fouls}</span>}
+      <span className="text-neutral-400">({winrate}%)</span>
+    </div>
+  );
+};
+
 const getPersonaStateLabel = (steamPlayer?: main.SteamPlayer) => {
   switch (steamPlayer?.personastate) {
     case 0:
@@ -86,7 +108,11 @@ export const PlayerDetails = ({
               {playerNamesMap.getNames(player.id).join(', ')}
             </div>
 
-            <RankIndicator player={player} rankMinMax={rankMinMax} rank={parseInt(eugenPlayer?.ELO_LB_rank ?? '0')} />
+            <RankIndicator
+              player={player}
+              rankMinMax={rankMinMax}
+              rank={parseInt(eugenPlayer?.ELO_LB_rank ?? '0')}
+            />
             <Tag bordered={false}>#{player?.id}</Tag>
           </div>
         </div>
@@ -94,6 +120,7 @@ export const PlayerDetails = ({
       <div>
         <Descriptions
           rootClassName="mb-4"
+          column={4}
           items={[
             {
               key: '2',
@@ -108,6 +135,11 @@ export const PlayerDetails = ({
               children: player.oldestReplayCreatedAt
                 ? dayjs(player.oldestReplayCreatedAt).fromNow()
                 : 'N/A'
+            },
+            {
+              key: 'games',
+              label: 'Ranked Games',
+              children: getRankedWinrate(eugenPlayer)
             },
             {
               key: '4',
