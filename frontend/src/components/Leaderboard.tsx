@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { GetLeaderboard } from '../../wailsjs/go/main/App';
+import { GetLeaderboard, GetPlayerIdsOptions } from '../../wailsjs/go/main/App';
 import { main } from '../../wailsjs/go/models';
 import { Table, Input } from 'antd';
 import { useDebounce } from '../hooks/useDebounce';
@@ -9,14 +9,17 @@ const { Search } = Input;
 export const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<(main.LeaderboardEntry & { rank: number })[]>([]);
   const [search, setSearch] = useState('');
+  const [trackedPlayerIds, setTrackedPlayerIds] = useState<string[]>([]);
 
   const debouncedSearch = useDebounce(search, 300);
 
   useEffect(() => {
     (async () => {
       const data = await GetLeaderboard();
+      const ids = await GetPlayerIdsOptions();
 
       setLeaderboard(data.map((entry, i) => ({ ...entry, rank: i + 1 })));
+      setTrackedPlayerIds(ids.map((option) => option.value));
     })();
   }, []);
 
@@ -51,13 +54,26 @@ export const Leaderboard = () => {
         dataIndex: 'rank',
         key: 'rank',
         width: 50,
-        align: 'center' as const
+        align: 'center' as const,
+        render: (rank: number, record: main.LeaderboardEntry & { rank: number }) => {
+          const isTracked = trackedPlayerIds.includes(record.id.toString());
+
+          return <span className={isTracked ? 'text-yellow-500' : ''}>{rank}</span>;
+        }
       },
       {
         title: 'Name',
         dataIndex: 'name',
         key: 'name',
-        render: (name: string) => highlightText(name, search)
+        render: (_: string, record: main.LeaderboardEntry & { rank: number }) => {
+          const isTracked = trackedPlayerIds.includes(record.id.toString());
+
+          return (
+            <span className={isTracked ? 'text-yellow-500' : ''}>
+              {highlightText(record.name, search)}
+            </span>
+          );
+        }
       },
       {
         title: 'Elo',
@@ -66,7 +82,7 @@ export const Leaderboard = () => {
         render: (elo: number) => elo.toFixed(0)
       }
     ],
-    [search]
+    [search, trackedPlayerIds]
   );
 
   return (

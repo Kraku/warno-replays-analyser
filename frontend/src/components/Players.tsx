@@ -12,6 +12,7 @@ import { PlayerNamesMap } from '../helpers/playerNamesMap';
 import { main } from '../../wailsjs/go/models';
 import { RankIndicator } from './RankIndicator';
 import { getMinMax } from '../helpers/getMinMax';
+import { useDebounce } from '../hooks/useDebounce';
 
 dayjs.extend(relativeTime);
 
@@ -24,6 +25,7 @@ export const Players = ({
 }) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
   const [selectedPlayer, setSelectedPlayer] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -60,6 +62,16 @@ export const Players = ({
   };
 
   useEffect(() => {
+    const fetchApiPlayers = async () => {
+      if (debouncedSearchQuery.length > 0) {
+        await handleApiSearch(debouncedSearchQuery);
+      }
+    };
+
+    fetchApiPlayers();
+  }, [debouncedSearchQuery]);
+
+  useEffect(() => {
     const fetch = async () => {
       setIsLoading(true);
 
@@ -68,7 +80,7 @@ export const Players = ({
 
       if (!settings.playerInfoSharingDisabled) {
         await SendPlayersToAPI(
-          players.map((player) => {
+          parsedPlayers.map((player) => {
             const sortedHistory = [...player.history].sort(
               (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
@@ -112,7 +124,7 @@ export const Players = ({
     };
 
     fetch();
-  }, [players.length, replays.length]);
+  }, [replays.length]);
 
   const handleApiSearch = async (query: string) => {
     const apiPlayers = (await SearchPlayerInApi(query)) || [];
@@ -122,30 +134,27 @@ export const Players = ({
         .filter(
           (apiPlayer) => !prevPlayers.some((player) => player.id === apiPlayer.eugenId.toString())
         )
-        .map((apiPlayer) => ({
-          id: apiPlayer.eugenId.toString(),
-          names: apiPlayer.usernames,
-          ranks: apiPlayer.ranks?.map(String),
-          steamId: apiPlayer.steamId || '',
-          history: [],
-          api: true
-        }));
+        .map((apiPlayer) => {
+          apiPlayer.usernames.forEach((username) =>
+            playerNamesMap.incrementPlayerNameCount(apiPlayer.eugenId.toString(), username)
+          );
+
+          return {
+            id: apiPlayer.eugenId.toString(),
+            ranks: apiPlayer.ranks?.map(String),
+            steamId: apiPlayer.steamId || '',
+            history: [],
+            api: true
+          };
+        });
 
       return [...prevPlayers, ...newPlayers];
     });
   };
 
-  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value.trim();
-    setSearchQuery(query);
-
-    if (query.length >= 1) {
-      const settings = await GetSettings();
-
-      if (settings.playerInfoSharingDisabled || !players.length) return;
-
-      handleApiSearch(query);
-    }
+    setSearchQuery(query); // update immediately for local filtering
   };
 
   const filteredPlayers = players.filter((player) => {
@@ -199,7 +208,7 @@ export const Players = ({
                         </Typography.Text>
                       </div>
                     }
-                    description={<RankIndicator player={player} rankMinMax={rankMinMax} />}
+                    description={<RankIndicator rankMinMax={rankMinMax} />}
                   />
                 </List.Item>
               );

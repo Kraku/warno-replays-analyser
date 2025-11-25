@@ -29,9 +29,7 @@ const getRankedWinrate = (eugenPlayer?: main.EugenPlayer) => {
 
   return (
     <div className="flex items-center gap-1">
-      <span className="text-green-600">{wins}</span>/
-      <span className="text-red-600 ">{losses}</span>
-      {fouls > 0 && <span>/ {fouls}</span>}
+      <span className="text-green-600">{wins}</span>/<span className="text-red-600 ">{losses}</span>
       <span className="text-neutral-400">({winrate}%)</span>
     </div>
   );
@@ -104,14 +102,12 @@ export const PlayerDetails = ({
               <ReactCountryFlag countryCode={steamPlayer.loccountrycode} svg />
             ) : null}
 
-            <div className="max-w-[80%] truncate">
-              {playerNamesMap.getNames(player.id).join(', ')}
-            </div>
+            <div className="max-w-xl truncate">{playerNamesMap.getNames(player.id).join(', ')}</div>
 
             <RankIndicator
-              player={player}
               rankMinMax={rankMinMax}
               rank={parseInt(eugenPlayer?.ELO_LB_rank ?? '0')}
+              delta={parseInt(eugenPlayer?.ELO_LB_delta_rank ?? '0')}
             />
             <Tag bordered={false}>#{player?.id}</Tag>
           </div>
@@ -120,7 +116,8 @@ export const PlayerDetails = ({
       <div>
         <Descriptions
           rootClassName="mb-4"
-          column={4}
+          column={5}
+          size="small"
           items={[
             {
               key: '2',
@@ -140,6 +137,17 @@ export const PlayerDetails = ({
               key: 'games',
               label: 'Ranked Games',
               children: getRankedWinrate(eugenPlayer)
+            },
+            {
+              key: 'elo',
+              label: 'ELO',
+              children: eugenPlayer ? (
+                <div className="flex flex-col gap-1">
+                  {parseInt(eugenPlayer.ELO)} ({parseInt(eugenPlayer.ELO_LB_delta_value)})
+                </div>
+              ) : (
+                'N/A'
+              )
             },
             {
               key: '4',
