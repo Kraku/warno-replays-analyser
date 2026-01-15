@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { GetSettings, SaveSettings } from '../../../wailsjs/go/main/App';
 import { useReplayContext } from '../../contexts/ReplayContext';
 
-type SeasonKey = 'Season 1' | 'Season 2' | 'Season 3';
+type SeasonKey = 'Season 1' | 'Season 2' | 'Season 3'| 'Season 4';
 
 const seasonPresets: Record<SeasonKey, [dayjs.Dayjs | null, dayjs.Dayjs | null]> = {
   'Season 1': [null, dayjs('2025-02-28 08:24', 'YYYY-MM-DD HH:mm')],
@@ -12,7 +12,10 @@ const seasonPresets: Record<SeasonKey, [dayjs.Dayjs | null, dayjs.Dayjs | null]>
     dayjs('2025-02-28 08:25', 'YYYY-MM-DD HH:mm'),
     dayjs('2025-07-07 09:59', 'YYYY-MM-DD HH:mm')
   ],
-  'Season 3': [dayjs('2025-07-07 10:00', 'YYYY-MM-DD HH:mm'), null]
+  'Season 3': [
+    dayjs('2025-07-07 10:00', 'YYYY-MM-DD HH:mm'), 
+    dayjs('2026-01-12 13:57', 'YYYY-MM-DD HH:mm')],
+  'Season 4': [dayjs('2026-01-12 13:58', 'YYYY-MM-DD HH:mm'), null]
 };
 
 export const SeasonSelect = () => {
