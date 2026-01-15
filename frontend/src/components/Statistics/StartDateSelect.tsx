@@ -12,8 +12,10 @@ const seasonPresets: Record<SeasonKey, [dayjs.Dayjs | null, dayjs.Dayjs | null]>
     dayjs('2025-02-28 08:25', 'YYYY-MM-DD HH:mm'),
     dayjs('2025-07-07 09:59', 'YYYY-MM-DD HH:mm')
   ],
-  'Season 3': [dayjs('2025-07-07 10:00', 'YYYY-MM-DD HH:mm'), null],
-  'Season 4': [dayjs('2026-01-12 10:00', 'YYYY-MM-DD HH:mm'), null]
+  'Season 3': [
+    dayjs('2025-07-07 10:00', 'YYYY-MM-DD HH:mm'), 
+    dayjs('2026-01-12 13:57', 'YYYY-MM-DD HH:mm')],
+  'Season 4': [dayjs('2026-01-12 13:58', 'YYYY-MM-DD HH:mm'), null]
 };
 
 export const SeasonSelect = () => {
