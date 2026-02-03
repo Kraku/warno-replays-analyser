@@ -304,5 +304,17 @@
     "alliance": "ECoalition/Allied",
     "country": "CZE",
     "id": 318
+  },
+  {
+    "name": "Guzman el Bueno",
+    "alliance": "ECoalition/Allied",
+    "country": "ESP",
+    "id": 407
+  },
+  {
+    "name": "2. Motostrelecka Divize",
+    "alliance": "ECoalition/Axis",
+    "country": "CZE",
+    "id": 408
   }
 ]
