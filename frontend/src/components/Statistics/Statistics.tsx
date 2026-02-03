@@ -193,16 +193,6 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
         />
 
         <TableComponent
-          dataSource={stats.mostFrequentOpponents}
-          columns={[
-            createColumn('Enemy Division', 'enemyDivision', 'enemyDivision'),
-            createColumn('Count', 'count', 'count', undefined, (a, b) => a.count - b.count)
-          ]}
-          rowKey="enemyDivision"
-          title="Most Frequent Opponents"
-        />
-
-        <TableComponent
           dataSource={stats.mapVictoryRatios}
           columns={mapVictoryRatioColumns}
           rowKey="map"

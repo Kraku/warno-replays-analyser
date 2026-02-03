@@ -113,7 +113,7 @@ const columns: ColumnType<Replay1v1>[] = [
     sorter: (a: Replay1v1, b: Replay1v1) => a.result.localeCompare(b.result)
   },
   {
-    title: 'Elo Change',
+    title: 'Predicted Elo Change',
     dataIndex: 'eloChange',
     key: 'eloChange',
     sorter: (a: Replay1v1, b: Replay1v1) => parseInt(a.enemyElo) - parseInt(b.enemyElo)

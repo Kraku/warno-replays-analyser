@@ -128,7 +128,7 @@ export const DailyRecap = ({ replays }: DailyRecapProps) => {
             },
             {
               key: 'eloChange',
-              label: 'Elo Change',
+              label: 'Predicted Elo Change',
               children: `${stats.eloChange > 0 ? '+' : ''}${stats.eloChange}`
             }
           ];

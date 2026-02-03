@@ -37,10 +37,6 @@ export type Statistics1v1 = CommonStatistics & {
     victoryRatio: number;
     games: number;
   }[];
-  mostFrequentOpponents: {
-    enemyDivision: string;
-    count: number;
-  }[];
   timeSpent: number;
   winrateByEnemyRank: Record<
     string,
@@ -169,30 +165,6 @@ const getMapVictoryRatios = (replays: CommonReplayData[]) => {
     .sort((a, b) => b.victoryRatio - a.victoryRatio);
 };
 
-const calculateMostFrequentOpponents = (
-  replays: Replay1v1[]
-): { enemyDivision: string; count: number }[] => {
-  const opponentFrequency: Record<string, number> = {};
-
-  replays.forEach((replay) => {
-    const enemyDivision = replay.enemyDivision;
-    if (!enemyDivision) return;
-
-    if (!opponentFrequency[enemyDivision]) {
-      opponentFrequency[enemyDivision] = 0;
-    }
-
-    opponentFrequency[enemyDivision] += 1;
-  });
-
-  return Object.keys(opponentFrequency)
-    .map((enemyDivision) => ({
-      enemyDivision,
-      count: opponentFrequency[enemyDivision]
-    }))
-    .sort((a, b) => b.count - a.count);
-};
-
 const calculateAverageGameDuration = (replays: CommonReplayData[]): number => {
   const totalDuration = replays.reduce((acc, replay) => acc + (replay.duration || 0), 0);
   return totalDuration / replays.length || 0;
@@ -318,7 +290,6 @@ export const getStats1v1 = async (replays: Replay1v1[]) => {
     );
 
   const { longestWinningStreak, longestLosingStreak } = calculateStreaks(replays);
-  const mostFrequentOpponents = calculateMostFrequentOpponents(replays);
   const averageGameDuration = calculateAverageGameDuration(replays);
   const rankHistory = trackRankHistory(replays);
   const mapVictoryRatios = getMapVictoryRatios(replays);
@@ -330,7 +301,6 @@ export const getStats1v1 = async (replays: Replay1v1[]) => {
     divisionVictoryRatios,
     enemyDivisionVictoryRatios,
     averageGameDuration,
-    mostFrequentOpponents,
     longestWinningStreak,
     longestLosingStreak,
     rankHistory,
