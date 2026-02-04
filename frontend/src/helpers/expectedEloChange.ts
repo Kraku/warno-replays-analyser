@@ -1,15 +1,25 @@
-const getDynamicK = (playerElo: number, opponentElo: number): number => {
+type KRule = {
+  diffMin: number;
+  k: number;
+};
+
+const DEFAULT_K_RULES: KRule[] = [
+  { diffMin: 0, k: 22 },
+  { diffMin: 40, k: 25 },
+  { diffMin: 160, k: 26 }
+];
+
+const getDynamicK = (playerElo: number, opponentElo: number, rules = DEFAULT_K_RULES): number => {
   const eloDifference = Math.abs(playerElo - opponentElo);
 
-  if (eloDifference > 100) {
-    return 26;
+  let selectedK = rules[0]?.k ?? 22;
+  for (const rule of rules) {
+    if (eloDifference >= rule.diffMin) {
+      selectedK = rule.k;
+    }
   }
 
-  if (eloDifference > 40) {
-    return 25;
-  }
-
-  return 22;
+  return selectedK;
 };
 
 export const expectedEloChange = (

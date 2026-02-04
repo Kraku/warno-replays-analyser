@@ -1,5 +1,5 @@
 import { Player } from '../../parsers/playersParser';
-import { Card, Typography, Tag, Descriptions, Avatar, Spin } from 'antd';
+import { Card, Typography, Tag, Descriptions, Avatar, Spin, Popover } from 'antd';
 import { useEffect, useState } from 'react';
 import { GetEugenPlayer, GetSteamPlayer } from '../../../wailsjs/go/main/App';
 import { OurGamesTable } from './OurGamesTable';
@@ -12,6 +12,7 @@ import { main } from '../../../wailsjs/go/models';
 import ReactCountryFlag from 'react-country-flag';
 import { getMinMax } from '../../helpers/getMinMax';
 import { Divisions } from './Divisions';
+import { Replay1v1 } from '../../parsers/replaysParser';
 
 dayjs.extend(relativeTime);
 
@@ -64,10 +65,12 @@ const getPersonaStateLabel = (steamPlayer?: main.SteamPlayer) => {
 
 export const PlayerDetails = ({
   player,
-  playerNamesMap
+  playerNamesMap,
+  allReplays
 }: {
   player: Player;
   playerNamesMap: PlayerNamesMap;
+  allReplays?: Replay1v1[];
 }) => {
   const [steamPlayer, setSteamPlayer] = useState<main.SteamPlayer>();
   const [eugenPlayer, setEugenPlayer] = useState<main.EugenPlayer>();
@@ -76,7 +79,7 @@ export const PlayerDetails = ({
   useEffect(() => {
     const fetcSteamData = async () => {
       setSteamPlayerLoading(true);
-      const steamPlayer = await GetSteamPlayer(player.steamId);
+      const steamPlayer = player.steamId ? await GetSteamPlayer(player.steamId) : undefined;
       const eugenPlayer = await GetEugenPlayer(player.id);
 
       setSteamPlayer(steamPlayer);
@@ -85,9 +88,12 @@ export const PlayerDetails = ({
     };
 
     fetcSteamData();
-  }, [player.steamId]);
+  }, [player.steamId, player.id]);
 
   const rankMinMax = getMinMax(player.ranks.flatMap((ranks) => parseInt(ranks)));
+  const names = playerNamesMap.getNames(player.id);
+  const primaryName = playerNamesMap.getPlayerCommonName(player.id);
+  const otherNames = names.filter((n) => n !== primaryName);
 
   return (
     <Card
@@ -102,7 +108,30 @@ export const PlayerDetails = ({
               <ReactCountryFlag countryCode={steamPlayer.loccountrycode} svg />
             ) : null}
 
-            <div className="max-w-xl truncate">{playerNamesMap.getNames(player.id).join(', ')}</div>
+            <div className="max-w-xl truncate flex items-center gap-2">
+              <span>{primaryName}</span>
+              {otherNames.length > 0 ? (
+                <Popover
+                  placement="bottom"
+                  content={
+                    <div className="max-w-md">
+                      <Typography.Text type="secondary">Also seen as:</Typography.Text>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {otherNames.slice(0, 20).map((n) => (
+                          <Tag key={n} bordered={false}>
+                            {n}
+                          </Tag>
+                        ))}
+                        {otherNames.length > 20 ? (
+                          <Tag bordered={false}>+{otherNames.length - 20} more</Tag>
+                        ) : null}
+                      </div>
+                    </div>
+                  }>
+                  <Tag bordered={false}>{otherNames.length + 1} names</Tag>
+                </Popover>
+              ) : null}
+            </div>
 
             <RankIndicator
               rankMinMax={rankMinMax}
@@ -163,17 +192,6 @@ export const PlayerDetails = ({
 
         <Typography.Title level={5} className="mb-2">
           Our Games History
-          <span className="text-xs text-neutral-400 ml-2">
-            {player.history.length > 0
-              ? `${player.history.filter((game) => game.result === 'Victory').length}/${
-                  player.history.length
-                } (${(
-                  (player.history.filter((game) => game.result === 'Victory').length /
-                    player.history.length) *
-                  100
-                ).toFixed(1)}%)`
-              : ''}
-          </span>
         </Typography.Title>
 
         <OurGamesTable history={player.history} />

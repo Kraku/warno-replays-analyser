@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react';
 import { Replay1v1 } from '../parsers/replaysParser';
 import dayjs from 'dayjs';
 import { formatDuration } from '../helpers/formatDuration';
-import { GetEugenPlayer } from '../../wailsjs/go/main/App';
+import { GetEugenPlayer, GetLeaderboard } from '../../wailsjs/go/main/App';
+import type { main } from '../../wailsjs/go/models';
 
 type DailyRecapProps = {
   replays: Replay1v1[];
@@ -26,7 +27,66 @@ const ColoredCircle = ({ winRate }: { winRate: number }) => {
 const pluralize = (count: number, singular: string, plural: string) =>
   count === 1 ? singular : plural;
 
-const calculateStats = (replays: Replay1v1[], rank: string) => {
+const mostCommonString = (values: string[]) => {
+  const counts = new Map<string, number>();
+  for (const v of values) {
+    if (!v) continue;
+    counts.set(v, (counts.get(v) ?? 0) + 1);
+  }
+
+  let best: { value: string; count: number } | undefined;
+  for (const [value, count] of counts.entries()) {
+    if (
+      !best ||
+      count > best.count ||
+      (count === best.count && value.localeCompare(best.value) < 0)
+    ) {
+      best = { value, count };
+    }
+  }
+  return best;
+};
+
+const safeParseInt = (value: string | undefined) => {
+  if (!value) return undefined;
+  const n = parseInt(value, 10);
+  return Number.isFinite(n) ? n : undefined;
+};
+
+const safeParseFloat = (value: string | undefined) => {
+  if (!value) return undefined;
+  const n = parseFloat(value);
+  return Number.isFinite(n) ? n : undefined;
+};
+
+const getNextRankMilestone = (currentRank: number | undefined) => {
+  if (!currentRank || currentRank <= 1) return undefined;
+
+  // Milestone rules:
+  // - Ranks > 1000: milestones every 1000 (e.g. 5000 -> 4000)
+  // - Ranks 101..1000: milestones every 100 (e.g. 118 -> 100)
+  // - Ranks 2..100: milestones at 75/50/25/10/3/2/1
+  if (currentRank <= 100) {
+    const milestones = [75, 50, 25, 10, 3, 2, 1];
+    for (const m of milestones) {
+      if (currentRank > m) return m;
+    }
+    return undefined;
+  }
+
+  if (currentRank <= 1000) {
+    return Math.floor((currentRank - 1) / 100) * 100;
+  }
+
+  return Math.floor((currentRank - 1) / 1000) * 1000;
+};
+
+const calculateStats = (
+  replays: Replay1v1[],
+  rank: string | undefined,
+  currentElo: number | undefined,
+  leaderboard: main.LeaderboardEntry[]
+) => {
   const todaysReplays = replays.filter((r) => isToday(r.createdAt));
   if (!todaysReplays.length) return undefined;
 
@@ -39,6 +99,59 @@ const calculateStats = (replays: Replay1v1[], rank: string) => {
   const eloChange = Number(todaysReplays.reduce((acc, r) => acc + r.eloChange, 0).toFixed(2));
   const playerName = todaysReplays[0].playerName;
 
+  const topMap = mostCommonString(todaysReplays.map((r) => r.map));
+  const topDivision = mostCommonString(todaysReplays.map((r) => r.division));
+  const longestDuration = Math.max(...todaysReplays.map((r) => r.duration ?? 0));
+
+  const enemyRanks = todaysReplays
+    .map((r) => safeParseInt(r.enemyRank))
+    .filter((n): n is number => n !== undefined && n > 0);
+  const avgEnemyRank = enemyRanks.length
+    ? Number((enemyRanks.reduce((a, b) => a + b, 0) / enemyRanks.length).toFixed(0))
+    : undefined;
+
+  const eloDiffs = todaysReplays
+    .map((r) => {
+      const p = safeParseFloat(r.playerElo);
+      const e = safeParseFloat(r.enemyElo);
+      return p !== undefined && e !== undefined ? p - e : undefined;
+    })
+    .filter((n): n is number => n !== undefined);
+  const avgEloDiff = eloDiffs.length
+    ? Number((eloDiffs.reduce((a, b) => a + b, 0) / eloDiffs.length).toFixed(0))
+    : undefined;
+
+  const sortedByTime = [...todaysReplays].sort(
+    (a, b) => dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf()
+  );
+  let bestWinStreak = 0;
+  let runningWinStreak = 0;
+  for (const r of sortedByTime) {
+    if (r.result === 'Victory') {
+      runningWinStreak += 1;
+      bestWinStreak = Math.max(bestWinStreak, runningWinStreak);
+    } else {
+      runningWinStreak = 0;
+    }
+  }
+  let currentWinStreak = 0;
+  for (let i = sortedByTime.length - 1; i >= 0; i--) {
+    if (sortedByTime[i].result === 'Victory') currentWinStreak += 1;
+    else break;
+  }
+
+  const rankNumber = safeParseInt(rank);
+  const nextMilestoneRank = getNextRankMilestone(rankNumber);
+  const milestoneEntry =
+    nextMilestoneRank && leaderboard.length >= nextMilestoneRank
+      ? leaderboard[nextMilestoneRank - 1]
+      : undefined;
+  const targetElo = milestoneEntry?.elo;
+  const eloNeededRaw =
+    currentElo !== undefined && targetElo !== undefined ? targetElo - currentElo : undefined;
+  const eloNeeded =
+    eloNeededRaw !== undefined ? Math.max(0, Number(eloNeededRaw.toFixed(2))) : undefined;
+
   return {
     playerName,
     gamesPlayed,
@@ -48,7 +161,18 @@ const calculateStats = (replays: Replay1v1[], rank: string) => {
     draws,
     winRate,
     eloChange,
-    rank: rank || 'Unranked'
+    rank: rank || 'Unranked',
+    currentElo,
+    nextMilestoneRank,
+    targetElo,
+    eloNeeded,
+    topMap,
+    topDivision,
+    longestDuration,
+    avgEnemyRank,
+    avgEloDiff,
+    bestWinStreak,
+    currentWinStreak
   };
 };
 
@@ -56,31 +180,51 @@ export const DailyRecap = ({ replays }: DailyRecapProps) => {
   const [statsByPlayer, setStatsByPlayer] = useState<
     Record<string, ReturnType<typeof calculateStats>>
   >({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const uniquePlayerIds = Array.from(new Set(replays.map((r) => r.playerId)));
-      const newStats: Record<string, ReturnType<typeof calculateStats>> = {};
+      setLoading(true);
+      try {
+        if (!replays.length) {
+          setStatsByPlayer({});
+          return;
+        }
 
-      await Promise.all(
-        uniquePlayerIds.map(async (playerId) => {
-          const playerReplays = replays.filter((r) => r.playerId === playerId);
+        const leaderboard = await GetLeaderboard().catch(() => []);
+        const replaysByPlayer = new Map<string, Replay1v1[]>();
+        for (const replay of replays) {
+          const list = replaysByPlayer.get(replay.playerId);
+          if (list) list.push(replay);
+          else replaysByPlayer.set(replay.playerId, [replay]);
+        }
 
-          const { ELO_LB_rank } = await GetEugenPlayer(playerId);
-          const stats = calculateStats(playerReplays, ELO_LB_rank);
+        const uniquePlayerIds = Array.from(replaysByPlayer.keys());
+        const newStats: Record<string, ReturnType<typeof calculateStats>> = {};
 
-          if (stats) newStats[playerId] = stats;
-        })
-      );
+        await Promise.all(
+          uniquePlayerIds.map(async (playerId) => {
+            const playerReplays = replaysByPlayer.get(playerId) ?? [];
+            const eugenPlayer = await GetEugenPlayer(playerId);
+            const rank = eugenPlayer?.ELO_LB_rank;
+            const currentElo = safeParseFloat(eugenPlayer?.ELO);
 
-      setStatsByPlayer(newStats);
+            const stats = calculateStats(playerReplays, rank, currentElo, leaderboard);
+            if (stats) newStats[playerId] = stats;
+          })
+        );
+
+        setStatsByPlayer(newStats);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchStats();
   }, [replays]);
 
   return (
-    <Spin spinning={false}>
+    <Spin spinning={loading}>
       <div
         className={
           Object.keys(statsByPlayer).length === 1
@@ -95,11 +239,6 @@ export const DailyRecap = ({ replays }: DailyRecapProps) => {
               key: 'rank',
               label: 'Rank',
               children: stats.rank
-            },
-            {
-              key: 'gamesPlayed',
-              label: 'Games Played',
-              children: `${stats.gamesPlayed} ${pluralize(stats.gamesPlayed, 'game', 'games')}`
             },
             {
               key: 'timeSpent',
@@ -124,13 +263,35 @@ export const DailyRecap = ({ replays }: DailyRecapProps) => {
                 stats.draws,
                 'draw',
                 'draws'
-              )}`
+              )} (${stats.gamesPlayed} ${pluralize(stats.gamesPlayed, 'game', 'games')})`
             },
+            ...(stats.avgEnemyRank !== undefined
+              ? [
+                  {
+                    key: 'avgEnemyRank',
+                    label: 'Avg Opponent Rank',
+                    children: <span>{stats.avgEnemyRank}</span>
+                  }
+                ]
+              : []),
             {
               key: 'eloChange',
-              label: 'Predicted Elo Change',
+              label: 'Estimated Elo Change',
               children: `${stats.eloChange > 0 ? '+' : ''}${stats.eloChange}`
-            }
+            },
+            ...(stats.nextMilestoneRank && stats.eloNeeded !== undefined
+              ? [
+                  {
+                    key: 'milestone',
+                    label: 'Next Milestone',
+                    children: (
+                      <span>
+                        rank {stats.nextMilestoneRank} (need +{stats.eloNeeded} elo)
+                      </span>
+                    )
+                  }
+                ]
+              : [])
           ];
 
           return (

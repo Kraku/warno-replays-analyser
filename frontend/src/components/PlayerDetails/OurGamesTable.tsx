@@ -1,12 +1,15 @@
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import duration from 'dayjs/plugin/duration';
 import { PlayerHistory } from '../../parsers/playersParser';
-import { Table } from 'antd';
-import { CopyOutlined } from '@ant-design/icons';
+import { Button, Table } from 'antd';
+import { CopyOutlined, DownloadOutlined } from '@ant-design/icons';
 import { ColumnType } from 'antd/es/table';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { downloadCsv, toCsv } from '../../helpers/exportCsv';
 
 dayjs.extend(relativeTime);
+dayjs.extend(duration);
 
 const columns: ColumnType<PlayerHistory>[] = [
   {
@@ -96,15 +99,56 @@ const columns: ColumnType<PlayerHistory>[] = [
 ];
 
 export const OurGamesTable = ({ history }: { history: PlayerHistory[] }) => {
+  const exportCsv = () => {
+    const rows = history
+      .slice()
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .map((h) => ({
+        createdAt: h.createdAt,
+        map: h.map,
+        result: h.result,
+        myDivision: h.division,
+        enemyDivision: h.enemyDivision,
+        myRank: h.rank,
+        enemyRank: h.enemyRank,
+        durationSeconds: h.duration,
+        matchId: h.id,
+        replayPath: h.filePath
+      }));
+
+    const columns = [
+      'createdAt',
+      'map',
+      'result',
+      'myDivision',
+      'enemyDivision',
+      'myRank',
+      'enemyRank',
+      'durationSeconds',
+      'matchId',
+      'replayPath'
+    ];
+
+    downloadCsv('our-games-history.csv', toCsv(rows, columns));
+  };
+
   return (
-    <Table
-      dataSource={history}
-      columns={columns}
-      size="small"
-      rowKey="createdAt"
-      pagination={{
-        pageSize: 10
-      }}
-    />
+    <>
+      <div className="flex justify-end mb-2">
+        <Button icon={<DownloadOutlined />} onClick={exportCsv} size="small">
+          Export CSV
+        </Button>
+      </div>
+
+      <Table
+        dataSource={history}
+        columns={columns}
+        size="small"
+        rowKey="createdAt"
+        pagination={{
+          pageSize: 10
+        }}
+      />
+    </>
   );
 };

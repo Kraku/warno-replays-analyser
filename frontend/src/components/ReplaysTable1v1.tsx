@@ -1,21 +1,25 @@
-import { Table } from 'antd';
+import { Button, Table } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Replay1v1 } from '../parsers/replaysParser';
 import { ColumnType } from 'antd/es/table';
 import { Input } from 'antd';
 import { useState } from 'react';
-import { CopyOutlined } from '@ant-design/icons';
+import { CopyOutlined, DownloadOutlined, LinkOutlined } from '@ant-design/icons';
 import duration from 'dayjs/plugin/duration';
 import CopyToClipboard from 'react-copy-to-clipboard';
 import { transliterate } from '../helpers/transliterate';
+import { downloadCsv, toCsv } from '../helpers/exportCsv';
 
 dayjs.extend(relativeTime);
 dayjs.extend(duration);
 
 const { Search } = Input;
 
-const columns: ColumnType<Replay1v1>[] = [
+const waryesDeckBuilderUrl = (deckCode: string) =>
+  `https://waryes.com/deck-builder?code=${encodeURIComponent(deckCode)}`;
+
+const getColumns = (onOpenPlayer?: (playerId: string) => void): ColumnType<Replay1v1>[] => [
   {
     title: 'Date',
     dataIndex: 'createdAt',
@@ -27,8 +31,8 @@ const columns: ColumnType<Replay1v1>[] = [
           record.result === 'Victory'
             ? 'border-emerald-950'
             : record.result === 'Defeat'
-            ? 'border-rose-950'
-            : 'border-gray-500'
+              ? 'border-rose-950'
+              : 'border-gray-500'
         ].join(' ')}>
         {`${dayjs(value).format('DD/MM/YYYY HH:mm')} (${dayjs(value).fromNow()}) `}
         <CopyToClipboard text={record.filePath}>
@@ -42,7 +46,23 @@ const columns: ColumnType<Replay1v1>[] = [
     title: 'Enemy Name',
     dataIndex: 'enemyName',
     key: 'enemyName',
-    sorter: (a: Replay1v1, b: Replay1v1) => a.enemyName.localeCompare(b.enemyName)
+    sorter: (a: Replay1v1, b: Replay1v1) => a.enemyName.localeCompare(b.enemyName),
+    render: (value: string, record) => (
+      <button
+        type="button"
+        className={[
+          'block w-full text-left truncate',
+          onOpenPlayer && record.enemyId ? 'cursor-pointer hover:underline' : 'cursor-default'
+        ].join(' ')}
+        title={onOpenPlayer ? 'Open player details' : undefined}
+        onClick={() => {
+          if (!onOpenPlayer) return;
+          if (!record.enemyId) return;
+          onOpenPlayer(record.enemyId.toString());
+        }}>
+        {value}
+      </button>
+    )
   },
   {
     title: 'My Division',
@@ -52,9 +72,16 @@ const columns: ColumnType<Replay1v1>[] = [
     render: (value: string, record) => (
       <div>
         {value}{' '}
-        <CopyToClipboard text={record.deck}>
-          <CopyOutlined />
-        </CopyToClipboard>
+        {record.deck ? (
+          <>
+            <CopyToClipboard text={record.deck}>
+              <CopyOutlined />
+            </CopyToClipboard>{' '}
+            <a href={waryesDeckBuilderUrl(record.deck)} target="_blank" rel="noreferrer">
+              <LinkOutlined />
+            </a>
+          </>
+        ) : null}
       </div>
     )
   },
@@ -67,9 +94,16 @@ const columns: ColumnType<Replay1v1>[] = [
     render: (value: string, record) => (
       <div>
         {value}{' '}
-        <CopyToClipboard text={record.enemyDeck}>
-          <CopyOutlined />
-        </CopyToClipboard>
+        {record.enemyDeck ? (
+          <>
+            <CopyToClipboard text={record.enemyDeck}>
+              <CopyOutlined />
+            </CopyToClipboard>{' '}
+            <a href={waryesDeckBuilderUrl(record.enemyDeck)} target="_blank" rel="noreferrer">
+              <LinkOutlined />
+            </a>
+          </>
+        ) : null}
       </div>
     )
   },
@@ -113,14 +147,20 @@ const columns: ColumnType<Replay1v1>[] = [
     sorter: (a: Replay1v1, b: Replay1v1) => a.result.localeCompare(b.result)
   },
   {
-    title: 'Predicted Elo Change',
+    title: 'Estimated Elo Change',
     dataIndex: 'eloChange',
     key: 'eloChange',
-    sorter: (a: Replay1v1, b: Replay1v1) => parseInt(a.enemyElo) - parseInt(b.enemyElo)
+    sorter: (a: Replay1v1, b: Replay1v1) => a.eloChange - b.eloChange
   }
 ];
 
-export const ReplaysTable1v1 = ({ replays }: { replays: Replay1v1[] }) => {
+export const ReplaysTable1v1 = ({
+  replays,
+  onOpenPlayer
+}: {
+  replays: Replay1v1[];
+  onOpenPlayer?: (playerId: string) => void;
+}) => {
   const [searchText, setSearchText] = useState('');
 
   const handleSearch = (value: string) => {
@@ -131,12 +171,53 @@ export const ReplaysTable1v1 = ({ replays }: { replays: Replay1v1[] }) => {
     transliterate(replay.enemyName.toLowerCase()).includes(transliterate(searchText.toLowerCase()))
   );
 
+  const exportCsv = () => {
+    const rows = filteredReplays.map((r) => ({
+      createdAt: r.createdAt,
+      enemyName: r.enemyName,
+      enemyId: r.enemyId,
+      map: r.map,
+      result: r.result,
+      myDivision: r.division,
+      enemyDivision: r.enemyDivision,
+      myRank: r.rank,
+      enemyRank: r.enemyRank,
+      durationSeconds: r.duration,
+      predictedEloChange: r.eloChange,
+      matchId: r.id,
+      replayPath: r.filePath
+    }));
+
+    const columns = [
+      'createdAt',
+      'enemyName',
+      'enemyId',
+      'map',
+      'result',
+      'myDivision',
+      'enemyDivision',
+      'myRank',
+      'enemyRank',
+      'durationSeconds',
+      'predictedEloChange',
+      'matchId',
+      'replayPath'
+    ];
+
+    downloadCsv(`replays-1v1-${dayjs().format('YYYY-MM-DD')}.csv`, toCsv(rows, columns));
+  };
+
   return (
     <>
-      <Search placeholder="Find enemy" onSearch={handleSearch} className="mb-2" allowClear />
+      <div className="flex gap-2 mb-2">
+        <Search placeholder="Find enemy" onSearch={handleSearch} className="flex-1" allowClear />
+        <Button icon={<DownloadOutlined />} onClick={exportCsv}>
+          Export CSV
+        </Button>
+      </div>
       <Table
         dataSource={filteredReplays}
-        columns={columns}
+        columns={getColumns(onOpenPlayer)}
         size="small"
         pagination={false}
         rowKey="fileName"

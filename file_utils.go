@@ -10,6 +10,40 @@ import (
 	"sync"
 )
 
+type cachedReplay struct {
+	ModTimeUnixNano int64      `json:"modTimeUnixNano"`
+	Size            int64      `json:"size"`
+	Data            *WarnoData `json:"data,omitempty"`
+}
+
+var (
+	cacheDirOnce sync.Once
+	cacheDirPath string
+	cacheDirErr  error
+)
+
+func getCacheDir() (string, error) {
+	cacheDirOnce.Do(func() {
+		cacheDirPath, cacheDirErr = getLocalAppDataDir("warno-replays-analyser", filepath.Join("cache", version))
+	})
+	return cacheDirPath, cacheDirErr
+}
+
+func writeCache(cacheFilePath string, fileInfo os.FileInfo, data *WarnoData) error {
+	entry := cachedReplay{
+		ModTimeUnixNano: fileInfo.ModTime().UnixNano(),
+		Size:            fileInfo.Size(),
+		Data:            data,
+	}
+
+	encoded, err := json.Marshal(entry)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(cacheFilePath, encoded, 0644)
+}
+
 func readFilesFromDir(dir string) ([]os.DirEntry, error) {
 	files, err := os.ReadDir(dir)
 	if err != nil {
@@ -50,13 +84,9 @@ func getLocalAppDataDir(appName string, directory ...string) (string, error) {
 }
 
 func writeEmptyCache(cacheFilePath string) error {
-	emptyFile, err := os.Create(cacheFilePath)
-	if err != nil {
-		return err
-	}
-	defer emptyFile.Close()
-
-	return nil
+	// Backwards-compat shim: keep behavior for existing callers.
+	// Prefer writeCache(cacheFilePath, fileInfo, nil) which includes modtime/size.
+	return os.WriteFile(cacheFilePath, []byte{}, 0644)
 }
 
 func processFile(filePath string, result *sync.Map) error {
@@ -65,7 +95,7 @@ func processFile(filePath string, result *sync.Map) error {
 		return err
 	}
 
-	cacheDir, err := getLocalAppDataDir("warno-replays-analyser", filepath.Join("cache", version))
+	cacheDir, err := getCacheDir()
 	if err != nil {
 		return err
 	}
@@ -77,18 +107,20 @@ func processFile(filePath string, result *sync.Map) error {
 			return err
 		}
 
+		// Historical empty-cache format: treat as stale and reprocess.
 		if len(cachedContent) == 0 {
-			return nil
+			// Fall through to parsing and rewrite cache with metadata.
+		} else {
+			var cached cachedReplay
+			if err := json.Unmarshal(cachedContent, &cached); err == nil {
+				if cached.ModTimeUnixNano == fileInfo.ModTime().UnixNano() && cached.Size == fileInfo.Size() {
+					if cached.Data != nil {
+						result.Store(filePath, *cached.Data)
+					}
+					return nil
+				}
+			}
 		}
-
-		var cachedData map[string]interface{}
-		if err := json.Unmarshal(cachedContent, &cachedData); err != nil {
-			return err
-		}
-
-		result.Store(filePath, cachedData)
-
-		return nil
 	}
 
 	content, err := readFileContent(filePath)
@@ -99,7 +131,7 @@ func processFile(filePath string, result *sync.Map) error {
 	is1v1 := strings.Contains(content, `"NbMaxPlayer":"2"`)
 	is2v2 := strings.Contains(content, `"NbMaxPlayer":"4"`)
 	if (!is1v1 && !is2v2) || !strings.Contains(content, `"IsNetworkMode":"1"`) {
-		return writeEmptyCache(cacheFilePath)
+		return writeCache(cacheFilePath, fileInfo, nil)
 	}
 
 	jsons, err := extractJsons(content)
@@ -107,25 +139,27 @@ func processFile(filePath string, result *sync.Map) error {
 		return err
 	}
 
-	game := jsons[0]["game"].(map[string]interface{})
+	gameAny, ok := jsons[0]["game"]
+	if !ok {
+		return writeCache(cacheFilePath, fileInfo, nil)
+	}
+	game, ok := gameAny.(map[string]interface{})
+	if !ok {
+		return writeCache(cacheFilePath, fileInfo, nil)
+	}
 	if _, exists := game["WithHost"]; exists && !is2v2 {
-		return writeEmptyCache(cacheFilePath)
+		return writeCache(cacheFilePath, fileInfo, nil)
 	}
 	if _, exists := game["ServerName"]; exists && !is2v2 {
-		return writeEmptyCache(cacheFilePath)
+		return writeCache(cacheFilePath, fileInfo, nil)
 	}
 
-	merged := mergeJsons(filePath, jsons, fileInfo)
+	merged, err := mergeJsons(filePath, jsons, fileInfo)
+	if err != nil {
+		return writeCache(cacheFilePath, fileInfo, nil)
+	}
+
 	result.Store(filePath, merged)
 
-	cachedData, err := json.Marshal(merged)
-	if err != nil {
-		return err
-	}
-
-	if err := os.WriteFile(cacheFilePath, cachedData, os.ModePerm); err != nil {
-		return err
-	}
-
-	return nil
+	return writeCache(cacheFilePath, fileInfo, &merged)
 }

@@ -9,6 +9,7 @@ import (
 
 type Settings struct {
 	PlayerIds                 []string `json:"playerIds,omitempty"`
+	FavoritePlayerIds         []string `json:"favoritePlayerIds,omitempty"`
 	DateRangeFrom             string   `json:"dateRangeFrom,omitempty"`
 	DateRangeTo               string   `json:"dateRangeTo,omitempty"`
 	DailyRecapUser            string   `json:"dailyRecapUser,omitempty"`

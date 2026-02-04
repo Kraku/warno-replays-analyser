@@ -18,16 +18,25 @@ dayjs.extend(relativeTime);
 
 export const Players = ({
   replays,
-  playerNamesMap
+  playerNamesMap,
+  selectedPlayerId,
+  onSelectedPlayerChange
 }: {
   replays: Replay1v1[];
   playerNamesMap: PlayerNamesMap;
+  selectedPlayerId?: string;
+  onSelectedPlayerChange?: (playerId?: string) => void;
 }) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
-  const [selectedPlayer, setSelectedPlayer] = useState<string>();
+  const trimmedSearchQuery = searchQuery.trim();
+  const normalizedSearchQuery = trimmedSearchQuery.replace(/\s+/g, ' ');
+  const [debouncedSearchQuery] = useDebounce(normalizedSearchQuery, 300);
+  const [internalSelectedPlayer, setInternalSelectedPlayer] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  const selectedPlayer = selectedPlayerId ?? internalSelectedPlayer;
+  const setSelectedPlayer = onSelectedPlayerChange ?? setInternalSelectedPlayer;
 
   const mergeWithApiPlayers = (
     parsedPlayers: Player[],
@@ -70,6 +79,15 @@ export const Players = ({
 
     fetchApiPlayers();
   }, [debouncedSearchQuery]);
+
+  useEffect(() => {
+    if (!selectedPlayerId) return;
+    if (players.some((p) => p.id === selectedPlayerId)) return;
+
+    // When the player was selected externally (e.g. from Leaderboard),
+    // ensure we have it loaded in our list.
+    handleApiSearch(selectedPlayerId);
+  }, [selectedPlayerId, players]);
 
   useEffect(() => {
     const fetch = async () => {
@@ -153,12 +171,11 @@ export const Players = ({
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value.trim();
-    setSearchQuery(query); // update immediately for local filtering
+    setSearchQuery(e.target.value);
   };
 
   const filteredPlayers = players.filter((player) => {
-    const normalizedQuery = transliterate(searchQuery.toLowerCase());
+    const normalizedQuery = transliterate(normalizedSearchQuery.toLowerCase());
 
     return (
       playerNamesMap.nameMatches(player.id, normalizedQuery) ||
@@ -204,8 +221,13 @@ export const Players = ({
                       <div className="flex gap-1 items-center">
                         {player.api && <ApiOutlined />}
                         <Typography.Text strong>
-                          {playerNamesMap.getNames(player.id).join(', ')}
+                          {playerNamesMap.getPlayerCommonName(player.id)}
                         </Typography.Text>
+                        {playerNamesMap.getNames(player.id).length > 1 ? (
+                          <Typography.Text type="secondary">
+                            ({playerNamesMap.getNames(player.id).length} names)
+                          </Typography.Text>
+                        ) : null}
                       </div>
                     }
                     description={<RankIndicator rankMinMax={rankMinMax} />}
@@ -218,7 +240,11 @@ export const Players = ({
       </div>
       <div className="w-4/5">
         {selectedPlayerData ? (
-          <PlayerDetails player={selectedPlayerData} playerNamesMap={playerNamesMap} />
+          <PlayerDetails
+            player={selectedPlayerData}
+            playerNamesMap={playerNamesMap}
+            allReplays={replays}
+          />
         ) : (
           <Card>
             <Empty description="Select a player" image={Empty.PRESENTED_IMAGE_SIMPLE} />

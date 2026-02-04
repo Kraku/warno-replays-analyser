@@ -482,6 +482,7 @@ export namespace main {
 	}
 	export class Settings {
 	    playerIds?: string[];
+	    favoritePlayerIds?: string[];
 	    dateRangeFrom?: string;
 	    dateRangeTo?: string;
 	    dailyRecapUser?: string;
@@ -495,6 +496,7 @@ export namespace main {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.playerIds = source["playerIds"];
+	        this.favoritePlayerIds = source["favoritePlayerIds"];
 	        this.dateRangeFrom = source["dateRangeFrom"];
 	        this.dateRangeTo = source["dateRangeTo"];
 	        this.dailyRecapUser = source["dailyRecapUser"];

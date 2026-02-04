@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"path/filepath"
 	"runtime"
@@ -54,26 +53,15 @@ func getReplays(directories []string) []WarnoData {
 	close(fileChan)
 	wg.Wait()
 
-	finalResult := []map[string]any{}
+	finalResult := make([]WarnoData, 0, 256)
 	result.Range(func(_, value any) bool {
-		finalResult = append(finalResult, value.(map[string]any))
+		if wd, ok := value.(WarnoData); ok {
+			finalResult = append(finalResult, wd)
+		}
 		return true
 	})
 
-	resultArray, err := json.MarshalIndent(finalResult, "", "  ")
-	if err != nil {
-		log.Printf("Error marshaling result to JSON: %v", err)
-		return nil
-	}
-
-	var warnoData []WarnoData
-	err = json.Unmarshal(resultArray, &warnoData)
-	if err != nil {
-		log.Printf("Error unmarshaling JSON to WarnoData: %v", err)
-		return nil
-	}
-
-	return warnoData
+	return finalResult
 }
 
 func (a *App) GetReplays(directories []string) []WarnoData {

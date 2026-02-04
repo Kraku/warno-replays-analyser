@@ -121,6 +121,29 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
     }
   ];
 
+  const winrateByDurationColumns = [
+    {
+      title: 'Duration Bucket',
+      dataIndex: 'bucket',
+      key: 'bucket'
+    },
+    {
+      title: 'Wins',
+      dataIndex: 'wins',
+      key: 'wins'
+    },
+    {
+      title: 'Total Games',
+      dataIndex: 'total',
+      key: 'total'
+    },
+    {
+      title: 'Win Rate',
+      dataIndex: 'winRate',
+      key: 'winRate'
+    }
+  ];
+
   const mapVictoryRatioColumns = [
     createColumn('Map', 'map', 'map', undefined, (a, b) => a.map.localeCompare(b.map)),
     createColumn(
@@ -162,6 +185,20 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
         parseInt((b.bucket.match(/\d+/) || ['0'])[0], 10)
     );
 
+  const winrateByDurationData = Object.entries(stats.winrateByDuration)
+    .map(([bucket, stats]) => ({
+      key: bucket,
+      bucket,
+      wins: stats.wins,
+      total: stats.total,
+      winRate: stats.total ? ((stats.wins / stats.total) * 100).toFixed(1) + '%' : '—'
+    }))
+    .sort(
+      (a, b) =>
+        parseInt((a.bucket.match(/\d+/) || ['0'])[0], 10) -
+        parseInt((b.bucket.match(/\d+/) || ['0'])[0], 10)
+    );
+
   return (
     <div className="flex w-full gap-4">
       <div className="w-full pr-4 border-r border-neutral-800">
@@ -176,6 +213,13 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
           dataSource={winrateByEnemyRankData}
           rowKey="bucket"
           title="Victory Ratio by Enemy Rank"
+        />
+
+        <TableComponent
+          columns={winrateByDurationColumns}
+          dataSource={winrateByDurationData}
+          rowKey="bucket"
+          title="Victory Ratio by Match Duration"
         />
 
         <TableComponent
@@ -214,6 +258,8 @@ export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
             title="Average Game Duration"
             value={`${(stats.averageGameDuration / 60).toFixed(2)} min`}
           />
+          <Statistic title="Avg Win Duration" value={formatDuration(stats.averageWinDuration)} />
+          <Statistic title="Avg Loss Duration" value={formatDuration(stats.averageLossDuration)} />
           <Statistic title="Longest Winning Streak" value={stats.longestWinningStreak} />
           <Statistic title="Longest Losing Streak" value={stats.longestLosingStreak} />{' '}
         </div>

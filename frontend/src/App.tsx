@@ -33,6 +33,14 @@ function App() {
   } = useReplayContext();
 
   const [showSettings, setShowSettings] = useState(false);
+  const [activeTab1v1, setActiveTab1v1] = useState<string>('1');
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | undefined>(undefined);
+
+  const openPlayerDetails = (playerId: string) => {
+    setSelectedPlayerId(playerId);
+    setGameMode('1v1');
+    setActiveTab1v1('2');
+  };
 
   useEffect(() => {
     Events.On('replay-file-added', () => {
@@ -94,7 +102,7 @@ function App() {
                       label: 'Summary',
                       children: (
                         <div className="pt-4 mb-10">
-                          <ReplaysTable1v1 replays={replays1v1} />
+                          <ReplaysTable1v1 replays={replays1v1} onOpenPlayer={openPlayerDetails} />
                         </div>
                       )
                     },
@@ -104,7 +112,12 @@ function App() {
                       children: (
                         <div className="pt-4 mb-10">
                           {stats1v1 && (
-                            <Players replays={replays1v1} playerNamesMap={playerNamesMap} />
+                            <Players
+                              replays={replays1v1}
+                              playerNamesMap={playerNamesMap}
+                              selectedPlayerId={selectedPlayerId}
+                              onSelectedPlayerChange={setSelectedPlayerId}
+                            />
                           )}
                         </div>
                       )
@@ -123,11 +136,17 @@ function App() {
                       label: 'Leaderboard',
                       children: (
                         <div className="pt-4 mb-10">
-                          <Leaderboard />
+                          <Leaderboard
+                            onOpenPlayer={(playerId) => {
+                              openPlayerDetails(playerId);
+                            }}
+                          />
                         </div>
                       )
                     }
                   ]}
+                  activeTabKey={activeTab1v1}
+                  onTabChange={(key) => setActiveTab1v1(key)}
                   styles={{ body: { padding: 0 } }}
                 />
                 <div className="text-xs flex justify-end">Brought to you by Grand Potato</div>
@@ -143,7 +162,7 @@ function App() {
                       label: 'Summary',
                       children: (
                         <div className="pt-4 mb-10">
-                          <ReplaysTable2v2 replays={replays2v2} />
+                          <ReplaysTable2v2 replays={replays2v2} onOpenPlayer={openPlayerDetails} />
                         </div>
                       )
                     },

@@ -38,7 +38,16 @@ export type Statistics1v1 = CommonStatistics & {
     games: number;
   }[];
   timeSpent: number;
+  averageWinDuration: number;
+  averageLossDuration: number;
   winrateByEnemyRank: Record<
+    string,
+    {
+      wins: number;
+      total: number;
+    }
+  >;
+  winrateByDuration: Record<
     string,
     {
       wins: number;
@@ -170,6 +179,15 @@ const calculateAverageGameDuration = (replays: CommonReplayData[]): number => {
   return totalDuration / replays.length || 0;
 };
 
+const calculateAverageDurationByResult = (
+  replays: CommonReplayData[],
+  result: CommonReplayData['result']
+): number => {
+  const filtered = replays.filter((r) => r.result === result);
+  if (filtered.length === 0) return 0;
+  return filtered.reduce((acc, r) => acc + (r.duration || 0), 0) / filtered.length;
+};
+
 const calculateEnemyRankBuckets = (
   replays: Replay1v1[]
 ): Record<
@@ -222,6 +240,48 @@ const calculateEnemyRankBuckets = (
   return enemyRankBuckets;
 };
 
+const calculateDurationBuckets = (
+  replays: CommonReplayData[]
+): Record<
+  string,
+  {
+    wins: number;
+    total: number;
+  }
+> => {
+  const buckets: Record<string, { wins: number; total: number }> = {};
+
+  // Bucket boundaries in minutes (inclusive start, exclusive end), last one is open-ended.
+  const boundaries = [0, 10, 20, 30, 40];
+
+  const getBucketLabel = (minutes: number): string => {
+    for (let i = 0; i < boundaries.length - 1; i++) {
+      const start = boundaries[i];
+      const end = boundaries[i + 1];
+      if (minutes >= start && minutes < end) return `${start}-${end}m`;
+    }
+    const last = boundaries[boundaries.length - 1];
+    return `${last}m+`;
+  };
+
+  for (const replay of replays) {
+    const seconds = replay.duration || 0;
+    const minutes = Math.floor(seconds / 60);
+    const bucket = getBucketLabel(minutes);
+
+    if (!buckets[bucket]) {
+      buckets[bucket] = { wins: 0, total: 0 };
+    }
+
+    buckets[bucket].total += 1;
+    if (replay.result === 'Victory') {
+      buckets[bucket].wins += 1;
+    }
+  }
+
+  return buckets;
+};
+
 const trackRankHistory = (replays: Replay1v1[]): { date: string; rank: number }[] => {
   return replays
     .map((replay) => ({
@@ -255,6 +315,9 @@ export const getStats1v1 = async (replays: Replay1v1[]) => {
   const divisionStats = getDivisionStats(replays, 'division');
   const timeSpent = replays.reduce((acc, r) => acc + r.duration, 0);
   const winrateByEnemyRank = calculateEnemyRankBuckets(replays);
+  const winrateByDuration = calculateDurationBuckets(replays);
+  const averageWinDuration = calculateAverageDurationByResult(replays, 'Victory');
+  const averageLossDuration = calculateAverageDurationByResult(replays, 'Defeat');
 
   const divisionVictoryRatios = Object.keys(divisionStats)
     .map((division) => {
@@ -306,7 +369,10 @@ export const getStats1v1 = async (replays: Replay1v1[]) => {
     rankHistory,
     mapVictoryRatios,
     timeSpent,
-    winrateByEnemyRank
+    averageWinDuration,
+    averageLossDuration,
+    winrateByEnemyRank,
+    winrateByDuration
   };
 };
 

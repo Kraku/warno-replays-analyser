@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -9,6 +10,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+)
+
+var (
+	gameRegex   = regexp.MustCompile(`\{"game":.*?"ingamePlayerId":\d+\}`)
+	resultRegex = regexp.MustCompile(`\{"result":.*?\}\}`)
 )
 
 type Player struct {
@@ -78,11 +84,11 @@ type KeyPlayerPair struct {
 func extractJsons(data string) ([]map[string]any, error) {
 	cleanedData := strings.ReplaceAll(data, "\n", "")
 
-	gameRegex := regexp.MustCompile(`\{"game":.*?"ingamePlayerId":[0-99]\}`)
-	resultRegex := regexp.MustCompile(`\{"result":.*?\}\}`)
-
 	gameMatch := gameRegex.FindString(cleanedData)
 	resultMatch := resultRegex.FindString(cleanedData)
+	if gameMatch == "" || resultMatch == "" {
+		return nil, errors.New("failed to locate embedded game/result JSON")
+	}
 
 	var gameJson, resultJson map[string]any
 
@@ -97,11 +103,19 @@ func extractJsons(data string) ([]map[string]any, error) {
 	return []map[string]any{gameJson, resultJson}, nil
 }
 
-func mergeJsons(filePath string, jsons []map[string]any, fileInfo os.FileInfo) map[string]interface{} {
+func mergeJsons(filePath string, jsons []map[string]any, fileInfo os.FileInfo) (WarnoData, error) {
 	fileName := filepath.Base(filePath)
 	players := make(map[string]Player)
 	var orderedPlayerSlice = []KeyPlayerPair{}
-	ingamePlayerId := int(jsons[0]["ingamePlayerId"].(float64))
+	ingamePlayerIdAny, ok := jsons[0]["ingamePlayerId"]
+	if !ok {
+		return WarnoData{}, errors.New("missing ingamePlayerId")
+	}
+	ingamePlayerIdFloat, ok := ingamePlayerIdAny.(float64)
+	if !ok {
+		return WarnoData{}, errors.New("invalid ingamePlayerId type")
+	}
+	ingamePlayerId := int(ingamePlayerIdFloat)
 	var localPlayerEugenId string
 	var localPlayerKey string
 
@@ -116,13 +130,12 @@ func mergeJsons(filePath string, jsons []map[string]any, fileInfo os.FileInfo) m
 		}
 	}
 
-	if len(players) == 4 {
-		sort.Slice(orderedPlayerSlice, func(i, j int) bool {
-			playerNumerici, _ := strconv.Atoi(strings.TrimPrefix(orderedPlayerSlice[i].Key, "player_"))
-			playerNumericj, _ := strconv.Atoi(strings.TrimPrefix(orderedPlayerSlice[j].Key, "player_"))
-			return playerNumerici < playerNumericj
-		})
-	}
+	// Ensure deterministic ordering for both 1v1 and 2v2.
+	sort.Slice(orderedPlayerSlice, func(i, j int) bool {
+		playerNumerici, _ := strconv.Atoi(strings.TrimPrefix(orderedPlayerSlice[i].Key, "player_"))
+		playerNumericj, _ := strconv.Atoi(strings.TrimPrefix(orderedPlayerSlice[j].Key, "player_"))
+		return playerNumerici < playerNumericj
+	})
 
 	var alliance0, alliance1 []KeyPlayerPair
 	for _, keyPlayerPair := range orderedPlayerSlice {
@@ -133,6 +146,9 @@ func mergeJsons(filePath string, jsons []map[string]any, fileInfo os.FileInfo) m
 		}
 	}
 	var orderedPlayers = append(alliance0, alliance1...)
+	if ingamePlayerId < 0 || ingamePlayerId >= len(orderedPlayers) {
+		return WarnoData{}, errors.New("ingamePlayerId out of range")
+	}
 	localPlayerEugenId = orderedPlayers[ingamePlayerId].Player.PlayerUserId
 	localPlayerKey = orderedPlayers[ingamePlayerId].Key
 
@@ -161,9 +177,5 @@ func mergeJsons(filePath string, jsons []map[string]any, fileInfo os.FileInfo) m
 		},
 	}
 
-	mergedMap := make(map[string]interface{})
-	mergedBytes, _ := json.Marshal(merged)
-	_ = json.Unmarshal(mergedBytes, &mergedMap)
-
-	return mergedMap
+	return merged, nil
 }
