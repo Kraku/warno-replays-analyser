@@ -11,6 +11,11 @@ require (
 	golang.org/x/sys v0.31.0
 )
 
+// Exclude Windows-specific WebView2 dependency for Linux builds
+exclude github.com/wailsapp/go-webview2 v1.0.22
+
+exclude github.com/wailsapp/go-webview2 v1.0.23
+
 require (
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
@@ -32,7 +37,7 @@ require (
 	github.com/tkrajina/go-reflector v0.5.8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	github.com/wailsapp/go-webview2 v1.0.22 // indirect
+	github.com/wailsapp/go-webview2 v1.0.21 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/net v0.35.0 // indirect

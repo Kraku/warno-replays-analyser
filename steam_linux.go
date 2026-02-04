@@ -1,5 +1,5 @@
-//go:build windows
-// +build windows
+//go:build !windows
+// +build !windows
 
 package main
 
@@ -13,8 +13,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-
-	"golang.org/x/sys/windows/registry"
 )
 
 type SteamPlayersResponse struct {
@@ -44,18 +42,28 @@ type SteamPlayer struct {
 }
 
 func getSteamPath() (string, error) {
-	key, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\WOW6432Node\Valve\Steam`, registry.QUERY_VALUE)
-	if err != nil {
-		return "", err
-	}
-	defer key.Close()
-
-	steamPath, _, err := key.GetStringValue("InstallPath")
-	if err != nil {
-		return "", err
+	// Check environment variable first
+	if steamPath := os.Getenv("STEAM_PATH"); steamPath != "" {
+		if _, err := os.Stat(steamPath); err == nil {
+			return steamPath, nil
+		}
 	}
 
-	return steamPath, nil
+	// Check common Steam installation paths on Linux
+	commonPaths := []string{
+		filepath.Join(os.Getenv("HOME"), ".steam", "steam"),
+		filepath.Join(os.Getenv("HOME"), ".local", "share", "Steam"),
+		"/usr/local/share/steam",
+		"/usr/share/steam",
+	}
+
+	for _, path := range commonPaths {
+		if _, err := os.Stat(path); err == nil {
+			return path, nil
+		}
+	}
+
+	return "", fmt.Errorf("Steam installation not found. Set STEAM_PATH environment variable")
 }
 
 func getSteamUsername(steamID, userdataPath string) (string, error) {

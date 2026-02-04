@@ -66,12 +66,27 @@ func readFileContent(filePath string) (string, error) {
 }
 
 func getLocalAppDataDir(appName string, directory ...string) (string, error) {
+	var cacheDir string
+
+	// Platform-specific cache directory detection
 	localAppData := os.Getenv("LOCALAPPDATA")
-	if localAppData == "" {
-		return "", fmt.Errorf("LOCALAPPDATA environment variable is not set")
+	if localAppData != "" {
+		// Windows
+		cacheDir = filepath.Join(localAppData, appName)
+	} else {
+		// Linux/macOS - use XDG cache directory or fallback
+		xdgCache := os.Getenv("XDG_CACHE_HOME")
+		if xdgCache != "" {
+			cacheDir = filepath.Join(xdgCache, appName)
+		} else {
+			home := os.Getenv("HOME")
+			if home == "" {
+				return "", fmt.Errorf("HOME environment variable is not set")
+			}
+			cacheDir = filepath.Join(home, ".cache", appName)
+		}
 	}
 
-	cacheDir := filepath.Join(localAppData, appName)
 	if len(directory) > 0 {
 		cacheDir = filepath.Join(cacheDir, directory[0])
 	}
