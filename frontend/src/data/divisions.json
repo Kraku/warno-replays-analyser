@@ -1,24 +1,24 @@
 [
   {
-    "name": "16DE Pantserdivision",
+    "name": "16de Pantserdivisie",
     "alliance": "ECoalition/Allied",
     "country": "BEL",
     "id": 91
   },
   {
-    "name": "11E Division Parachutiste",
+    "name": "11e Division Parachutiste",
     "alliance": "ECoalition/Allied",
     "country": "FR",
     "id": 25
   },
   {
-    "name": "152E Division D'Infanterie",
+    "name": "152e Division d'Infanterie",
     "alliance": "ECoalition/Allied",
     "country": "FR",
     "id": 304
   },
   {
-    "name": "5E Division Blindee",
+    "name": "5e Division Blindée",
     "alliance": "ECoalition/Allied",
     "country": "FR",
     "id": 26
@@ -30,19 +30,19 @@
     "id": 15
   },
   {
-    "name": "4E Divisie",
+    "name": "4e Divisie",
     "alliance": "ECoalition/Allied",
     "country": "NL",
     "id": 87
   },
   {
-    "name": "20 Dywizja Pancerna",
+    "name": "20. Dywizja Pancerna",
     "alliance": "ECoalition/Axis",
     "country": "POL",
     "id": 95
   },
   {
-    "name": "4 Dyw. Zmechanizowana",
+    "name": "4. Dyw. Zmechanizowana",
     "alliance": "ECoalition/Axis",
     "country": "POL",
     "id": 96
@@ -54,13 +54,13 @@
     "id": 97
   },
   {
-    "name": "4. Mot.-Schutzen-Division",
+    "name": "4. Mot.-Schützen-Division",
     "alliance": "ECoalition/Axis",
     "country": "DDR",
     "id": 19
   },
   {
-    "name": "7. PanzerDivision",
+    "name": "7. Panzerdivision",
     "alliance": "ECoalition/Axis",
     "country": "DDR",
     "id": 9
@@ -72,85 +72,85 @@
     "id": 93
   },
   {
-    "name": "K.d.A Bezirk Erfurt",
+    "name": "K.d.A. Bezirk Erfurt",
     "alliance": "ECoalition/Axis",
     "country": "DDR",
     "id": 27
   },
   {
-    "name": "Rugener Gruppierung",
+    "name": "Rügener Gruppierung",
     "alliance": "ECoalition/Axis",
     "country": "DDR",
     "id": 300
   },
   {
-    "name": "2. Pz.Grenadier-Division",
+    "name": "2. Panzergrenadier-Division",
     "alliance": "ECoalition/Allied",
     "country": "RFA",
     "id": 20
   },
   {
-    "name": "5. PanzerDivision",
+    "name": "5. Panzerdivision",
     "alliance": "ECoalition/Allied",
     "country": "RFA",
     "id": 10
   },
   {
-    "name": "TerritorialKommando Sud",
+    "name": "Territorialkommando Süd",
     "alliance": "ECoalition/Allied",
     "country": "RFA",
     "id": 28
   },
   {
-    "name": "119-Y Odt. Tank. Polk",
+    "name": "119-y Odt. Tank. Polk",
     "alliance": "ECoalition/Axis",
     "country": "SOV",
     "id": 195
   },
   {
-    "name": "25-Ya Tank. Div",
+    "name": "25-ya Tank. Div.",
     "alliance": "ECoalition/Axis",
     "country": "SOV",
     "id": 205
   },
   {
-    "name": "27-Ya Gv. Motostrelk. Div.",
+    "name": "27-ya Gv. Motostrelk. Div.",
     "alliance": "ECoalition/Axis",
     "country": "SOV",
     "id": 207
   },
   {
-    "name": "35-Ya OG Desantno-Shturmovaya Brig.",
+    "name": "35-ya OG Desantno-Shturmovaya Brig.",
     "alliance": "ECoalition/Axis",
     "country": "SOV",
     "id": 23
   },
   {
-    "name": "39-Ya Gv. Motostrelk. Div.",
+    "name": "39-ya Gv. Motostrelk. Div.",
     "alliance": "ECoalition/Axis",
     "country": "SOV",
     "id": 17
   },
   {
-    "name": "56-Ya OG Desantno-Shturmovaya Brig.",
+    "name": "56-ya OG Desantno-Shturmovaya Brig.",
     "alliance": "ECoalition/Axis",
     "country": "SOV",
     "id": 220
   },
   {
-    "name": "6-ya Og Motostrelk. Brig.",
+    "name": "6-ya OG Motostrelk. Brig.",
     "alliance": "ECoalition/Axis",
     "country": "SOV",
     "id": 216
   },
   {
-    "name": "76-Ya Gv. Vozdushno-Desantnaya Div.",
+    "name": "76-ya Gv. Vozdushno-Desantnaya Div.",
     "alliance": "ECoalition/Axis",
     "country": "SOV",
     "id": 305
   },
   {
-    "name": "79-Ya Gv. Tank. Div.",
+    "name": "79-ya Gv. Tank. Div.",
     "alliance": "ECoalition/Axis",
     "country": "SOV",
     "id": 11
@@ -180,25 +180,25 @@
     "id": 90
   },
   {
-    "name": "101st Airborne Division (Air Assault)",
+    "name": "101st Airborne Division",
     "alliance": "ECoalition/Allied",
     "country": "US",
     "id": 221
   },
   {
-    "name": "11th Arm. Cavalry Regt.",
+    "name": "11th Armored Cavalry Regiment",
     "alliance": "ECoalition/Allied",
     "country": "US",
     "id": 12
   },
   {
-    "name": "24th Infantry Division (Mech.)",
+    "name": "24th Infantry Division",
     "alliance": "ECoalition/Allied",
     "country": "US",
     "id": 208
   },
   {
-    "name": "35th Infantry Division (Mech.)",
+    "name": "35th Infantry Division",
     "alliance": "ECoalition/Allied",
     "country": "US",
     "id": 301
@@ -216,13 +216,13 @@
     "id": 24
   },
   {
-    "name": "8th Infantry Division (Mech.)",
+    "name": "8th Infantry Division",
     "alliance": "ECoalition/Allied",
     "country": "US",
     "id": 14
   },
   {
-    "name": "9th Infantry Division (Mot.)",
+    "name": "9th Infantry Division",
     "alliance": "ECoalition/Allied",
     "country": "US",
     "id": 89
@@ -234,13 +234,13 @@
     "id": 33
   },
   {
-    "name": "6th Infantry Division (light)",
+    "name": "6th Infantry Division",
     "alliance": "ECoalition/Allied",
     "country": "US",
     "id": 319
   },
   {
-    "name": "157-Ya Motostrelk. Div.",
+    "name": "157-ya Motostrelk. Div.",
     "alliance": "ECoalition/Axis",
     "country": "SOV",
     "id": 321
@@ -258,7 +258,7 @@
     "id": 306
   },
   {
-    "name": "6e Division Legere Blindee",
+    "name": "6e Division Légère Blindée",
     "alliance": "ECoalition/Allied",
     "country": "FR",
     "id": 197
@@ -270,51 +270,75 @@
     "id": 311
   },
   {
-    "name": "1. Luftlande Division",
+    "name": "1. Luftlande-Division",
     "alliance": "ECoalition/Allied",
     "country": "GER",
     "id": 312
   },
   {
-    "name": "Division Acorazada Brunete",
+    "name": "División Acorazada Brunete",
     "alliance": "ECoalition/Allied",
     "country": "ESP",
     "id": 313
   },
   {
-    "name": "31-Ya Tank. Div.",
+    "name": "31-ya Tank. Div.",
     "alliance": "ECoalition/Axis",
     "country": "SOV",
     "id": 315
   },
   {
-    "name": "19. Motostrelecke Divize",
+    "name": "19. Motostřelecké Divize",
     "alliance": "ECoalition/Axis",
     "country": "CZE",
     "id": 316
   },
   {
-    "name": "1. Tankova Divize",
+    "name": "1. Tanková Divize",
     "alliance": "ECoalition/Axis",
     "country": "CZE",
     "id": 317
   },
   {
-    "name": "303. Tankova Divize",
+    "name": "303. Tanková Divize",
     "alliance": "ECoalition/Allied",
     "country": "CZE",
     "id": 318
   },
   {
-    "name": "Guzman el Bueno",
+    "name": "Guzmán el Bueno",
     "alliance": "ECoalition/Allied",
     "country": "ESP",
     "id": 407
   },
   {
-    "name": "2. Motostrelecka Divize",
+    "name": "2. Motostřelecká Divize",
     "alliance": "ECoalition/Axis",
     "country": "CZE",
     "id": 408
+  },
+  {
+    "name": "17-ya Gvardeyskaya Tank. Div.",
+    "alliance": "ECoalition/Axis",
+    "country": "SOV",
+    "id": 314
+  },
+  {
+    "name": "2-ya Tamanskaya Gvardeyskaya Motostrelk. Div.",
+    "alliance": "ECoalition/Axis",
+    "country": "SOV",
+    "id": 391
+  },
+  {
+    "name": "Home Defence Region London",
+    "alliance": "ECoalition/Allied",
+    "country": "UK",
+    "id": 392
+  },
+  {
+    "name": "Division du Rhin",
+    "alliance": "ECoalition/Allied",
+    "country": "FR",
+    "id": 92
   }
 ]
