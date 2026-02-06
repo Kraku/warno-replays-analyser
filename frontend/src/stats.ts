@@ -165,8 +165,8 @@ const calculateEnemyRankBuckets = (
   const getBucket = (rank: number): string | null => {
     if (rank === 0) return null;
     if (rank <= 10) return '1-10';
-    if (rank <= 25) return '10-25';
-    if (rank <= 50) return '25-50';
+    if (rank <= 25) return '11-25';
+    if (rank <= 50) return '26-50';
     if (rank <= 100) return '51-100';
     if (rank <= 150) return '101-150';
     if (rank <= 200) return '151-200';
