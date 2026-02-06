@@ -12,7 +12,7 @@ import { main } from '../../../wailsjs/go/models';
 import ReactCountryFlag from 'react-country-flag';
 import { getMinMax } from '../../helpers/getMinMax';
 import { Divisions } from './Divisions';
-import { Replay1v1 } from '../../parsers/replaysParser';
+import { Replay } from '../../parsers/replaysParser';
 
 dayjs.extend(relativeTime);
 
@@ -66,11 +66,9 @@ const getPersonaStateLabel = (steamPlayer?: main.SteamPlayer) => {
 export const PlayerDetails = ({
   player,
   playerNamesMap,
-  allReplays
 }: {
   player: Player;
   playerNamesMap: PlayerNamesMap;
-  allReplays?: Replay1v1[];
 }) => {
   const [steamPlayer, setSteamPlayer] = useState<main.SteamPlayer>();
   const [eugenPlayer, setEugenPlayer] = useState<main.EugenPlayer>();

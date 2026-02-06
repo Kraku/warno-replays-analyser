@@ -229,7 +229,7 @@ export const Leaderboard = ({ onOpenPlayer }: { onOpenPlayer?: (playerId: string
           <td className={`${COL_RANK} px-2 py-1 text-center text-sm`}>
             <span className={isTracked ? 'text-yellow-500' : ''}>{item.rank}</span>
           </td>
-          <td className="px-2 py-1 text-sm min-w-0">
+          <td className="px-2 py-1 min-w-0">
             <button
               type="button"
               className={[

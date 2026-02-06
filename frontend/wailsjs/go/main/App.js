@@ -6,16 +6,8 @@ export function CreatePlayerNote(arg1, arg2) {
   return window['go']['main']['App']['CreatePlayerNote'](arg1, arg2);
 }
 
-export function CreateTeamNote(arg1, arg2, arg3) {
-  return window['go']['main']['App']['CreateTeamNote'](arg1, arg2, arg3);
-}
-
 export function DeletePlayerNote(arg1, arg2) {
   return window['go']['main']['App']['DeletePlayerNote'](arg1, arg2);
-}
-
-export function DeleteTeamNote(arg1, arg2, arg3) {
-  return window['go']['main']['App']['DeleteTeamNote'](arg1, arg2, arg3);
 }
 
 export function GetAppVersions() {
@@ -50,6 +42,10 @@ export function GetPlayerReplays(arg1) {
   return window['go']['main']['App']['GetPlayerReplays'](arg1);
 }
 
+export function GetRankedReplaysAnalytics(arg1, arg2) {
+  return window['go']['main']['App']['GetRankedReplaysAnalytics'](arg1, arg2);
+}
+
 export function GetReplays(arg1) {
   return window['go']['main']['App']['GetReplays'](arg1);
 }
@@ -60,10 +56,6 @@ export function GetSettings() {
 
 export function GetSteamPlayer(arg1) {
   return window['go']['main']['App']['GetSteamPlayer'](arg1);
-}
-
-export function GetTeamNotes(arg1, arg2) {
-  return window['go']['main']['App']['GetTeamNotes'](arg1, arg2);
 }
 
 export function GetWarnoSaveFolders() {
@@ -80,4 +72,8 @@ export function SearchPlayerInApi(arg1) {
 
 export function SendPlayersToAPI(arg1) {
   return window['go']['main']['App']['SendPlayersToAPI'](arg1);
+}
+
+export function SendRankedReplaysToAPI(arg1) {
+  return window['go']['main']['App']['SendRankedReplaysToAPI'](arg1);
 }

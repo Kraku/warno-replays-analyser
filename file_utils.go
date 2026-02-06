@@ -128,9 +128,9 @@ func processFile(filePath string, result *sync.Map) error {
 		return err
 	}
 
-	is1v1 := strings.Contains(content, `"NbMaxPlayer":"2"`)
-	is2v2 := strings.Contains(content, `"NbMaxPlayer":"4"`)
-	if (!is1v1 && !is2v2) || !strings.Contains(content, `"IsNetworkMode":"1"`) {
+	isTwoPlayerReplay := strings.Contains(content, `"NbMaxPlayer":"2"`)
+	isNetworkMode := strings.Contains(content, `"IsNetworkMode":"1"`)
+	if !isTwoPlayerReplay || !isNetworkMode {
 		return writeCache(cacheFilePath, fileInfo, nil)
 	}
 
@@ -147,10 +147,10 @@ func processFile(filePath string, result *sync.Map) error {
 	if !ok {
 		return writeCache(cacheFilePath, fileInfo, nil)
 	}
-	if _, exists := game["WithHost"]; exists && !is2v2 {
+	if _, exists := game["WithHost"]; exists {
 		return writeCache(cacheFilePath, fileInfo, nil)
 	}
-	if _, exists := game["ServerName"]; exists && !is2v2 {
+	if _, exists := game["ServerName"]; exists {
 		return writeCache(cacheFilePath, fileInfo, nil)
 	}
 

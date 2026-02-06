@@ -19,7 +19,7 @@ const typedDivisions: GenericLookupAdapterObject[] = (divisions as any[]).map((d
 }));
 const typedMaps: Record<string, string> = maps as Record<string, string>;
 
-export type Replay1v1 = CommonReplayData & {
+export type Replay = CommonReplayData & {
   enemyName: string;
   enemyId: string;
   enemyDivision: string;
@@ -29,11 +29,6 @@ export type Replay1v1 = CommonReplayData & {
   playerElo: string;
   eloChange: number;
   enemySteamId?: string;
-};
-
-export type Replay2v2 = CommonReplayData & {
-  allyData: PlayerData;
-  enemiesData: PlayerData[];
 };
 
 export type EugenUser = {
@@ -51,22 +46,14 @@ export type CommonReplayData = {
   division: string;
   deck: string;
   duration: number;
+  mapKey: string;
   map: string;
   id: string;
   result: 'Victory' | 'Defeat' | 'Draw';
 };
 
-type PlayerData = {
-  playerId: string;
-  playerName: string;
-  playerDivision: string;
-  playerRank: string;
-  playerDeck: string;
-};
-
 type ParserResult = {
-  replays1v1: Replay1v1[];
-  replays2v2: Replay2v2[];
+  replays: Replay[];
   playerNamesMap: PlayerNamesMap;
   eugenUsers: EugenUser[];
 };
@@ -83,15 +70,18 @@ export const getDivisionName = (code: string) => {
   return divisions.find((division) => division.id === id)?.name || 'Unknown';
 };
 
+export const getDivisionId = (code: string): number | null => {
+  const id = code ? decodeDeckString(code, lookup).division.id : null;
+  return typeof id === 'number' && id > 0 ? id : null;
+};
+
 export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResult> => {
   const settings = await GetSettings();
   const eugenUsers: EugenUser[] = [];
   const playerNamesMap = new PlayerNamesMap();
-  const replays1v1: Replay1v1[] = [];
-  const replays2v2: Replay2v2[] = [];
+  const replays: Replay[] = [];
 
   data.forEach((replay: main.WarnoData) => {
-    const players = Object.entries(replay.warno.players) ?? {};
     const playerKey = replay.warno.localPlayerKey;
     const playerId = replay.warno.localPlayerEugenId;
 
@@ -134,6 +124,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
       deck: replay.warno.players?.[playerKey].PlayerDeckContent,
       division: getDivisionName(replay.warno.players?.[playerKey].PlayerDeckContent),
       duration: parseInt(replay.warno.result.Duration),
+      mapKey: replay.warno.game.Map,
       map: typedMaps[replay.warno.game.Map] || replay.warno.game.Map,
       id: replay.warno.game.UniqueSessionId,
       result
@@ -152,7 +143,7 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
         replay.warno.players[enemyKey].PlayerName
       );
 
-      replays1v1.push({
+      replays.push({
         ...commonReplayData,
         playerElo: replay.warno.players?.[playerKey].PlayerElo,
         enemyName: replay.warno.players[enemyKey].PlayerName,
@@ -168,51 +159,11 @@ export const replaysParser = async (data: main.WarnoData[]): Promise<ParserResul
           result === 'Victory' ? 1 : result === 'Defeat' ? 0 : 0.5
         )
       });
-    } else if (replay.warno.playerCount == 4) {
-      const allies: PlayerData[] = [];
-      const enemies: PlayerData[] = [];
-      const playerAlliance = replay.warno.players?.[playerKey].PlayerAlliance;
-
-      for (const [key, player] of players as [string, any][]) {
-        if (key === playerKey) {
-          continue;
-        }
-
-        const playerData: PlayerData = {
-          playerName: player.PlayerName,
-          playerId: player.PlayerUserId,
-          playerDivision: getDivisionName(player.PlayerDeckContent),
-          playerRank: player.PlayerRank,
-          playerDeck: player.PlayerDeckContent
-        };
-
-        playerNamesMap.incrementPlayerNameCount(player.PlayerUserId, player.PlayerName);
-
-        if (player.PlayerAlliance === playerAlliance) {
-          allies.push(playerData);
-        } else {
-          enemies.push(playerData);
-        }
-      }
-
-      if (allies.length == 1 && enemies.length == 2) {
-        playerNamesMap.incrementPlayerNameCount(allies[0].playerId, allies[0].playerName);
-        enemies.forEach((enemy) => {
-          playerNamesMap.incrementPlayerNameCount(enemy.playerId, enemy.playerName);
-        });
-
-        replays2v2.push({
-          ...commonReplayData,
-          allyData: allies[0],
-          enemiesData: enemies
-        });
-      }
     }
   });
 
   return {
-    replays1v1: replays1v1,
-    replays2v2: replays2v2,
+    replays: replays,
     playerNamesMap,
     eugenUsers
   };

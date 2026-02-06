@@ -1,13 +1,13 @@
 import { Card, Descriptions, DescriptionsProps, Spin } from 'antd';
 import { useEffect, useState } from 'react';
-import { Replay1v1 } from '../parsers/replaysParser';
+import { Replay } from '../parsers/replaysParser';
 import dayjs from 'dayjs';
 import { formatDuration } from '../helpers/formatDuration';
 import { GetEugenPlayer, GetLeaderboard } from '../../wailsjs/go/main/App';
 import type { main } from '../../wailsjs/go/models';
 
 type DailyRecapProps = {
-  replays: Replay1v1[];
+  replays: Replay[];
 };
 
 const isToday = (dateStr: string) => dayjs(dateStr).isSame(dayjs(), 'day');
@@ -82,7 +82,7 @@ const getNextRankMilestone = (currentRank: number | undefined) => {
 };
 
 const calculateStats = (
-  replays: Replay1v1[],
+  replays: Replay[],
   rank: string | undefined,
   currentElo: number | undefined,
   leaderboard: main.LeaderboardEntry[]
@@ -192,7 +192,7 @@ export const DailyRecap = ({ replays }: DailyRecapProps) => {
         }
 
         const leaderboard = await GetLeaderboard().catch(() => []);
-        const replaysByPlayer = new Map<string, Replay1v1[]>();
+        const replaysByPlayer = new Map<string, Replay[]>();
         for (const replay of replays) {
           const list = replaysByPlayer.get(replay.playerId);
           if (list) list.push(replay);
@@ -276,7 +276,7 @@ export const DailyRecap = ({ replays }: DailyRecapProps) => {
               : []),
             {
               key: 'eloChange',
-              label: 'Estimated Elo Change',
+              label: 'Estimated Elo',
               children: `${stats.eloChange > 0 ? '+' : ''}${stats.eloChange}`
             },
             ...(stats.nextMilestoneRank && stats.eloNeeded !== undefined

@@ -130,7 +130,7 @@ func mergeJsons(filePath string, jsons []map[string]any, fileInfo os.FileInfo) (
 		}
 	}
 
-	// Ensure deterministic ordering for both 1v1 and 2v2.
+	// Ensure deterministic ordering for players.
 	sort.Slice(orderedPlayerSlice, func(i, j int) bool {
 		playerNumerici, _ := strconv.Atoi(strings.TrimPrefix(orderedPlayerSlice[i].Key, "player_"))
 		playerNumericj, _ := strconv.Atoi(strings.TrimPrefix(orderedPlayerSlice[j].Key, "player_"))

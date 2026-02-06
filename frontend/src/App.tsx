@@ -1,51 +1,40 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import { Select, Button, Card, Spin } from 'antd';
+import { Button, Card, Spin } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
-import { Events } from '@wailsio/runtime';
+import { EventsOff, EventsOn } from '../wailsjs/runtime/runtime';
 
 import { Version } from './components/Version';
 import { DirectoriesSelect } from './components/DirectoriesSelect';
-import { ReplaysTable1v1 } from './components/ReplaysTable1v1';
-import { ReplaysTable2v2 } from './components/ReplaysTable2v2';
-import { Stats1v1 } from './components/Statistics/Statistics';
-import { Stats2v2 } from './components/Statistics2v2';
+import { ReplaysTable } from './components/ReplaysTable';
+import { PlayerStats } from './components/Statistics/Statistics';
 import { Players } from './components/Players';
-import { Teams } from './components/Teams';
 import { SettingsDrawer } from './drawers/SettingsDrawer';
 import { DailyRecap } from './components/DailyRecap';
 import { useReplayContext } from './contexts/ReplayContext';
 import { Leaderboard } from './components/Leaderboard';
+import { GlobalStats } from './components/GlobalStats';
 
 function App() {
-  const {
-    directories,
-    setDirectories,
-    replays1v1,
-    replays2v2,
-    stats1v1,
-    stats2v2,
-    playerNamesMap,
-    loading,
-    gameMode,
-    setGameMode,
-    refresh
-  } = useReplayContext();
+  const { directories, setDirectories, replays, stats, playerNamesMap, loading, refresh } =
+    useReplayContext();
 
   const [showSettings, setShowSettings] = useState(false);
-  const [activeTab1v1, setActiveTab1v1] = useState<string>('1');
+  const [activeTab, setActiveTab] = useState<string>('1');
   const [selectedPlayerId, setSelectedPlayerId] = useState<string | undefined>(undefined);
 
   const openPlayerDetails = (playerId: string) => {
     setSelectedPlayerId(playerId);
-    setGameMode('1v1');
-    setActiveTab1v1('2');
+    setActiveTab('2');
   };
 
   useEffect(() => {
-    Events.On('replay-file-added', () => {
-      refresh();
-    });
+    const handler = () => refresh();
+    EventsOn('replay-file-added', handler);
+
+    return () => {
+      EventsOff('replay-file-added');
+    };
   }, []);
 
   return (
@@ -53,20 +42,11 @@ function App() {
       <div className="p-4">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-4">
-            <div className="text-3xl font-bold">WARNO Replays Analyser</div>
+            <div className="text-3xl font-bold">WARNO Ranked Replays Analyser</div>
             <Version />
           </div>
 
           <div className="flex items-center gap-2">
-            <Select
-              value={gameMode}
-              onChange={setGameMode}
-              className="w-14"
-              options={[
-                { value: '1v1', label: '1v1' },
-                { value: '2v2', label: '2v2' }
-              ]}
-            />
             <Button icon={<SettingOutlined />} onClick={() => setShowSettings(true)}>
               Settings
             </Button>
@@ -80,7 +60,7 @@ function App() {
             onClick={() => refresh()}
             disabled={loading || directories.length === 0}
             loading={loading}>
-            {loading ? 'Loading' : replays1v1.length === 0 ? 'Generate' : 'Refresh'}
+            {loading ? 'Loading' : replays.length === 0 ? 'Generate' : 'Refresh'}
           </Button>
         </div>
 
@@ -92,17 +72,29 @@ function App() {
           ) : null}
 
           <div className="flex flex-col gap-4 mt-4">
-            {gameMode === '1v1' && (
+            {replays.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
+                <div className="text-neutral-300">
+                  By clicking <span className="font-bold">Generate</span> you agree to share your
+                  replays data with us
+                </div>
+                <div className="max-w-xl text-neutral-400 text-sm">
+                  Every replay helps the app get better and unlock new insights for you and the
+                  community. The data we collect is focused on divisions and maps and will not
+                  be shared with third parties or used to gain leverage over you in the game.
+                </div>
+              </div>
+            ) : (
               <>
-                <DailyRecap replays={replays1v1} />
+                <DailyRecap replays={replays} />
                 <Card
                   tabList={[
                     {
                       key: '1',
-                      label: 'Summary',
+                      label: 'Replays',
                       children: (
                         <div className="pt-4 mb-10">
-                          <ReplaysTable1v1 replays={replays1v1} onOpenPlayer={openPlayerDetails} />
+                          <ReplaysTable replays={replays} onOpenPlayer={openPlayerDetails} />
                         </div>
                       )
                     },
@@ -111,9 +103,9 @@ function App() {
                       label: 'Players',
                       children: (
                         <div className="pt-4 mb-10">
-                          {stats1v1 && (
+                          {stats && (
                             <Players
-                              replays={replays1v1}
+                              replays={replays}
                               playerNamesMap={playerNamesMap}
                               selectedPlayerId={selectedPlayerId}
                               onSelectedPlayerChange={setSelectedPlayerId}
@@ -124,15 +116,18 @@ function App() {
                     },
                     {
                       key: '3',
-                      label: 'Statistics',
+                      label: 'Your Statistics',
                       children: (
-                        <div className="pt-4 mb-10">
-                          {stats1v1 && <Stats1v1 stats={stats1v1} />}
-                        </div>
+                        <div className="pt-4 mb-10">{stats && <PlayerStats stats={stats} />}</div>
                       )
                     },
                     {
                       key: '4',
+                      label: 'Global Statistics',
+                      children: <div className="pt-4 mb-10">{stats && <GlobalStats />}</div>
+                    },
+                    {
+                      key: '5',
                       label: 'Leaderboard',
                       children: (
                         <div className="pt-4 mb-10">
@@ -145,49 +140,11 @@ function App() {
                       )
                     }
                   ]}
-                  activeTabKey={activeTab1v1}
-                  onTabChange={(key) => setActiveTab1v1(key)}
+                  activeTabKey={activeTab}
+                  onTabChange={(key) => setActiveTab(key)}
                   styles={{ body: { padding: 0 } }}
                 />
                 <div className="text-xs flex justify-end">Brought to you by Grand Potato</div>
-              </>
-            )}
-
-            {gameMode === '2v2' && (
-              <>
-                <Card
-                  tabList={[
-                    {
-                      key: '1',
-                      label: 'Summary',
-                      children: (
-                        <div className="pt-4 mb-10">
-                          <ReplaysTable2v2 replays={replays2v2} onOpenPlayer={openPlayerDetails} />
-                        </div>
-                      )
-                    },
-                    {
-                      key: '2',
-                      label: 'Teams',
-                      children: (
-                        <div className="pt-4 mb-10">
-                          <Teams replays={replays2v2} playerNamesMap={playerNamesMap} />
-                        </div>
-                      )
-                    },
-                    {
-                      key: '3',
-                      label: 'Statistics',
-                      children: (
-                        <div className="pt-4 mb-10">
-                          {stats2v2 && <Stats2v2 stats={stats2v2} />}
-                        </div>
-                      )
-                    }
-                  ]}
-                  styles={{ body: { padding: 0 } }}
-                />
-                <div className="text-xs flex justify-end">Brought to you by Suojeluskunta</div>
               </>
             )}
           </div>
