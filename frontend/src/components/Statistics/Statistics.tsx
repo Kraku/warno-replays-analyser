@@ -1,7 +1,7 @@
 import { Col, Row, Statistic, Table, Typography } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Statistics1v1 } from '../../stats';
+import { Statistics } from '../../stats';
 import { renderVictoryRatio } from '../../helpers/renderVictoryRatio';
 import RankHistoryChart from './RankHistoryChart';
 import { formatDuration } from '../../helpers/formatDuration';
@@ -64,7 +64,7 @@ export const renderRankHistoryTooltip = ({ payload }: any) => {
   );
 };
 
-export const Stats1v1 = ({ stats }: { stats: Statistics1v1 }) => {
+export const PlayerStats = ({ stats }: { stats: Statistics }) => {
   if (!stats) {
     return null;
   }

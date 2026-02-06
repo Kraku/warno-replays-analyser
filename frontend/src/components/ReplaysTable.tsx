@@ -1,7 +1,7 @@
 import { Button, Table } from 'antd';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Replay1v1 } from '../parsers/replaysParser';
+import { Replay } from '../parsers/replaysParser';
 import { ColumnType } from 'antd/es/table';
 import { Input } from 'antd';
 import { useState } from 'react';
@@ -19,7 +19,7 @@ const { Search } = Input;
 const waryesDeckBuilderUrl = (deckCode: string) =>
   `https://waryes.com/deck-builder?code=${encodeURIComponent(deckCode)}`;
 
-const getColumns = (onOpenPlayer?: (playerId: string) => void): ColumnType<Replay1v1>[] => [
+const getColumns = (onOpenPlayer?: (playerId: string) => void): ColumnType<Replay>[] => [
   {
     title: 'Date',
     dataIndex: 'createdAt',
@@ -40,13 +40,13 @@ const getColumns = (onOpenPlayer?: (playerId: string) => void): ColumnType<Repla
         </CopyToClipboard>
       </div>
     ),
-    sorter: (a: Replay1v1, b: Replay1v1) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix()
+    sorter: (a: Replay, b: Replay) => dayjs(a.createdAt).unix() - dayjs(b.createdAt).unix()
   },
   {
     title: 'Enemy Name',
     dataIndex: 'enemyName',
     key: 'enemyName',
-    sorter: (a: Replay1v1, b: Replay1v1) => a.enemyName.localeCompare(b.enemyName),
+    sorter: (a: Replay, b: Replay) => a.enemyName.localeCompare(b.enemyName),
     render: (value: string, record) => (
       <button
         type="button"
@@ -68,7 +68,7 @@ const getColumns = (onOpenPlayer?: (playerId: string) => void): ColumnType<Repla
     title: 'My Division',
     dataIndex: 'division',
     key: 'division',
-    sorter: (a: Replay1v1, b: Replay1v1) => (a.division || '').localeCompare(b.division || ''),
+    sorter: (a: Replay, b: Replay) => (a.division || '').localeCompare(b.division || ''),
     render: (value: string, record) => (
       <div>
         {value}{' '}
@@ -89,8 +89,7 @@ const getColumns = (onOpenPlayer?: (playerId: string) => void): ColumnType<Repla
     title: 'Enemy Division',
     dataIndex: 'enemyDivision',
     key: 'enemyDivision',
-    sorter: (a: Replay1v1, b: Replay1v1) =>
-      (a.enemyDivision || '').localeCompare(b.enemyDivision || ''),
+    sorter: (a: Replay, b: Replay) => (a.enemyDivision || '').localeCompare(b.enemyDivision || ''),
     render: (value: string, record) => (
       <div>
         {value}{' '}
@@ -111,27 +110,27 @@ const getColumns = (onOpenPlayer?: (playerId: string) => void): ColumnType<Repla
     title: 'My Rank',
     dataIndex: 'rank',
     key: 'rank',
-    sorter: (a: Replay1v1, b: Replay1v1) => a.rank.localeCompare(b.rank)
+    sorter: (a: Replay, b: Replay) => a.rank.localeCompare(b.rank)
   },
   {
     title: 'Enemy Rank',
     dataIndex: 'enemyRank',
     key: 'enemyRank',
-    sorter: (a: Replay1v1, b: Replay1v1) => parseInt(a.enemyRank) - parseInt(b.enemyRank)
+    sorter: (a: Replay, b: Replay) => parseInt(a.enemyRank) - parseInt(b.enemyRank)
   },
   {
     title: 'Duration',
     dataIndex: 'duration',
     key: 'duration',
     render: (value: number) => dayjs.duration(value, 'seconds').format('mm:ss'),
-    sorter: (a: Replay1v1, b: Replay1v1) =>
+    sorter: (a: Replay, b: Replay) =>
       dayjs(a.duration, 'mm:ss').unix() - dayjs(b.duration, 'mm:ss').unix()
   },
   {
     title: 'Map',
     dataIndex: 'map',
     key: 'map',
-    sorter: (a: Replay1v1, b: Replay1v1) => a.map.localeCompare(b.map)
+    sorter: (a: Replay, b: Replay) => a.map.localeCompare(b.map)
   },
   {
     title: 'Result',
@@ -142,23 +141,22 @@ const getColumns = (onOpenPlayer?: (playerId: string) => void): ColumnType<Repla
       { text: 'Defeat', value: 'Defeat' },
       { text: 'Draw', value: 'Draw' }
     ],
-    onFilter: (value: boolean | React.Key, record: Replay1v1) =>
-      record.result.includes(String(value)),
-    sorter: (a: Replay1v1, b: Replay1v1) => a.result.localeCompare(b.result)
+    onFilter: (value: boolean | React.Key, record: Replay) => record.result.includes(String(value)),
+    sorter: (a: Replay, b: Replay) => a.result.localeCompare(b.result)
   },
   {
-    title: 'Estimated Elo Change',
+    title: 'Estimated Elo',
     dataIndex: 'eloChange',
     key: 'eloChange',
-    sorter: (a: Replay1v1, b: Replay1v1) => a.eloChange - b.eloChange
+    sorter: (a: Replay, b: Replay) => a.eloChange - b.eloChange
   }
 ];
 
-export const ReplaysTable1v1 = ({
+export const ReplaysTable = ({
   replays,
   onOpenPlayer
 }: {
-  replays: Replay1v1[];
+  replays: Replay[];
   onOpenPlayer?: (playerId: string) => void;
 }) => {
   const [searchText, setSearchText] = useState('');
@@ -204,7 +202,7 @@ export const ReplaysTable1v1 = ({
       'replayPath'
     ];
 
-    downloadCsv(`replays-1v1-${dayjs().format('YYYY-MM-DD')}.csv`, toCsv(rows, columns));
+    downloadCsv(`replays-ranked-${dayjs().format('YYYY-MM-DD')}.csv`, toCsv(rows, columns));
   };
 
   return (

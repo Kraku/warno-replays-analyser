@@ -19,7 +19,7 @@ const seasonPresets: Record<SeasonKey, [dayjs.Dayjs | null, dayjs.Dayjs | null]>
 };
 
 export const SeasonSelect = () => {
-  const { refresh1v1Stats } = useReplayContext();
+  const { refreshStats } = useReplayContext();
 
   const [selectedSeason, setSelectedSeason] = useState<SeasonKey>();
 
@@ -61,7 +61,7 @@ export const SeasonSelect = () => {
     }
 
     await SaveSettings(updatedSettings);
-    refresh1v1Stats();
+    refreshStats();
   };
 
   return (

@@ -22,8 +22,7 @@ export const SettingsDrawer = ({
         const [settings, data] = await Promise.all([GetSettings(), GetPlayerIdsOptions()]);
 
         form.setFieldsValue({
-          playerIds: settings.playerIds,
-          playerInfoSharingDisabled: settings.playerInfoSharingDisabled || false
+          playerIds: settings.playerIds
         });
 
         setOptions(data);
@@ -37,12 +36,11 @@ export const SettingsDrawer = ({
 
   const handleSave = async () => {
     const settings = await GetSettings();
-    const { playerIds = [], startDate, playerInfoSharingDisabled } = form.getFieldsValue(true);
+    const { playerIds = [], startDate } = form.getFieldsValue(true);
 
     const params = {
       ...settings,
-      playerIds,
-      playerInfoSharingDisabled
+      playerIds
     };
 
     await SaveSettings(params);
@@ -68,7 +66,7 @@ export const SettingsDrawer = ({
         <Form.Item
           label="Player IDs"
           name="playerIds"
-          extra="Choose your Eugen account IDs to exclude other players replays. When empty, all replays will be shown.">
+          extra="Choose your Eugen account IDs to exclude other players' replays. When empty, all ranked replays will be shown.">
           <Select
             mode="multiple"
             allowClear
@@ -82,12 +80,6 @@ export const SettingsDrawer = ({
               value: item.value
             }))}
           />
-        </Form.Item>
-        <Form.Item
-          name="playerInfoSharingDisabled"
-          valuePropName="checked"
-          extra="When this is enabled, your replay data stays private — we won’t collect any opponent names, ranks, or Eugen IDs, etc. You’ll also only be able to search for players you’ve already played with.">
-          <Checkbox>Disable Player Info Sharing</Checkbox>
         </Form.Item>
       </Form>
     </Drawer>

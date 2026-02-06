@@ -19,12 +19,8 @@ export const Divisions = ({ playerId }: DivisionsProps) => {
     (async () => {
       setIsLoading(true);
 
-      const settings = await GetSettings();
-
-      if (!settings.playerInfoSharingDisabled) {
-        const playerReplays = await GetPlayerReplays(playerId);
-        setReplays(playerReplays);
-      }
+      const playerReplays = await GetPlayerReplays(playerId);
+      setReplays(playerReplays);
 
       setIsLoading(false);
     })();

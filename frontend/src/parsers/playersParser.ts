@@ -1,4 +1,4 @@
-import { Replay1v1 } from './replaysParser';
+import { Replay } from './replaysParser';
 
 export type PlayerHistory = {
   filePath: string;
@@ -25,7 +25,7 @@ export type Player = {
   steamId: string;
 };
 
-const createPlayerHistory = (replay: Replay1v1): PlayerHistory => ({
+const createPlayerHistory = (replay: Replay): PlayerHistory => ({
   filePath: replay.filePath,
   result: replay.result,
   division: replay.division,
@@ -39,7 +39,7 @@ const createPlayerHistory = (replay: Replay1v1): PlayerHistory => ({
   id: replay.id
 });
 
-const createNewPlayer = (replay: Replay1v1): Player => ({
+const createNewPlayer = (replay: Replay): Player => ({
   id: replay.enemyId,
   ranks: [replay.enemyRank],
   api: false,
@@ -47,11 +47,11 @@ const createNewPlayer = (replay: Replay1v1): Player => ({
   history: [createPlayerHistory(replay)]
 });
 
-const updatePlayer = (existingPlayer: Player, replay: Replay1v1): void => {
+const updatePlayer = (existingPlayer: Player, replay: Replay): void => {
   existingPlayer.history.push(createPlayerHistory(replay));
 };
 
-export const playersParser = async (replays: Replay1v1[]): Promise<Player[]> => {
+export const playersParser = async (replays: Replay[]): Promise<Player[]> => {
   const playersMap: Map<string, Player> = new Map();
 
   replays.forEach((replay) => {

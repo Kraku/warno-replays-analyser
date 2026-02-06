@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { Replay1v1 } from '../parsers/replaysParser';
+import { Replay } from '../parsers/replaysParser';
 import { Player, playersParser } from '../parsers/playersParser';
-import { List, Input, Button, Card, Empty, Typography } from 'antd';
+import { List, Input, Button, Card, Empty } from 'antd';
 import { ApiOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { PlayerDetails } from './PlayerDetails/PlayerDetails';
 import { transliterate } from '../helpers/transliterate';
-import { GetSettings, SearchPlayerInApi, SendPlayersToAPI } from '../../wailsjs/go/main/App';
+import { SearchPlayerInApi, SendPlayersToAPI } from '../../wailsjs/go/main/App';
 import { PlayerNamesMap } from '../helpers/playerNamesMap';
 import { main } from '../../wailsjs/go/models';
 import { RankIndicator } from './RankIndicator';
@@ -22,7 +22,7 @@ export const Players = ({
   selectedPlayerId,
   onSelectedPlayerChange
 }: {
-  replays: Replay1v1[];
+  replays: Replay[];
   playerNamesMap: PlayerNamesMap;
   selectedPlayerId?: string;
   onSelectedPlayerChange?: (playerId?: string) => void;
@@ -31,7 +31,7 @@ export const Players = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const trimmedSearchQuery = searchQuery.trim();
   const normalizedSearchQuery = trimmedSearchQuery.replace(/\s+/g, ' ');
-  const [debouncedSearchQuery] = useDebounce(normalizedSearchQuery, 300);
+  const debouncedSearchQuery = useDebounce(normalizedSearchQuery, 300);
   const [internalSelectedPlayer, setInternalSelectedPlayer] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -84,8 +84,6 @@ export const Players = ({
     if (!selectedPlayerId) return;
     if (players.some((p) => p.id === selectedPlayerId)) return;
 
-    // When the player was selected externally (e.g. from Leaderboard),
-    // ensure we have it loaded in our list.
     handleApiSearch(selectedPlayerId);
   }, [selectedPlayerId, players]);
 
@@ -93,50 +91,31 @@ export const Players = ({
     const fetch = async () => {
       setIsLoading(true);
 
-      const settings = await GetSettings();
       const parsedPlayers = await playersParser(replays);
 
-      if (!settings.playerInfoSharingDisabled) {
-        await SendPlayersToAPI(
-          parsedPlayers.map((player) => {
-            const sortedHistory = [...player.history].sort(
-              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-            const newest = sortedHistory[0];
-            const oldest = sortedHistory[sortedHistory.length - 1];
+      await SendPlayersToAPI(
+        parsedPlayers.map((player) => {
+          const sortedHistory = [...player.history].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          const newest = sortedHistory[0];
+          const oldest = sortedHistory[sortedHistory.length - 1];
 
-            return {
-              usernames: playerNamesMap.getNames(player.id),
-              ranks: player.history.map((history) => parseInt(history.enemyRank)),
-              eugenId: parseInt(player.id),
-              steamId: player.steamId || '',
-              lastKnownRank: newest ? parseInt(newest.enemyRank) : undefined,
-              lastKnownRankCreatedAt: newest ? dayjs(newest.createdAt).toISOString() : undefined,
-              oldestReplayCreatedAt: oldest ? dayjs(oldest.createdAt).toISOString() : undefined,
-              replays: player.history
-                .map((history) => ({
-                  eugenId: history.id,
-                  division: history.enemyDivision,
-                  createdAt: dayjs(history.createdAt).toISOString()
-                }))
-                .filter(({ division }) => division !== 'Unknown')
-            };
-          }) as main.PostUser[]
-        );
-      }
+          return {
+            usernames: playerNamesMap.getNames(player.id),
+            ranks: player.history.map((history) => parseInt(history.enemyRank)),
+            eugenId: parseInt(player.id),
+            steamId: player.steamId || '',
+            lastKnownRank: newest ? parseInt(newest.enemyRank) : undefined,
+            lastKnownRankCreatedAt: newest ? dayjs(newest.createdAt).toISOString() : undefined,
+            oldestReplayCreatedAt: oldest ? dayjs(oldest.createdAt).toISOString() : undefined
+          };
+        }) as main.PostUser[]
+      );
 
       const apiPlayers = (await SearchPlayerInApi('')) || [];
 
-      if (settings.playerInfoSharingDisabled) {
-        setPlayers(
-          parsedPlayers.map((player) => ({
-            ...player,
-            ranks: player.history.map((history) => history.enemyRank)
-          }))
-        );
-      } else {
-        setPlayers(mergeWithApiPlayers(parsedPlayers, apiPlayers));
-      }
+      setPlayers(mergeWithApiPlayers(parsedPlayers, apiPlayers));
 
       setIsLoading(false);
     };
@@ -218,15 +197,14 @@ export const Players = ({
                   key={player.id}>
                   <List.Item.Meta
                     title={
-                      <div className="flex gap-1 items-center">
-                        {player.api && <ApiOutlined />}
-                        <Typography.Text strong>
-                          {playerNamesMap.getPlayerCommonName(player.id)}
-                        </Typography.Text>
+                      <div className="flex-inline">
+                        {player.api && <ApiOutlined className="mr-1" />}
+                        {playerNamesMap.getPlayerCommonName(player.id)}
                         {playerNamesMap.getNames(player.id).length > 1 ? (
-                          <Typography.Text type="secondary">
+                          <span className="text-neutral-500">
+                            {' '}
                             ({playerNamesMap.getNames(player.id).length} names)
-                          </Typography.Text>
+                          </span>
                         ) : null}
                       </div>
                     }
@@ -243,7 +221,6 @@ export const Players = ({
           <PlayerDetails
             player={selectedPlayerData}
             playerNamesMap={playerNamesMap}
-            allReplays={replays}
           />
         ) : (
           <Card>

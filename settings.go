@@ -8,13 +8,11 @@ import (
 )
 
 type Settings struct {
-	PlayerIds                 []string `json:"playerIds,omitempty"`
-	FavoritePlayerIds         []string `json:"favoritePlayerIds,omitempty"`
-	DateRangeFrom             string   `json:"dateRangeFrom,omitempty"`
-	DateRangeTo               string   `json:"dateRangeTo,omitempty"`
-	DailyRecapUser            string   `json:"dailyRecapUser,omitempty"`
-	PlayerInfoSharingDisabled bool     `json:"playerInfoSharingDisabled,omitempty"`
-	GameMode                  string   `json:"gameMode,omitempty"`
+	PlayerIds         []string `json:"playerIds,omitempty"`
+	FavoritePlayerIds []string `json:"favoritePlayerIds,omitempty"`
+	DateRangeFrom     string   `json:"dateRangeFrom,omitempty"`
+	DateRangeTo       string   `json:"dateRangeTo,omitempty"`
+	DailyRecapUser    string   `json:"dailyRecapUser,omitempty"`
 }
 
 type PlayerIdsOption struct {

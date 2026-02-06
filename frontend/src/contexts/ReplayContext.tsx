@@ -1,24 +1,31 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import dayjs from 'dayjs';
-import { GetReplays, GetSettings, SaveSettings } from '../../wailsjs/go/main/App';
-import { replaysParser, Replay1v1, Replay2v2, EugenUser } from '../parsers/replaysParser';
-import { getStats1v1, getStats2v2, Statistics1v1, Statistics2v2 } from '../stats';
+import {
+  GetReplays,
+  GetSettings,
+  GetRankedReplaysAnalytics,
+  SendRankedReplaysToAPI
+} from '../../wailsjs/go/main/App';
+import {
+  replaysParser,
+  Replay,
+  EugenUser,
+  getDivisionId
+} from '../parsers/replaysParser';
+import { getStats, Statistics } from '../stats';
 import { PlayerNamesMap } from '../helpers/playerNamesMap';
+import { main } from '../../wailsjs/go/models';
 
 interface ReplayContextType {
   directories: string[];
   setDirectories: (dirs: string[]) => void;
-  replays1v1: Replay1v1[];
-  replays2v2: Replay2v2[];
-  stats1v1?: Statistics1v1;
-  stats2v2?: Statistics2v2;
+  replays: Replay[];
+  stats?: Statistics;
   playerNamesMap: PlayerNamesMap;
   eugenUsers?: EugenUser[];
   loading: boolean;
-  gameMode: string;
-  setGameMode: (mode: string) => void;
   refresh: () => void;
-  refresh1v1Stats: () => void;
+  refreshStats: () => void;
 }
 
 const ReplayContext = createContext<ReplayContextType | undefined>(undefined);
@@ -31,27 +38,17 @@ export const useReplayContext = () => {
 
 export const ReplayProvider = ({ children }: { children: React.ReactNode }) => {
   const [directories, setDirectories] = useState<string[]>([]);
-  const [replays1v1, setReplays1v1] = useState<Replay1v1[]>([]);
-  const [replays2v2, setReplays2v2] = useState<Replay2v2[]>([]);
-  const [stats1v1, setStats1v1] = useState<Statistics1v1>();
-  const [stats2v2, setStats2v2] = useState<Statistics2v2>();
+  const [replays, setReplays] = useState<Replay[]>([]);
+  const [stats, setStats] = useState<Statistics>();
   const [loading, setLoading] = useState(false);
   const [eugenUsers, setEugenUsers] = useState<EugenUser[]>();
   const [playerNamesMap, setPlayerNamesMap] = useState<PlayerNamesMap>(new PlayerNamesMap());
-  const [gameMode, setGameMode] = useState<string>('1v1');
-
-  useEffect(() => {
-    GetSettings().then((settings) => {
-      setGameMode(settings.gameMode || '1v1');
-    });
-  }, []);
 
   const fetchAndParseReplays = async () => {
     const data = await GetReplays(directories);
     const replays = await replaysParser(data);
 
-    replays.replays1v1 = sortReplaysByDate(replays.replays1v1);
-    replays.replays2v2 = sortReplaysByDate(replays.replays2v2);
+    replays.replays = sortReplaysByDate(replays.replays);
 
     return replays;
   };
@@ -61,17 +58,114 @@ export const ReplayProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const updateStateWithReplays = async (
-    replays1v1: Replay1v1[],
-    replays2v2: Replay2v2[],
+    replays: Replay[],
     playerMap: PlayerNamesMap,
     users: EugenUser[]
   ) => {
-    setReplays1v1(replays1v1);
-    setReplays2v2(replays2v2);
+    setReplays(replays);
     setPlayerNamesMap(playerMap);
     setEugenUsers(users);
-    setStats1v1(await getStats1v1(replays1v1));
-    setStats2v2(getStats2v2(replays2v2, playerMap));
+    setStats(await getStats(replays));
+  };
+
+  const buildRankedReplayInputs = (replays: Replay[]): main.RankedReplayInput[] => {
+    return replays
+      .map((replay) => {
+        const player1EugenId = Number.parseInt(replay.playerId, 10);
+        const player2EugenId = Number.parseInt(replay.enemyId, 10);
+
+        if (!Number.isFinite(player1EugenId) || !Number.isFinite(player2EugenId)) {
+          return null;
+        }
+
+        if (player1EugenId === player2EugenId) {
+          return null;
+        }
+
+        const player1Division = getDivisionId(replay.deck);
+        const player2Division = getDivisionId(replay.enemyDeck);
+
+        if (!player1Division || !player2Division) {
+          return null;
+        }
+
+        const mapKey = (replay.mapKey || '').trim();
+        if (!mapKey) {
+          return null;
+        }
+
+        const duration = Number.isFinite(replay.duration) ? replay.duration : 0;
+        if (!duration || duration <= 0) {
+          return null;
+        }
+
+        const player1EloRaw = Number.parseInt(replay.playerElo, 10);
+        const player2EloRaw = Number.parseInt(replay.enemyElo, 10);
+        const player1RankRaw = Number.parseInt(replay.rank, 10);
+        const player2RankRaw = Number.parseInt(replay.enemyRank, 10);
+
+        const player1Elo = Number.isFinite(player1EloRaw) && player1EloRaw > 0 ? player1EloRaw : undefined;
+        const player2Elo = Number.isFinite(player2EloRaw) && player2EloRaw > 0 ? player2EloRaw : undefined;
+        const player1Rank = Number.isFinite(player1RankRaw) && player1RankRaw > 0 ? player1RankRaw : undefined;
+        const player2Rank = Number.isFinite(player2RankRaw) && player2RankRaw > 0 ? player2RankRaw : undefined;
+
+        const eugen_id = (replay.id || '').trim();
+
+        let winnerPlayerEugenId: number | null = null;
+        if (replay.result === 'Victory') {
+          winnerPlayerEugenId = player1EugenId;
+        } else if (replay.result === 'Defeat') {
+          winnerPlayerEugenId = player2EugenId;
+        } else {
+          winnerPlayerEugenId = null;
+        }
+
+        const playedAt = dayjs(replay.createdAt).isValid()
+          ? dayjs(replay.createdAt).toISOString()
+          : undefined;
+
+        const player1Name = (replay.playerName || '').trim();
+        const player2Name = (replay.enemyName || '').trim();
+
+        if (!player1Name || !player2Name) {
+          return null;
+        }
+
+        if (player1Name === 'Unknown' || player2Name === 'Unknown') {
+          return null;
+        }
+
+        return {
+          eugenId: eugen_id.length > 0 ? eugen_id : undefined,
+          player1EugenId,
+          player2EugenId,
+          player1Elo,
+          player1Rank,
+          player2Elo,
+          player2Rank,
+          player1Name,
+          player2Name,
+          player1Division,
+          player2Division,
+          map: mapKey,
+          duration,
+          winnerPlayerEugenId,
+          submittedByEugenId: player1EugenId,
+          playedAt
+        };
+      })
+      .filter(Boolean) as main.RankedReplayInput[];
+  };
+
+  const sendRankedReplaysIfEnabled = async (replays: Replay[]) => {
+    try {
+      const rankedReplays = buildRankedReplayInputs(replays);
+
+      await SendRankedReplaysToAPI(rankedReplays);
+      await GetRankedReplaysAnalytics(0, 0);
+    } catch (error) {
+      console.error('Error sending ranked replays to API:', error);
+    }
   };
 
   const refresh = async () => {
@@ -79,35 +173,27 @@ export const ReplayProvider = ({ children }: { children: React.ReactNode }) => {
     clearReplayData();
 
     try {
-      const { replays1v1, replays2v2, playerNamesMap, eugenUsers } = await fetchAndParseReplays();
+      const { replays, playerNamesMap, eugenUsers } = await fetchAndParseReplays();
 
-      await updateStateWithReplays(replays1v1, replays2v2, playerNamesMap, eugenUsers);
+      void sendRankedReplaysIfEnabled(replays);
+
+      await updateStateWithReplays(replays, playerNamesMap, eugenUsers);
     } finally {
       setLoading(false);
     }
   };
 
-  const refresh1v1Stats = async () => {
+  const refreshStats = async () => {
     setLoading(true);
     const replays = await fetchAndParseReplays();
 
-    setStats1v1(await getStats1v1(replays.replays1v1));
+    setStats(await getStats(replays.replays));
     setLoading(false);
   };
 
   const clearReplayData = () => {
-    setReplays1v1([]);
-    setReplays2v2([]);
-    setStats1v1(undefined);
-    setStats2v2(undefined);
-  };
-
-  const handleSetGameMode = async (value: string) => {
-    setGameMode(value);
-
-    const settings = await GetSettings();
-
-    SaveSettings({ ...settings, gameMode: value });
+    setReplays([]);
+    setStats(undefined);
   };
 
   return (
@@ -115,17 +201,13 @@ export const ReplayProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         directories,
         setDirectories,
-        replays1v1,
-        replays2v2,
-        stats1v1,
-        stats2v2,
+        replays,
+        stats,
         playerNamesMap,
         eugenUsers,
         loading,
-        gameMode,
-        setGameMode: handleSetGameMode,
         refresh,
-        refresh1v1Stats
+        refreshStats
       }}>
       {children}
     </ReplayContext.Provider>

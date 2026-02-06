@@ -4,11 +4,7 @@ import {main} from '../models';
 
 export function CreatePlayerNote(arg1:string,arg2:string):Promise<void>;
 
-export function CreateTeamNote(arg1:string,arg2:string,arg3:string):Promise<void>;
-
 export function DeletePlayerNote(arg1:string,arg2:string):Promise<void>;
-
-export function DeleteTeamNote(arg1:string,arg2:string,arg3:string):Promise<void>;
 
 export function GetAppVersions():Promise<Array<string>>;
 
@@ -26,13 +22,13 @@ export function GetPlayerNotes(arg1:string):Promise<string>;
 
 export function GetPlayerReplays(arg1:string):Promise<Array<main.GetReplay>>;
 
+export function GetRankedReplaysAnalytics(arg1:number,arg2:number):Promise<main.RankedReplaysAnalyticsResponse>;
+
 export function GetReplays(arg1:Array<string>):Promise<Array<main.WarnoData>>;
 
 export function GetSettings():Promise<main.Settings>;
 
 export function GetSteamPlayer(arg1:string):Promise<main.SteamPlayer>;
-
-export function GetTeamNotes(arg1:string,arg2:string):Promise<string>;
 
 export function GetWarnoSaveFolders():Promise<string>;
 
@@ -41,3 +37,5 @@ export function SaveSettings(arg1:main.Settings):Promise<void>;
 export function SearchPlayerInApi(arg1:string):Promise<Array<main.GetUser>>;
 
 export function SendPlayersToAPI(arg1:Array<main.PostUser>):Promise<Record<string, boolean>>;
+
+export function SendRankedReplaysToAPI(arg1:Array<main.RankedReplayInput>):Promise<Record<string, any>>;
